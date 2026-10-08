@@ -1,0 +1,48 @@
+# Python environments and generated files
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+
+# Local AI services, credentials, and secrets
+.setup/
+.langflow/
+.env*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+*.token
+*.pt
+*.onnx
+*.engine
+*.pdf
+*.sqlite
+*.sqlite3
+*.db
+*.mp4
+*.gif
+*.elf
+*.hex
+*.bin
+*credentials*.txt
+*token*.txt
+*secret*.txt
+
+# Generated STM32 IDE state in the consolidated checkout
+aiu3/firmware/led_blink/.settings/
+aiu3/firmware/led_blink/.mxproject
+
+# Local knowledge may contain private user documents
+knowledge/*.md
+knowledge/*.txt
+
+# Local installer and diagnostic output
+.wsl-*-output.*
+*.log
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db

@@ -1,0 +1,38 @@
+# Publish the VALORANT and Hua Xiao Niu static interfaces without local data or services.
+name: Publish AIU website previews
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+      - name: Assemble static previews
+        run: |
+          mkdir -p _site/aiu4
+          cp -R aiu/valorant_platform/web/. _site/
+          cp -R aiu4/preview/. _site/aiu4/
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - name: Deploy site
+        id: deployment
+        uses: actions/deploy-pages@v5
