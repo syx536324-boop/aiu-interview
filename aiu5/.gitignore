@@ -1,0 +1,37 @@
+# Local environments and dependencies
+.venv/
+venv/
+node_modules/
+.uv-cache/
+.npm-cache/
+__pycache__/
+*.py[cod]
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+.setup/
+.runtime/
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+*.token
+
+# Generated files
+logs/
+*.log
+build/
+dist/
+coverage/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
