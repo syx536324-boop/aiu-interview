@@ -23,7 +23,7 @@ func run() -> void:
 	for a in s.livestock.animals: a.set_physics_process(false)
 	for id: String in s.inventory.Catalog.ITEMS: check(Categories.group(id)!="","classified item "+id)
 	var mapping: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://training/gifts/catalog.json"))
-	check(mapping.classes.size()==18 and mapping.training_images==0 and mapping.annotation_files==0,"honest eighteen-class registry")
+	check(mapping.classes.size()==18 and mapping.trained_custom_model and int(mapping.training_images)>0 and int(mapping.annotation_files)>0 and str(mapping.status).contains("pending"),"honest eighteen-class registry")
 	for i in range(18):
 		var r: Dictionary=mapping.classes[i]
 		check(r.class_id==i,"contiguous class index")

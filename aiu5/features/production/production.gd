@@ -7,6 +7,7 @@ const Herbs := preload("res://features/forest/catalog.gd")
 const Smith := preload("res://features/production/smith_catalog.gd")
 const Repairs := preload("res://features/production/repairs.gd")
 const RECIPES := {
+	"torch":{"name":"火把","cost":{"coal":1,"wood":1},"gain":{"torch":1}},
 	"campfire":{"name":"篝火","cost":{"stone":2,"wood":1,"coal":1},"gain":{"campfire":1}},
 	"iron_knife":{"name":"铁刀","cost":{"wood":1,"crude_iron":1},"gain":{"iron_knife":1}},
 	"hoe":{"name":"锄头","cost":{"wood":2,"stone":1},"gain":{"hoe":1}},

@@ -76,7 +76,9 @@ func focus(immediate := false) -> void:
 			active_count += 1
 			if "animal_id" in node: session.livestock.active_animals.append(node)
 			if node.get_parent() == null:
-				var viewport_area := Rect2(at - CHUNK_SIZE / 2 - Vector2(0, 28), CHUNK_SIZE).grow(64)
+				# Attach immediately whatever the camera actually shows, instead of one fixed chunk.
+				var half: Vector2 = get_viewport().get_visible_rect().size * 0.5 / maxf(0.01, world.camera.zoom.x)
+				var viewport_area := Rect2(at - half, half * 2.0).grow(64)
 				if node == world.active_resident or viewport_area.has_point(node.position):
 					record.parent.add_child(node)
 				elif not activation_queue.has(id): activation_queue.append(id)

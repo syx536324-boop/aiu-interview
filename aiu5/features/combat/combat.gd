@@ -52,24 +52,46 @@ func fire(target: Vector2) -> bool:
 	arrow.combat = self
 	arrow.actor_id = actor.resident_id
 	arrow.direction = origin.direction_to(target)
-	arrow.distance_left = minf(200,origin.distance_to(target)+12)
+	arrow.distance_left = minf(Gear.attack_range(weapon),origin.distance_to(target)+12)
 	if roof:
 		for body in session.interiors.rooms[actor.room_id].find_children("*","StaticBody2D",true,false): arrow.excluded.append(body.get_rid())
 		for body in session.construction.nodes[actor.room_id].find_children("*","StaticBody2D",true,false): arrow.excluded.append(body.get_rid())
 	session.world.objects.add_child(arrow)
 	arrow.global_position = origin
-	cooldown = 0.6
+	cooldown = Gear.interval(weapon)
 	return true
-func _melee(target: Vector2, weapon: String) -> bool:
+func attack_clicked(at: Vector2) -> bool:
+	if cooldown>0 or not ready_for_action() or (is_instance_valid(session.gifts) and session.gifts.opened): return false
+	var actor: CharacterBody2D = session.world.active_resident
+	var weapon: String = session.magic.ensure(actor.resident_id).equipment.weapon
+	if weapon not in Gear.WEAPONS or not session.magic.weapon_usable(actor.resident_id): return false
+	if actor.room_id!="" and not session.world.home_data(actor.room_id).get("tower",false): return false
+	var clicked: CharacterBody2D
+	# Hit-test the visible body sprite, rather than selecting a different enemy near the pointer.
+	for enemy: CharacterBody2D in enemies.values():
+		if enemy.hp>0 and enemy.get_parent()!=null and Rect2(enemy.global_position+Vector2(-8,-16),Vector2(16,20)).has_point(at):
+			clicked=enemy
+			break
+	if not is_instance_valid(clicked): return false
+	if actor.global_position.distance_to(clicked.global_position)>Gear.attack_range(weapon):
+		message.emit("目标超出武器攻击范围。")
+		return false
+	if not Rect2(Vector2.ZERO,Vector2(640,400)).has_point(actor.get_canvas_transform()*clicked.global_position): return false
+	var query := PhysicsRayQueryParameters2D.create(actor.global_position,clicked.global_position,1|8|4,[actor.get_rid()])
+	if actor.get_world_2d().direct_space_state.intersect_ray(query).get("collider")!=clicked: return false
+	if weapon=="bow": return fire(clicked.global_position)
+	return _melee(clicked.global_position,weapon,clicked)
+
+func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) -> bool:
 	var actor: CharacterBody2D = session.world.active_resident
 	var before: Dictionary = session.inventory.export_data()
 	var direction := actor.global_position.direction_to(target)
 	var candidate: CharacterBody2D
-	var nearest := 29.0
+	var nearest := Gear.attack_range(weapon)+0.0001
 	for enemy: CharacterBody2D in enemies.values()+session.livestock.animals:
 		if enemy.hp <= 0 or enemy.get_parent() == null: continue
 		var gap := actor.global_position.distance_to(enemy.global_position)
-		if gap < nearest and direction.dot(actor.global_position.direction_to(enemy.global_position)) >= 0.3:
+		if (not is_instance_valid(clicked) or enemy==clicked) and gap < nearest and direction.dot(actor.global_position.direction_to(enemy.global_position)) >= 0.3:
 			candidate = enemy
 			nearest = gap
 	if is_instance_valid(candidate):
@@ -84,7 +106,7 @@ func _melee(target: Vector2, weapon: String) -> bool:
 					outcome.text += " 获得25魔法点。"
 				session.magic.consume_weapon(actor.resident_id)
 				if not session.production.commit(before,outcome.text): return false
-				_spawn_swing(actor,direction)
+				_spawn_swing(actor,direction,weapon)
 				return true
 			candidate.hp = maxf(0,float(candidate.hp)-Gear.damage(weapon)-session.magic.skills.attack_bonus(actor.resident_id)-session.magic.skills.drain_on_hit(candidate,actor.resident_id))
 			if candidate.hp<=0: session.magic.credit_points(actor.resident_id,25)
@@ -92,14 +114,14 @@ func _melee(target: Vector2, weapon: String) -> bool:
 			candidate.refresh()
 	session.magic.consume_weapon(actor.resident_id)
 	if not session.production.commit(before,"挥动武器。" if not is_instance_valid(candidate) else "近战攻击，敌人生命%.0f。" % candidate.hp): return false
-	_spawn_swing(actor,direction)
+	_spawn_swing(actor,direction,weapon)
 	return true
-func _spawn_swing(actor: CharacterBody2D, direction: Vector2) -> void:
+func _spawn_swing(actor: CharacterBody2D, direction: Vector2, weapon: String) -> void:
 	var swing := Swing.new()
 	swing.direction = direction
 	session.world.objects.add_child(swing)
 	swing.global_position = actor.global_position+Vector2(0,-8)
-	cooldown = 0.6
+	cooldown = Gear.interval(weapon)
 func hit_animal(animal: CharacterBody2D, raw: float, actor_id := "") -> bool:
 	var attacker: String = session.world.active_resident.resident_id if actor_id=="" else actor_id
 	if not is_instance_valid(session.magic._actor(attacker)): return false

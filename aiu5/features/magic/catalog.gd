@@ -1,6 +1,7 @@
 # Defines four exclusive elements, level costs, equipment slots and the five elemental trunk skills.
 extends RefCounted
 
+const Torch := preload("res://features/lighting/torch_record.gd")
 const MAX_LEVEL := 100
 const POINTS_PER_LEVEL := 5
 const BASE_MANA := 10
@@ -27,7 +28,7 @@ static func required(level: int) -> int:
 
 static func fresh() -> Dictionary:
 	return {"element": "", "level": 1, "xp": 0,"pending_points":0, "skill_points": 0, "unlocked": [],
-		"equipment_records":{"armor":{},"legs":{},"head":{},"feet":{}}, "equipment": {"armor": "", "legs": "", "head": "", "feet": "", "weapon": ""}, "gear_claimed": false, "weapon_wear": Wear.normalize()}
+		"torch":{}, "equipment_records":{"armor":{},"legs":{},"head":{},"feet":{}}, "equipment": {"armor": "", "legs": "", "head": "", "feet": "", "weapon": ""}, "gear_claimed": false, "weapon_wear": Wear.normalize()}
 
 static func add_points(state: Dictionary, amount: int) -> void:
 	state.xp += amount
@@ -68,5 +69,9 @@ static func restore_state(source: Dictionary) -> Dictionary:
 		var clean := {"item":state.equipment[slot],"count":1}
 		if record is Dictionary: clean.merge(Wear.Origin.fields(record))
 		state.equipment_records[slot] = clean
+	var torch: Variant = source.get("torch",{})
+	if torch is Dictionary and torch.get("item","")=="torch" and float(torch.get("fuel_left",Torch.LIFETIME))>0:
+		state.torch = {"item":"torch","count":1}
+		state.torch.merge(Torch.normalize(torch))
 	state.gear_claimed = bool(source.get("gear_claimed", false))
 	return state

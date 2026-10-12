@@ -313,7 +313,7 @@
       "coco_original_id": null,
       "category": "装备",
       "game_kind": "inventory",
-      "game_id": "armor",
+      "game_id": "leather_armor",
       "note": "只框躯干盔甲，不包含头盔、护腿、靴子",
       "images_by_split": {
         "train": 9,
@@ -335,8 +335,8 @@
       "coco_original_id": null,
       "category": "装备",
       "game_kind": "inventory",
-      "game_id": "hood",
-      "note": "模型识别头盔；当前基础装备槽ID为hood，材质待定",
+      "game_id": "leather_helmet",
+      "note": "模型识别头盔；赐予皮头盔，材质待定",
       "images_by_split": {
         "train": 53,
         "val": 11,
@@ -357,7 +357,7 @@
       "coco_original_id": null,
       "category": "装备",
       "game_kind": "inventory",
-      "game_id": "leggings",
+      "game_id": "leather_leggings",
       "note": "左右护腿独立出现时分别框选，同一类别",
       "images_by_split": {
         "train": 24,
@@ -379,7 +379,7 @@
       "coco_original_id": null,
       "category": "装备",
       "game_kind": "inventory",
-      "game_id": "boots",
+      "game_id": "leather_boots",
       "note": "每只靴子一个框，左右同类；同次赐予数量规则以后确定",
       "images_by_split": {
         "train": 47,

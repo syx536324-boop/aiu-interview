@@ -3,7 +3,12 @@ extends RefCounted
 
 const Water := preload("res://features/inventory/water_catalog.gd")
 
+# Items a new character already owns. They are a starting grant, not a first discovery,
+# so achievements only fire once the character genuinely holds more than this amount.
+const STARTING := {"seeds":3, "rice_seeds":3}
+
 const ITEMS := {
+	"torch":{"name":"火把","limit":1,"description":"工作台：煤矿1＋木头1，制作60在线秒。装备独立火把格，点燃后照亮80×80世界像素。累计燃烧10分钟报废，每次燃烧5分钟熄灭；点亮篝火旁E或火系三级H点燃。","use_label":"装备火把"},
 	"campfire":{"name":"篝火","limit":1,"description":"工作台：石头2＋木头1＋煤矿1，制作60秒。B选中后部署；E点亮/熄灭，火系H可瞬间点亮。照明96×96世界像素。","use_label":"部署篝火"},
 	"coal":{"name":"煤矿","limit":99,"description":"扩建矿洞按保存种子生成，每区块40%概率有煤矿脉；装备镐子采集3次获得煤矿3个。篝火合成需要煤矿1。"},
 	"iron_knife":{"name":"铁刀","limit":1,"description":"工作台：木头1＋粗铁1，60在线秒。攻击1，沿用刀的耐久规则。","use_label":"装备武器"},

@@ -98,6 +98,7 @@ func cast(rank: int, at: Vector2) -> bool:
 	var plot := -1
 	var cells: Array=[]
 	var camp: Node2D
+	var ignite_torch := false
 	var destination := Vector2.ZERO
 	var vessels: Array[int]=[]
 	if rank==2:
@@ -115,7 +116,8 @@ func cast(rank: int, at: Vector2) -> bool:
 				if vessels.is_empty(): return _reject("背包中需要空水桶或空木杯；每种最多装满一个。")
 			"fire":
 				camp=_camp(actor)
-				if not is_instance_valid(camp): return _reject("靠近未点燃的篝火（32像素内）再施放。")
+				ignite_torch=is_instance_valid(session.torches) and session.torches.can_ignite(id)
+				if not is_instance_valid(camp) and not ignite_torch: return _reject("装备熄灭的火把，或靠近未点燃的篝火（32像素内）再施放。")
 			"earth":
 				cells=_cells(actor,at)
 				if cells.is_empty(): return _reject("鼠标指向附近可开垦空地，避开道路、水面、建筑和已有田格。")
@@ -162,7 +164,9 @@ func cast(rank: int, at: Vector2) -> bool:
 				p.dry=false
 				p.age=0.0
 				session.homestead.refresh()
-			"fire": camp.set_lit(true)
+			"fire":
+				if is_instance_valid(camp): camp.set_lit(true)
+				if ignite_torch: session.torches.ignite(id)
 			"earth":
 				for p: Vector2 in cells: session.homestead.plots.append({"x":p.x,"y":p.y,"w":16.0,"h":16.0,"age":0.0,"dry":true,"crop":""})
 				session.homestead.refresh()
@@ -289,6 +293,9 @@ func interact_camp() -> bool:
 	var fixture: Variant=near.get("fixture")
 	if not is_instance_valid(fixture) or fixture.kind!="campfire": return false
 	var before: Dictionary=session.inventory.export_data()
+	if fixture.lit and session.torches.can_ignite(actor.resident_id):
+		session.torches.ignite(actor.resident_id)
+		return session.production.commit(before,"火把已点燃，照明80×80世界像素；剩余耐久保留。")
 	fixture.set_lit(not fixture.lit)
 	return session.production.commit(before,"篝火已点亮，照明96×96世界像素。" if fixture.lit else "篝火已熄灭。")
 func _attach_hut(id: String) -> void:

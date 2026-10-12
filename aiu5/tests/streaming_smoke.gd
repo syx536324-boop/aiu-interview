@@ -73,9 +73,10 @@ func run_checks() -> void:
 	stream.focus(true)
 	check(not outside_ore.is_inside_tree() and not bench.is_inside_tree(), "leaving a region removes its ore and furniture from the scene tree")
 	check(world.logical_obstacles().has(bench.collision_bounds()), "parked furniture remains an obstacle in the logical world")
+	var live_zoom: Vector2 = world.camera.zoom
 	await key(KEY_M)
 	check(paused and session.overview and stream.overview.visible and not world.visible, "real M input opens the independent map and pauses gameplay")
-	check(world.camera.zoom == Vector2(2, 2) and stream.overview.texture.get_size() == Vector2(432, 288), "full map uses a cached texture without changing the following camera")
+	check(world.camera.zoom == live_zoom and stream.overview.texture.get_size() == Vector2(432, 288), "full map uses a cached texture without changing the following camera")
 	var frozen: String = JSON.stringify(persistence.capture_session())
 	var frozen_position: Vector2 = actor.position
 	var patch_count: int = world.terrain.chunks.size()

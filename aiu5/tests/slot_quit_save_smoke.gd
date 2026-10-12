@@ -41,7 +41,8 @@ func run() -> void:
 		good = good and herd.find_animal("cow:3").growth == 143.25 and game.get_node("Mining").progress.get("surface:1") == 2
 		good = good and not paused and not game.get_node("Session").menu_paused
 		var magic: Dictionary = game.get_node("Magic").ensure("ali")
-		good = good and magic.element == "earth" and magic.level == 3 and magic.xp == 37 and magic.skill_points == 0 and magic.unlocked == ["trunk_1"] and magic.equipment.head == "leather_helmet" and not magic.gear_claimed
+		# 237 awarded points plus two first-item discoveries (leather_armor, leather_helmet, 25 each) = 287, so lv.3 with 87 xp.
+		good = good and magic.element == "earth" and magic.level == 3 and magic.xp == 87 and magic.skill_points == 0 and magic.unlocked == ["trunk_1"] and magic.equipment.head == "leather_helmet" and not magic.gear_claimed
 		good = good and not inventory.has_item("ali", "leather_helmet") and inventory.has_item("ali", "leather_armor")
 		good = good and game.get_node("Combat").enemies["tribe:1"].hp==0 and game.get_node("Production").smelting.remaining==12.5
 		good = good and game.get_node("Construction").records["built:0"].hp==91 and world.home_data("built:0").name=="中级石屋"

@@ -4,7 +4,7 @@ Godot 4.7.2 Windows村落生存游戏，工程目录仍为aiu5。摄像头赐予
 
 ## 安装与运行
 
-下载GitHub v0.7.2的 `AIU5-Setup-0.7.2-win64.exe`，安装后从开始菜单 **沙盘上的生活** 启动。安装器升级原AIU5安装位置，保留玩家存档。
+下载GitHub v0.7.3的 `AIU5-Setup-0.7.3-win64.exe`，安装后从开始菜单 **沙盘上的生活** 启动。安装器升级原AIU5安装位置，保留玩家存档。
 
 源码运行：
 
@@ -26,8 +26,11 @@ Godot_v4.7.2-stable_win64_console.exe --path D:\aiu5
 - 皮/铁装备在铁匠铺用皮革/粗铁合成：盔甲8、护腿5、头盔4、靴4。斧剑沿用原材料配方。
 - 击杀猪掉猪肉1；牛掉皮革1、牛肉1；成年羊掉羊肉1、羊毛2。羊与猪牛同样5分钟成长并可喂谷物、繁殖；三种肉在灶房60秒烹饪。
 - 森林草丛每2在线分钟20%概率生成一种种子；成熟收获作物1＋对应种子2。
-- 每次击杀奖励25魔法点，归击杀角色；未觉醒先累计。C→属性→成就，每项完成奖励100魔法点，具体成就待定。
-- B背包，E互动，Q锄地，G播种/收获，F家具部署，J攻击，鼠标瞄准，T冶炼，V装沙，C属性，M全图，Esc暂停。
+- 每次击杀奖励25魔法点，归击杀角色；未觉醒先累计。C→属性→成就，每名角色首次获得一种物品即完成一项成就，每项奖励25魔法点，重复获得同种物品不再奖励。开局自带的物品不算获得：小麦、水稻种子各3不完成成就，之后真正持有超过开局数量才算首次获得。
+- B背包，E互动，Q锄地，G播种/收获，F家具部署，J攻击，鼠标瞄准，装备武器后右键点击敌人攻击，T冶炼，V装沙，C属性，M全图，Esc暂停。
+- 装备武器后右键点击敌人攻击：镐子/斧/剑30世界像素·1秒，两种刀20世界像素·0.4秒，弓200世界像素·1秒；超出射程或被遮挡的目标不发动攻击。室外相机为0.9倍、角色居中，640×400视口显示711×444世界像素，因此各武器射程在上下左右都落在可点击的视野内。
+- 工作台制作火把：煤矿1＋木头1，60在线秒。装备独立火把格，照亮80×80世界像素；累计燃烧10分钟报废，每次点燃5分钟熄灭，可在点亮的篝火旁按E或火系三级技能点燃。
+- 魔法等级达到20级后，赐予所得物品可在赐予界面或背包“赋属性”里选择木/水/火/土属性；未达20级只保留赐予来源。
 
 - 四系五级技能已实现：一级被动，Z武器赋能，H生活技能，K防护/持续技能，L高阶技能；规则见[元素技能](docs/ELEMENTAL_SKILLS.md)。火系四级持续15秒。
 - 工作台制作篝火：石头2＋木头1＋煤矿1；F部署，E切换点亮/熄灭，照亮96×96世界像素。
@@ -43,9 +46,23 @@ scenes/main.gd仅装配模块和信号；features按库存、制作、养殖、�
 Godot_v4.7.2-stable_win64_console.exe --headless --path D:\aiu5 --script res://tests/elemental_smoke.gd
 ```
 
+双进程回归（关窗保存与第二进程续玩）：先跑第一次，再用 `-- verify` 跑第二次；`quit_save_smoke` 另支持 `-- paused` 变体验证全图暂停时关窗仍保存。
+
+```powershell
+$godot = 'Godot_v4.7.2-stable_win64_console.exe'
+& $godot --headless --path D:\aiu5 --script res://tests/quit_save_smoke.gd
+& $godot --headless --path D:\aiu5 --script res://tests/quit_save_smoke.gd -- verify
+& $godot --headless --path D:\aiu5 --script res://tests/slot_quit_save_smoke.gd
+& $godot --headless --path D:\aiu5 --script res://tests/slot_quit_save_smoke.gd -- verify
+& $godot --headless --path D:\aiu5 --script res://tests/resource_quit_smoke.gd
+& $godot --headless --path D:\aiu5 --script res://tests/resource_quit_smoke.gd -- verify
+```
+
 测试均使用隔离存档，不写玩家数据。摄像头18类首版模型的实物准确率仍需逐类验收。第三方资源见[THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)。
 
 0.7.2采用已确认的透明像素沙盘图标，统一游戏窗口、Windows程序文件、安装器和开始菜单；图标原图及七尺寸ICO见assets/branding。
+
+0.7.3新增火把（独立火把格、80×80世界像素照明、10分钟报废/5分钟熄灭，篝火与火系三级点燃）、右键点击敌人的精确攻击（每件武器各自的射程与间隔）、赐予物品的20级属性选择，并把成就改为“每名角色首次获得一种物品奖励25魔法点”（开局自带的种子不计入）；室外镜头改为0.9倍并让角色居中，使弓的200像素射程在上下左右都可用。同时修复祭台祭礼丢失与赐予类别IDs。
 
 ## 魔力上限与恢复
 

@@ -387,7 +387,7 @@ func _build_achievements() -> void:
 	achievement_root=Control.new()
 	achievement_root.position=level_root.position
 	attributes_root.add_child(achievement_root)
-	_label(achievement_root,"成就 · 每完成一项获得100魔法点",Vector2(8,6),13)
+	_label(achievement_root,"成就 · 每首次获得一种物品奖励25魔法点",Vector2(8,6),13)
 	achievement_text=RichTextLabel.new()
 	achievement_text.position=Vector2(8,36)
 	achievement_text.size=Vector2(480,174)
@@ -397,6 +397,6 @@ func _build_achievements() -> void:
 func _present_achievements(data: Dictionary) -> void:
 	var rows: PackedStringArray=[]
 	for entry: Dictionary in data.get("entries",[]):
-		rows.append(("已完成 · " if entry.completed else "未完成 · ")+str(entry.name)+" · 100魔法点\n"+str(entry.description))
-	var text := "具体成就与完成条件待定。\n每完成一项奖励100魔法点，每名角色每项只奖励一次。\n击杀生物每只获得25魔法点，未觉醒时先累计。" if rows.is_empty() else "\n\n".join(rows)
+		rows.append(("已完成 · " if entry.completed else "未完成 · ")+str(entry.name)+" · 25魔法点\n"+str(entry.description))
+	var text := "首次获得每种物品即完成成就，奖励25魔法点，每名角色每项只奖励一次。\n击杀生物每只获得25魔法点，未觉醒时先累计。" if rows.is_empty() else "\n\n".join(rows)
 	if achievement_text.text!=text: achievement_text.text=text

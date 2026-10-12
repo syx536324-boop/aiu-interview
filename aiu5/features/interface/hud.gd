@@ -5,8 +5,13 @@ signal resident_requested(index: int)
 signal roster_close_requested
 signal founder_names_requested(male: String, female: String)
 signal attributes_requested(id: String)
+signal torch_requested
 signal weapon_requested
 const ItemIcon := preload("res://features/interface/item_icon.gd")
+var torch_button: Button
+var torch_icon: Control
+var torch_label: Label
+var torch_durability: Control
 var weapon_button: Button
 var weapon_icon: Control
 var weapon_label: Label
@@ -121,6 +126,22 @@ func _ready() -> void:
 	weapon_durability.position = Vector2(2,40)
 	weapon_durability.size = Vector2(40,3)
 	weapon_button.add_child(weapon_durability)
+	torch_button = Button.new()
+	torch_button.name = "TorchSlot"
+	torch_button.position = Vector2(352,306)
+	torch_button.size = Vector2(44,44)
+	_style_button(torch_button)
+	torch_button.pressed.connect(func() -> void: torch_requested.emit())
+	root.add_child(torch_button)
+	torch_icon = ItemIcon.new()
+	torch_icon.position = Vector2(10,7)
+	torch_icon.size = Vector2(24,24)
+	torch_button.add_child(torch_icon)
+	torch_label = _text(torch_button,"火把",Vector2(9,29),9,Color("f6dfa7"))
+	torch_durability = DurabilityBar.new()
+	torch_durability.position = Vector2(2,40)
+	torch_durability.size = Vector2(40,3)
+	torch_button.add_child(torch_durability)
 	_build_roster(root)
 
 func bind_session(session: Node) -> void:
@@ -133,7 +154,7 @@ func _present(state: Dictionary) -> void:
 	var weapon: Dictionary = state.get("weapon",{})
 	weapon_icon.set_item(str(weapon.get("item","")), bool(weapon.get("magical", false)))
 	weapon_label.text = str(weapon.get("name","武器")) if weapon.get("item", "") != "" else "武器"
-	weapon_button.tooltip_text = "%s · 攻击%d · 点击卸回背包 · J 攻击 / E 采集" % [weapon.get("name",""),weapon.get("attack",0)] if weapon.get("item", "") != "" else "武器位 · 点击打开背包，选择镐子、斧、剑或弓装备"
+	weapon_button.tooltip_text = "%s · 攻击%d · 点击卸回背包 · 右键点击敌人 / J攻击 / E采集" % [weapon.get("name",""),weapon.get("attack",0)] if weapon.get("item", "") != "" else "武器位 · 点击打开背包，选择镐子、斧、剑或弓装备"
 	weapon_durability.visible = weapon.get("item","") != ""
 	weapon_durability.value = int(weapon.get("wear",{}).get("durability",40))
 	weapon_durability.queue_redraw()
@@ -141,6 +162,15 @@ func _present(state: Dictionary) -> void:
 	if weapon.get("item","") != "": weapon_button.tooltip_text += "\n" + str(weapon.get("durability_text",""))
 	weapon_button.visible = not state.overview and not state.roster_open and not state.inventory.open and not state.furnishing.open and not state.get("attributes",{}).get("open",false) and not state.get("awakening",{}).get("open",false) and not state.get("workshop",{}).get("open",false) and not state.get("menu_paused",false)
 	weapon_button.disabled = not weapon.get("editable",false)
+	var torch: Dictionary = state.get("torch",{})
+	torch_button.visible = weapon_button.visible
+	torch_button.disabled = not torch.get("editable",false)
+	torch_icon.set_record({"item":torch.get("item",""),"lit":torch.get("lit",false)})
+	torch_label.text = "点燃" if torch.get("lit",false) else "熄灭" if torch.get("item","")!="" else "火把"
+	torch_button.tooltip_text = str(torch.get("description","火把格"))+"\n点击卸回背包；空格时点击打开背包。"
+	torch_durability.visible = torch.get("item","")!=""
+	torch_durability.value = int(torch.get("durability",0))
+	torch_durability.queue_redraw()
 	var values: Dictionary = state.get("vitals", {})
 	var names := {"life": "生命", "hunger": "饥饿", "thirst": "饥渴", "health": "健康", "mana": "魔力"}
 	for key: String in stat_bars:

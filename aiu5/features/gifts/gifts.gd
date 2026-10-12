@@ -16,6 +16,7 @@ var received_at := 0
 var received := false
 var sequence := 0
 var selected := ""
+var selected_element := ""
 var frame_jpeg := ""
 var device := ""
 var was_paused := false
@@ -65,6 +66,7 @@ func begin_camera() -> void:
 	frame_jpeg = ""
 	candidates.clear()
 	selected = ""
+	selected_element = ""
 	sequence = 0
 	received = false
 	frozen = false
@@ -133,6 +135,29 @@ func select_candidate(id: String) -> void:
 			_emit()
 			return
 
+func attributes_available(id: String) -> bool:
+	return session.magic.ensure(id).element!="" and int(session.magic.ensure(id).level)>=20
+
+func select_element(element: String) -> void:
+	if not opened or mode!="camera" or not attributes_available(actor_id): return
+	if element!="" and not Origin.ELEMENTS.has(element): return
+	selected_element = element
+	_emit()
+
+func assign_selected_attribute(element: String) -> bool:
+	var id: String = session.world.active_resident.resident_id
+	if not session.magic._begin(id): return false
+	if not attributes_available(id): return session.magic._reject("魔法等级达到20级后才能选择赐予物品的魔法属性。")
+	if not Origin.ELEMENTS.has(element): return false
+	var chosen: Dictionary = session.inventory.selection
+	if chosen.get("side","")!="bag": return false
+	var bag: Array = session.inventory.ensure_bag(id)
+	var index := int(chosen.get("index",-1))
+	if index<0 or index>=bag.size() or not Origin.magical(bag[index]): return false
+	var before: Dictionary = session.inventory.export_data()
+	bag[index].magic_attribute = element
+	return session.production.commit(before,"已为赐予物品选择%s属性。" % Origin.ELEMENTS[element])
+
 func confirm() -> bool:
 	if not opened or mode != "camera" or not frozen or selected == "": return false
 	if not available() or actor_id != session.world.active_resident.resident_id: return _reject("角色或祭台位置已改变，请重新开启仪式。")
@@ -145,17 +170,17 @@ func confirm() -> bool:
 	if session.inventory.gift_events.has(event_id): return _reject("这次赐予已经完成。")
 	var before: Dictionary = session.inventory.export_data()
 	var record := {"item":str(chosen.item), "count":1}
-	record.merge(Origin.gifted(event_id))
+	record.merge(Origin.gifted(event_id,selected_element if attributes_available(actor_id) else ""))
 	if chosen.kind == "animal":
 		if not session.livestock.gift_animal(str(chosen.item), record): return _reject("村庄动物数量已达上限，请稍后再试。")
 	elif not session.inventory.insert_record(actor_id, record): return _reject("背包已满，请腾出1格后重试；尚未赐予。")
-	session.inventory.gift_events[event_id] = {"class_id":int(chosen.class_id), "actor":actor_id}
+	session.inventory.gift_events[event_id] = {"class_id":int(chosen.class_id), "actor":actor_id, "item":str(chosen.item)}
 	if not session.persistence.save_now():
 		session.inventory.apply_data(before)
 		session.persistence.restore_session(before.session)
 		get_tree().paused = true
 		return _reject("存档失败，赐予已撤销，请重试。")
-	var text := "已赐予%s×1，带有魔法标记，属性待定。" % chosen.name
+	var text := "已赐予%s×1%s。" % [chosen.name,Origin.describe(record)]
 	close()
 	session._set_notice(text)
 	return true
@@ -181,7 +206,7 @@ func _emit() -> void:
 	changed.emit(snapshot())
 
 func snapshot() -> Dictionary:
-	return {"open":opened,"mode":mode,"feedback":feedback,"frame_jpeg":frame_jpeg,"frozen":frozen,"selected":selected,"candidates":candidates.duplicate(true),"device":device}
+	return {"open":opened,"mode":mode,"feedback":feedback,"frame_jpeg":frame_jpeg,"frozen":frozen,"selected":selected,"candidates":candidates.duplicate(true),"device":device,"attributes_available":attributes_available(actor_id) if actor_id!="" else false,"selected_element":selected_element}
 
 func _process(_delta: float) -> void:
 	if opened and mode == "camera" and received and Time.get_ticks_msec()-received_at > (30000 if frozen else 2000):

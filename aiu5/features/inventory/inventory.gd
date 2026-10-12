@@ -7,6 +7,8 @@ const Catalog := preload("res://features/inventory/catalog.gd")
 const Gear := preload("res://features/combat/weapon_catalog.gd")
 const Wear := preload("res://features/combat/durability.gd")
 const Origin := preload("res://features/gifts/provenance.gd")
+const Torch := preload("res://features/lighting/torch_record.gd")
+var save_hook: Callable
 const CAPACITY := 21
 var gift_events: Dictionary = {}
 var bags: Dictionary = {}
@@ -75,6 +77,7 @@ func commit_resource_reward(actor: String, resource: String, progress: int, item
 				var count := mini(remaining, int(Catalog.ITEMS[item]["limit"]))
 				bag[i] = {"item": item, "count": count}
 				if item in Gear.WEAPONS: bag[i].merge(Wear.normalize())
+				if item=="torch": bag[i].merge(Torch.normalize())
 				remaining -= count
 			elif not empty_pass and slot.get("item", "") == item and not Origin.magical(slot):
 				var count := mini(remaining, int(Catalog.ITEMS[item]["limit"]) - int(slot["count"]))
@@ -108,6 +111,7 @@ func _sanitize_slots(data: Variant) -> Array:
 			clean.merge(Origin.fields(slot))
 			if Origin.magical(clean): clean.count = 1
 			if id in Gear.WEAPONS: clean.merge(Wear.normalize(slot))
+			if id=="torch": clean.merge(Torch.normalize(slot))
 			result.append(clean)
 		else:
 			result.append({})
@@ -180,7 +184,7 @@ func transfer_slots(source: Array, source_index: int, target: Array, target_inde
 	var to: Dictionary = target[target_index]
 	if from.is_empty():
 		return
-	if not to.is_empty() and from["item"] == to["item"] and from.item not in Gear.WEAPONS and not Origin.magical(from) and not Origin.magical(to):
+	if not to.is_empty() and from["item"] == to["item"] and from.item not in Gear.WEAPONS and from.item!="torch" and not Origin.magical(from) and not Origin.magical(to):
 		var room := int(Catalog.ITEMS[from["item"]]["limit"]) - int(to["count"])
 		var count := mini(room, int(from["count"]))
 		to["count"] += count
@@ -200,7 +204,7 @@ func quick_transfer(side: String, index: int) -> void:
 	var original := int(source[index]["count"])
 	var remaining := original
 	var id := str(source[index]["item"])
-	if id in Gear.WEAPONS or Origin.magical(source[index]):
+	if id in Gear.WEAPONS or id=="torch" or Origin.magical(source[index]):
 		for i in range(target.size()):
 			if target[i].is_empty():
 				target[i] = source[index]
@@ -257,6 +261,7 @@ func _report(text: String) -> void:
 	message.emit(text)
 
 func save_state() -> Error:
+	if save_hook.is_valid(): return save_hook.call(path)
 	return write_file(path, export_data())
 
 func write_file(target: String, data: Dictionary) -> Error:
@@ -303,6 +308,7 @@ func exchange(id: String, costs: Dictionary, rewards: Dictionary, apply := true,
 					var count := mini(remaining, int(Catalog.ITEMS[item].limit))
 					bag[i] = {"item": item, "count": count}
 					if item in Gear.WEAPONS: bag[i].merge(Wear.normalize())
+					if item=="torch": bag[i].merge(Torch.normalize())
 					remaining -= count
 				elif not empty_pass and slot.get("item", "") == item and not Origin.magical(slot):
 					var count := mini(remaining, int(Catalog.ITEMS[item].limit) - int(slot.count))
@@ -340,7 +346,7 @@ func swap_weapon(id: String, incoming: String, outgoing: String, wear: Dictionar
 
 func grant_supplies(id: String) -> void:
 	var supplied: Dictionary = grants.get(id, {})
-	var supplies := {"seeds":3,"rice_seeds":3}
+	var supplies: Dictionary = Catalog.STARTING
 	for item: String in supplies:
 		if supplied.has(item): continue
 		var amount: int = supplies[item]

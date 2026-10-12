@@ -48,6 +48,7 @@ func run_check() -> void:
 		farm.plots[0].age = 67.5
 		farm.selected_seeds.ali = "rice_seeds"
 		farm.refresh()
+		inventory.exchange("ali", {}, {"bucket": 1, "wooden_cup": 1}) # Prepared crafted vessels
 		inventory.exchange("ali", {"bucket": 1, "wooden_cup": 1}, {"water_bucket_2": 1, "water_cup": 1})
 		herd._spawn("cow:3", "cow", "female", 143.25, Vector2(104, 460))
 		herd.next_ids.cow = 4

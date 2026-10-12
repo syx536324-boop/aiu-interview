@@ -60,12 +60,18 @@ func _ready() -> void:
 	$Construction.message.connect($Session._set_notice)
 	$Production.message.connect($Session._set_notice)
 	$Combat.message.connect($Session._set_notice)
+	var torches := preload("res://features/lighting/torches.gd").new()
+	torches.name = "Torches"
+	add_child(torches)
+	$Session.torches = torches
+	torches.start($Session)
 	$Session.day_night = $DayNight
 	$DayNight.start($Session)
 	$Persistence.start($Session, $Vitals, $Homestead, $Grounds)
 	$HUD.bind_session($Session)
 	$HUD.resident_requested.connect($Session.select_resident)
 	$HUD.weapon_requested.connect($Session.weapon_slot_clicked)
+	$HUD.torch_requested.connect(torches.slot_clicked)
 	$HUD.roster_close_requested.connect($Session.close_roster)
 	$HUD.founder_names_requested.connect($Session.rename_founders)
 	$HUD.attributes_requested.connect($Session.show_attributes)
@@ -83,6 +89,7 @@ func _ready() -> void:
 	$Belongings.editor_rotate_requested.connect($FurnitureEditor.rotate_selected)
 	$Belongings.editor_remove_requested.connect($FurnitureEditor.remove_selected)
 	$Belongings.use_requested.connect($Session.use_selected)
+	$Belongings.gift_attribute_requested.connect($Gifts.assign_selected_attribute)
 	$Belongings.sacrifice_requested.connect($Session.sacrifice_selected)
 	$Attributes.bind_session($Session)
 	$Attributes.close_requested.connect($Session.close_attributes)

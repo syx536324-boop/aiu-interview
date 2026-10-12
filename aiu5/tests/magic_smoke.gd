@@ -83,7 +83,9 @@ func run() -> void:
 	check(progress.level == 100 and progress.xp == 0 and progress.skill_points == 495, "overflow at cap never generates more skill points")
 	await load_game()
 	check(magic.ensure("ali").element == "" and magic.ensure("heya").element == "", "new/legacy residents start unawakened with independent states")
-	check(magic.award_points("ali", 25) and magic.ensure("ali").pending_points==25, "unawakened residents retain earned magic points")
+	# First-item discoveries are settled on save as well, so measure the earned delta, not a fixed total.
+	var pending_before: int = magic.ensure("ali").pending_points
+	check(magic.award_points("ali", 25) and magic.ensure("ali").pending_points==pending_before+25, "unawakened residents retain earned magic points")
 	await key(KEY_R)
 	check(not session.awakening_open, "R away from altar cannot open awakening")
 	world.active_resident.position = Vector2(548, 332)
@@ -107,8 +109,9 @@ func run() -> void:
 	await click(ui.confirm_button)
 	items.path = path
 	check(session.awakening_open and magic.ensure("ali").element == "", "failed save rolls back awakening and allows retry")
+	var settled: int = magic.ensure("ali").pending_points
 	await click(ui.confirm_button)
-	check(magic.ensure("ali").element == "water" and magic.ensure("ali").level == 1 and magic.ensure("ali").skill_points == 0 and magic.ensure("ali").xp==25 and magic.ensure("ali").pending_points==0 and ui.attributes_root.visible, "confirmed awakening settles pending points once")
+	check(magic.ensure("ali").element == "water" and magic.ensure("ali").level == 1 and magic.ensure("ali").skill_points == 0 and magic.ensure("ali").xp==settled and magic.ensure("ali").pending_points==0 and ui.attributes_root.visible, "confirmed awakening settles pending points once")
 	check(not magic.awaken("ali", "fire") and magic.ensure("ali").element == "water", "element is exclusive and cannot be changed")
 	check(not magic.awaken("heya", "earth"), "inactive role cannot awaken through the current operator")
 	# Inspect another role without switching control; equipment belongs to its own bag.

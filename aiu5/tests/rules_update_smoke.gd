@@ -69,7 +69,7 @@ func run() -> void:
 		s.inventory.grant_supplies(actor.resident_id)
 		check(count("seeds",actor.resident_id)==3,"initial grant not repeated "+actor.resident_id)
 	check(not s.magic.claim_gear("ali"),"free armor grant removed")
-	check(s.achievements.definitions.is_empty(),"achievement definitions remain pending")
+	check(not s.achievements.definitions.is_empty() and s.achievements.snapshot("ali").reward==25,"first-item achievements are generated for every catalog item")
 	check(not s.achievements.complete("ali","undefined"),"undefined achievement cannot award points")
 	check(station()!=null and station().public_fixture,"public startup bench available")
 	check(not s.world.navigation.find_path(s.world.active_resident.position,station().position+Vector2(0,15)).is_empty(),"public bench reachable from starting location")
@@ -160,7 +160,8 @@ func run() -> void:
 		var amounts: Dictionary={}
 		for item: String in entry.drops: amounts[item]=count(item)
 		check(s.combat.hit_animal(target,10,"ali"),"kill actual creature "+entry.id)
-		check(s.magic.ensure("ali").pending_points==previous+25,"kill adds twenty-five pending magic "+entry.id)
+		# Killed animals also drop first-time items, which award their own 25 points on the same save.
+		check(s.magic.ensure("ali").pending_points>=previous+25,"kill adds twenty-five pending magic "+entry.id)
 		check(not s.combat.hit_animal(target,10,"ali"),"dead creature cannot grant twice "+entry.id)
 		for item: String in entry.drops: check(count(item)==amounts[item]+int(entry.drops[item]),"drop count "+entry.id+" "+item)
 	var xp_before: int=s.magic.ensure("ali").pending_points
@@ -242,7 +243,7 @@ func run() -> void:
 	s.achievements.definitions={"probe":{"name":"test","description":"isolated test definition"},"probe_fail":{}}
 	var pending: int=s.magic.ensure("ali").pending_points
 	check(s.achievements.complete("ali","probe"),"defined achievement awards")
-	check(s.magic.ensure("ali").pending_points==pending+100 and not s.achievements.complete("ali","probe"),"achievement exactly one hundred once")
+	check(s.magic.ensure("ali").pending_points==pending+25 and not s.achievements.complete("ali","probe"),"achievement exactly twenty-five once")
 	pending=s.magic.ensure("ali").pending_points; s.inventory.path="res://project.godot/blocked.json"
 	check(not s.achievements.complete("ali","probe_fail"),"failed achievement save")
 	s.inventory.path=real_path
@@ -257,7 +258,7 @@ func run() -> void:
 	ui.achievement_tab.pressed.emit()
 	check(ui.achievement_root.visible and not ui.level_root.visible,"achievement tab displays")
 	s.achievements.definitions={}; s.refresh_interface()
-	check("待定" in ui.achievement_text.text and "100" in ui.achievement_text.text,"undefined achievements clearly marked in UI")
+	check("25魔法点" in ui.achievement_text.text and "待定" not in ui.achievement_text.text and "100魔法点" not in ui.achievement_text.text,"achievement UI states the real twenty-five reward")
 	s.attributes_id=""; s.refresh_interface()
 	var complete_state: Dictionary=s.inventory.export_data()
 	check(s.persistence.save_now(),"save all new domains")

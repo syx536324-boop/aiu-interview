@@ -37,6 +37,7 @@ var watered := false
 var gate_open := false
 var overview := false
 var menu_paused := false
+var torches: Node
 var achievements: Node
 var foraging: Node
 var forest: Node
@@ -68,8 +69,11 @@ func _sync_view() -> void:
 	interiors.focus(world.active_resident)
 	if is_instance_valid(world.streamer): world.streamer.ensure_actor(world.active_resident)
 	if outside:
-		world.camera.position = world.active_resident.position + Vector2(0, -28)
+		world.camera.position = world.active_resident.position
 		world.camera.make_current()
+	# The carried light must follow the newly controlled character within the same call,
+	# so switching residents never leaves the previous character's torch burning on screen.
+	if is_instance_valid(torches): torches.refresh_light()
 	_refresh_nearest()
 
 func _refresh_nearest() -> void:
@@ -123,6 +127,13 @@ func _process(delta: float) -> void:
 		refresh_time = 0.1
 		_refresh_nearest()
 		state_changed.emit(snapshot())
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_RIGHT and event.pressed:
+		if is_instance_valid(combat) and combat.ready_for_action():
+			if is_instance_valid(simulation): simulation.flush()
+			combat.attack_clicked(world.active_resident.get_global_mouse_position())
+			get_viewport().set_input_as_handled()
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not is_instance_valid(world) or event.is_echo() or menu_paused:
@@ -374,7 +385,12 @@ func _interact_impl() -> void:
 		"altar_display":
 			inventory.open_container(world.active_resident.resident_id, world.active_resident.resident_name, "altar:display", "祭坛")
 			refresh_interface()
-		"forest_altar", "altar":
+		"forest_altar":
+			if is_instance_valid(world.forest_altar): world.forest_altar.perform()
+			gifts.open_menu()
+		"altar":
+			# The chief priest conducts the village offering; the ritual menu opens on top of it.
+			if world.active_resident.resident_id == "chief_priest" and is_instance_valid(world.altar): world.altar.perform()
 			gifts.open_menu()
 		_:
 			if not homestead.nearby(world.active_resident).is_empty():
@@ -440,6 +456,8 @@ func snapshot() -> Dictionary:
 		entry.vitals["max_mana"]=vitals.max_mana(str(entry.id))
 		entry["frozen"] = int(entry.index) != selected
 	return {
+		"torch":torches.snapshot(world.active_resident.resident_id) if is_instance_valid(torches) else {},
+		"gift_attributes_available":gifts.attributes_available(world.active_resident.resident_id) if is_instance_valid(gifts) else false,
 		"weapon": magic.weapon_snapshot(world.active_resident.resident_id) if is_instance_valid(magic) else {},
 		"day_night":day_night.snapshot() if is_instance_valid(day_night) else {},
 		"menu_paused": menu_paused,
@@ -481,7 +499,9 @@ func use_selected() -> void:
 	var slot: Dictionary = inventory.ensure_bag(world.active_resident.resident_id)[selection.index]
 	if slot.is_empty(): return
 	var item: String = slot.item
-	if item in magic.Catalog.WEAPONS:
+	if item=="torch":
+		if torches.equip(world.active_resident.resident_id,int(selection.index)): close_inventory()
+	elif item in magic.Catalog.WEAPONS:
 		if magic.equip_weapon(world.active_resident.resident_id,item,int(selection.index)): close_inventory()
 	elif magic.Catalog.Armor.contains(item):
 		show_attributes(world.active_resident.resident_id)

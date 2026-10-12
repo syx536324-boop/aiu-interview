@@ -12,6 +12,9 @@ var choices: VBoxContainer
 var freeze_button: Button
 var confirm_button: Button
 var camera_info: Label
+var attribute_choice: OptionButton
+var attribute_hint: Label
+const ELEMENT_IDS := ["","wood","water","fire","earth"]
 var gifts: Node
 var cached_jpeg := ""
 var cached_choices := ""
@@ -55,13 +58,25 @@ func _ready() -> void:
 	_label(camera_panel,"识别候选",Rect2(376,76,220,24),13)
 	var scroll := ScrollContainer.new()
 	scroll.position = Vector2(376,108)
-	scroll.size = Vector2(220,184)
+	scroll.size = Vector2(220,136)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	camera_panel.add_child(scroll)
 	choices = VBoxContainer.new()
 	choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	choices.add_theme_constant_override("separation",5)
 	scroll.add_child(choices)
+	attribute_hint = _label(camera_panel,"20级后可选择魔法属性",Rect2(376,248,220,18),10)
+	attribute_choice = OptionButton.new()
+	attribute_choice.position = Vector2(376,267)
+	attribute_choice.size = Vector2(220,25)
+	attribute_choice.focus_mode = Control.FOCUS_NONE
+	attribute_choice.add_theme_font_override("font",font)
+	attribute_choice.add_theme_font_size_override("font_size",11)
+	attribute_choice.get_popup().add_theme_font_override("font",font)
+	attribute_choice.get_popup().add_theme_font_size_override("font_size",11)
+	for name in ["不选择属性","木属性","水属性","火属性","土属性"]: attribute_choice.add_item(name)
+	attribute_choice.item_selected.connect(func(index: int) -> void: gifts.select_element(ELEMENT_IDS[index]))
+	camera_panel.add_child(attribute_choice)
 	freeze_button = _button(camera_panel,"定格选择",Rect2(32,334,160,28))
 	freeze_button.pressed.connect(func() -> void: gifts.freeze_frame())
 	confirm_button = _button(camera_panel,"确认赐予 1 件",Rect2(208,334,208,28))
@@ -92,6 +107,9 @@ func _present(state: Dictionary) -> void:
 	camera_info.text = "已定格 · 世界暂停" if state.frozen else "实时预览 · 世界暂停 · " + str(state.device)
 	freeze_button.text = "继续识别" if state.frozen else "定格选择"
 	confirm_button.disabled = not state.frozen or str(state.selected) == ""
+	attribute_choice.disabled = not state.get("attributes_available",false)
+	attribute_choice.select(maxi(0,ELEMENT_IDS.find(str(state.get("selected_element","")))))
+	attribute_hint.text = "选择赐予物品魔法属性" if state.get("attributes_available",false) else "魔法20级解锁属性选择"
 	var jpeg := str(state.frame_jpeg)
 	if jpeg != cached_jpeg:
 		cached_jpeg = jpeg

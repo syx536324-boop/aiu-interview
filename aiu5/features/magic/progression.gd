@@ -147,7 +147,7 @@ func equip_weapon(id: String, item: String, bag_index := -1) -> bool:
 		return _reject("缺少武器或背包已满，原武器保持不变。")
 	state.equipment.weapon = item
 	state.weapon_wear = exchange.wear
-	return _commit(id,previous,bag, "已卸下武器。" if item == "" else "已装备%s，按 J 攻击；E 使用采集工具。" % session.inventory.Catalog.ITEMS[item].name)
+	return _commit(id,previous,bag, "已卸下武器。" if item == "" else "已装备%s，右键点击敌人 / J 攻击；E 使用采集工具。" % session.inventory.Catalog.ITEMS[item].name)
 
 func weapon_usable(id: String) -> bool:
 	if _error(id) != "": return false
@@ -185,7 +185,7 @@ func snapshot(id: String) -> Dictionary:
 			"equipped_name":(session.inventory.Catalog.ITEMS[state.equipment[slot]].name+Catalog.Wear.Origin.describe(state.equipment_records.get(slot,{}))) if state.equipment[slot]!="" else "空",
 			"choices":_gear_choices(id,slot)})
 	result["gear"] = gear
-	result["achievements"] = session.achievements.snapshot(id) if is_instance_valid(session.achievements) else {"entries":[],"completed":0,"total":0,"reward":100}
+	result["achievements"] = session.achievements.snapshot(id) if is_instance_valid(session.achievements) else {"entries":[],"completed":0,"total":0,"reward":25}
 	var skills: Array[Dictionary] = []
 	for i in range(Catalog.TRUNK.size()):
 		var skill: String = Catalog.TRUNK[i]

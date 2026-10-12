@@ -129,10 +129,10 @@ func save_checkpoint(announce := true) -> bool:
 	for actor in world.controllable:
 		if vitals.ensure(actor.resident_id).life > 0: alive = true
 	if not alive: return false
-	var data: Dictionary = inventory.export_data()
-	if inventory.write_file(inventory.path + ".altar", data) != OK:
+	if session.achievements.save_to(inventory.path + ".altar") != OK:
 		message.emit("祭台存档写入失败，原来的祭台存档仍保留。")
 		return false
+	var data: Dictionary = inventory.export_data()
 	checkpoint = data.duplicate(true)
 	if announce: message.emit("祭台存档已保存。全员阵亡时将回到这一刻。")
 	return true

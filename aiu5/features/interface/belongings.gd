@@ -2,6 +2,7 @@
 extends CanvasLayer
 
 signal use_requested
+signal gift_attribute_requested(element: String)
 signal sacrifice_requested(target_id: String)
 signal slot_requested(side: String, index: int, quick: bool)
 signal inventory_close_requested
@@ -40,6 +41,9 @@ var category_filter: OptionButton
 var filter_ids: Array[String] = []
 var filter_id := "all"
 var last_state: Dictionary = {}
+var attribute_choice: OptionButton
+var attribute_button: Button
+const GIFT_ELEMENTS := ["wood","water","fire","earth"]
 
 func _ready() -> void:
 	font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC"])
@@ -115,6 +119,18 @@ func _build_inventory(parent: Control) -> void:
 	use_button = _button(inventory_panel, "使用 / 食用 / 部署", 160)
 	use_button.position = Vector2(16, 264)
 	use_button.pressed.connect(func() -> void: use_requested.emit())
+	attribute_choice = OptionButton.new()
+	attribute_choice.position = Vector2(184,264)
+	attribute_choice.size = Vector2(60,28)
+	attribute_choice.focus_mode = Control.FOCUS_NONE
+	attribute_choice.add_theme_font_override("font",font)
+	attribute_choice.add_theme_font_size_override("font_size",11)
+	attribute_choice.get_popup().add_theme_font_override("font",font)
+	for name in ["木","水","火","土"]: attribute_choice.add_item(name)
+	inventory_panel.add_child(attribute_choice)
+	attribute_button = _button(inventory_panel,"赋属性",68)
+	attribute_button.position = Vector2(248,264)
+	attribute_button.pressed.connect(func() -> void: gift_attribute_requested.emit(GIFT_ELEMENTS[attribute_choice.selected]))
 	sacrifice_target = OptionButton.new()
 	sacrifice_target.position = Vector2(188, 264)
 	sacrifice_target.size = Vector2(244, 28)
@@ -194,12 +210,20 @@ func _present(state: Dictionary) -> void:
 	var selected: Dictionary = items["selection"]
 	use_button.text = "使用 / 食用 / 部署"
 	use_button.disabled = selected.get("side", "") != "bag"
+	attribute_choice.visible = false
+	attribute_button.visible = false
 	if not selected.is_empty():
 		var slots: Array = items["bag"] if selected["side"] == "bag" else items["storage"]
 		var slot: Dictionary = slots[selected["index"]]
 		if not slot.is_empty():
 			selected_info.text = Catalog.ITEMS[slot["item"]]["description"]+Wear.Origin.describe(slot)
 			use_button.text = Catalog.ITEMS[slot["item"]].get("use_label", "使用 / 食用 / 部署")
+			if selected.get("side","")=="bag" and Wear.Origin.magical(slot) and not altar:
+				attribute_choice.visible = true
+				attribute_button.visible = true
+				attribute_choice.disabled = not state.get("gift_attributes_available",false)
+				attribute_button.disabled = attribute_choice.disabled
+				attribute_button.tooltip_text = "20级后可选择木、水、火、土属性；与武器赋能技能独立。" if attribute_button.disabled else "给选中的赐予物品设置魔法属性。"
 	if items["status"] != "":
 		selected_info.text = items["status"]
 
@@ -242,6 +266,7 @@ func _update_slots(buttons: Array[Button], slots: Array, side: String, selected:
 		if Wear.Origin.magical(slot): button.get_node("ItemName").text = "✦" + button.get_node("ItemName").text
 		if id != "": button.tooltip_text = "【"+Categories.label(id)+"】"+button.tooltip_text
 		if id in Gear.WEAPONS: button.tooltip_text += "\n" + Wear.describe(slot)
+		if id=="torch": button.tooltip_text += "\n" + preload("res://features/lighting/torch_record.gd").describe(slot)
 		var active: bool = selected.get("side", "") == side and selected.get("index", -1) == index
 		button.add_theme_stylebox_override("normal", _style(Color("7d7046") if active else Color("504331"), Color("e2cb82") if active else Color("806b49")))
 

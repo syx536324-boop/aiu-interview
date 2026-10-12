@@ -5,6 +5,7 @@ const Water := preload("res://features/inventory/water_catalog.gd")
 
 const GiftIcons := preload("res://features/interface/gift_icon_atlas.gd")
 const Origin := preload("res://features/gifts/provenance.gd")
+var torch_lit := false
 var item := ""
 var magical := false
 var gift_texture: Texture2D
@@ -20,6 +21,8 @@ func set_item(id: String, is_magical := false) -> void:
 	queue_redraw()
 
 func set_record(record: Dictionary) -> void:
+	var next_lit := bool(record.get("lit",false))
+	if torch_lit!=next_lit: torch_lit=next_lit; queue_redraw()
 	set_item(str(record.get("item", "")), Origin.magical(record))
 
 func _draw() -> void:
@@ -47,6 +50,13 @@ func _draw() -> void:
 	if item in ["beef","mutton"]: art_item="pork"
 	if item in ["cooked_beef","cooked_mutton"]: art_item="cooked_pork"
 	match art_item:
+		"torch":
+			draw_line(Vector2(7,22),Vector2(15,8),edge,5)
+			draw_line(Vector2(7,22),Vector2(15,8),wood,3)
+			draw_rect(Rect2(11,7,8,5),Color("47433c"))
+			if torch_lit:
+				draw_colored_polygon(PackedVector2Array([Vector2(10,9),Vector2(12,4),Vector2(15,6),Vector2(17,0),Vector2(21,9)]),Color("ed913e"))
+				draw_rect(Rect2(14,6,3,4),Color("ffe3a2"))
 		"campfire":
 			for at in [Vector2(5,19),Vector2(11,22),Vector2(19,19)]: draw_circle(at,3,steel.darkened(0.3))
 			draw_line(Vector2(4,18),Vector2(20,15),wood,3)
