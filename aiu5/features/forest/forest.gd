@@ -200,7 +200,7 @@ func drink_soup(item: String) -> bool:
 	if not Catalog.RECIPES.has(item) or not session.production.allowed(session.world.active_resident): return false
 	var before: Dictionary = session.inventory.export_data()
 	if not session.vitals.use_food(session.world.active_resident.resident_id,item): return false
-	return session.production.commit(before,"大补汤：生命与健康已回满。" if item=="restorative_soup" else "补气汤：健康+5，生命+3（上限10）。")
+	return session.production.commit(before,"大补汤：生命与健康已回满。" if item=="restorative_soup" else "补气汤：健康+5，生命+3（不超过生命上限）。")
 func export_state() -> Dictionary:
 	return {"seed_patches":seed_patches.duplicate(true),"online":online,"collected":collected.duplicate(true),"excluded":excluded.keys()}
 func _release(id: String) -> void:

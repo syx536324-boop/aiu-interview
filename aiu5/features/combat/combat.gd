@@ -48,7 +48,7 @@ func fire(target: Vector2) -> bool:
 	if not session.production.commit(before,"发射箭×1。"):
 		return false
 	var arrow := Arrow.new()
-	arrow.damage = Gear.damage(weapon)
+	arrow.damage = Gear.damage(weapon)+session.magic.skills.attack_bonus(actor.resident_id)
 	arrow.combat = self
 	arrow.actor_id = actor.resident_id
 	arrow.direction = origin.direction_to(target)
@@ -77,7 +77,7 @@ func _melee(target: Vector2, weapon: String) -> bool:
 		var hit: Dictionary = actor.get_world_2d().direct_space_state.intersect_ray(query)
 		if hit.get("collider") == candidate:
 			if candidate.is_in_group("creature_targets"):
-				var outcome: Dictionary = session.livestock.damage_animal(candidate,Gear.damage(weapon),actor.resident_id)
+				var outcome: Dictionary = session.livestock.damage_animal(candidate,Gear.damage(weapon)+session.magic.skills.attack_bonus(actor.resident_id),actor.resident_id)
 				if not outcome.ok: return false
 				if outcome.killed:
 					session.magic.credit_points(actor.resident_id,25)
@@ -86,7 +86,7 @@ func _melee(target: Vector2, weapon: String) -> bool:
 				if not session.production.commit(before,outcome.text): return false
 				_spawn_swing(actor,direction)
 				return true
-			candidate.hp = maxf(0,float(candidate.hp)-Gear.damage(weapon))
+			candidate.hp = maxf(0,float(candidate.hp)-Gear.damage(weapon)-session.magic.skills.attack_bonus(actor.resident_id)-session.magic.skills.drain_on_hit(candidate,actor.resident_id))
 			if candidate.hp<=0: session.magic.credit_points(actor.resident_id,25)
 			candidate.pursuit = 6.0
 			candidate.refresh()
@@ -117,12 +117,25 @@ func hit_enemy(enemy: CharacterBody2D, raw: float, actor_id := "") -> bool:
 	var attacker: String = session.world.active_resident.resident_id if actor_id=="" else actor_id
 	if not is_instance_valid(session.magic._actor(attacker)): return false
 	var before: Dictionary = session.inventory.export_data()
-	enemy.hp = maxf(0,float(enemy.hp)-raw)
+	enemy.hp = maxf(0,float(enemy.hp)-raw-session.magic.skills.drain_on_hit(enemy,attacker))
 	enemy.pursuit = 6.0
 	enemy.refresh()
 	if enemy.hp<=0: session.magic.credit_points(attacker,25)
 	return session.production.commit(before,"击败敌人，获得25魔法点。" if enemy.hp<=0 else "命中敌人，剩余生命%.0f。" % enemy.hp)
 
+func apply_skill_damage(target: CharacterBody2D, raw: float, actor_id: String) -> bool:
+	# Timed attacks advance with the saved online clock; normal autosaves capture their state.
+	if not is_instance_valid(target) or target.hp<=0 or not is_instance_valid(session.magic._actor(actor_id)): return false
+	if target.is_in_group("creature_targets"):
+		var result: Dictionary=session.livestock.damage_animal(target,raw,actor_id)
+		if not result.ok: return false
+		if result.killed: session.magic.credit_points(actor_id,25)
+	else:
+		target.hp=maxf(0,target.hp-raw)
+		target.pursuit=6.0
+		target.refresh()
+		if target.hp<=0: session.magic.credit_points(actor_id,25)
+	return true
 func demolish() -> void:
 	if demolition_cooldown > 0 or not ready_for_action(): return
 	if session.construction.demolish(session.world.active_resident): demolition_cooldown=0.6
@@ -130,13 +143,14 @@ func export_state() -> Dictionary:
 	var data: Dictionary = {}
 	for id: String in enemies:
 		var e: CharacterBody2D = enemies[id]
-		data[id] = {"hp":e.hp,"at":[e.position.x,e.position.y],"cooldown":e.cooldown,"pursuit":e.pursuit}
+		data[id] = {"hp":e.hp,"thirst":e.thirst,"at":[e.position.x,e.position.y],"cooldown":e.cooldown,"pursuit":e.pursuit}
 	return data
 func restore(data: Dictionary) -> void:
 	for id: String in enemies:
 		var e: CharacterBody2D = enemies[id]
 		var saved: Dictionary = data.get(id,{})
 		e.hp = clampf(float(saved.get("hp",30)),0,30)
+		e.thirst = clampf(float(saved.get("thirst",10)),0,10)
 		var at: Array = saved.get("at",[SPAWNS[id].x,SPAWNS[id].y])
 		e.position = Vector2(at[0],at[1])
 		e.cooldown = clampf(float(saved.get("cooldown",0)),0,2)

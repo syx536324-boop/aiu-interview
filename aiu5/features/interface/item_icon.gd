@@ -32,6 +32,13 @@ func _draw() -> void:
 	if item in ["beef","mutton"]: art_item="pork"
 	if item in ["cooked_beef","cooked_mutton"]: art_item="cooked_pork"
 	match art_item:
+		"campfire":
+			for at in [Vector2(5,19),Vector2(11,22),Vector2(19,19)]: draw_circle(at,3,steel.darkened(0.3))
+			draw_line(Vector2(4,18),Vector2(20,15),wood,3)
+			draw_colored_polygon(PackedVector2Array([Vector2(7,16),Vector2(9,7),Vector2(12,10),Vector2(15,2),Vector2(19,16)]),Color("ea823b"))
+		"coal":
+			draw_colored_polygon(PackedVector2Array([Vector2(3,17),Vector2(5,6),Vector2(14,3),Vector2(21,9),Vector2(19,21),Vector2(8,22)]),Color("383c3e"))
+			draw_line(Vector2(7,8),Vector2(14,5),Color("777c78"),2)
 		"bed":
 			draw_rect(Rect2(3,2,18,20),edge)
 			draw_rect(Rect2(4,3,16,6),Color("ead7b3"))

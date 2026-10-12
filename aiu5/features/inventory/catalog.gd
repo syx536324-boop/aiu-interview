@@ -4,6 +4,8 @@ extends RefCounted
 const Water := preload("res://features/inventory/water_catalog.gd")
 
 const ITEMS := {
+	"campfire":{"name":"篝火","limit":1,"description":"工作台：石头2＋木头1＋煤矿1，制作60秒。B选中后部署；E点亮/熄灭，火系H可瞬间点亮。照明96×96世界像素。","use_label":"部署篝火"},
+	"coal":{"name":"煤矿","limit":99,"description":"扩建矿洞按保存种子生成，每区块40%概率有煤矿脉；装备镐子采集3次获得煤矿3个。篝火合成需要煤矿1。"},
 	"iron_knife":{"name":"铁刀","limit":1,"description":"工作台：木头1＋粗铁1，60在线秒。攻击1，沿用刀的耐久规则。","use_label":"装备武器"},
 	"beef":{"name":"生牛肉","limit":99,"description":"击杀牛获得1份；灶台E烹饪60在线秒，灶台旁B选中使用可指定烹饪。生食规则同生猪肉。","use_label":"食用 / 灶台烹饪"},
 	"mutton":{"name":"生羊肉","limit":99,"description":"击杀成年羊获得1份；灶台E烹饪60在线秒，灶台旁B选中使用可指定烹饪。生食规则同生猪肉。","use_label":"食用 / 灶台烹饪"},

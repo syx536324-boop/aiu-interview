@@ -4,6 +4,7 @@ extends Node
 signal message(text: String)
 const Gear := preload("res://features/combat/weapon_catalog.gd")
 var equipment: Node
+const Cave := preload("res://features/mining/cave_catalog.gd")
 const Ore := preload("res://features/mining/ore.gd")
 const Entrance := preload("res://features/mining/entrance.gd")
 const Underground := preload("res://features/mining/underground.gd")
@@ -71,19 +72,24 @@ var surface: Dictionary = {}
 var procedural: Dictionary = {}
 var progress: Dictionary = {}
 var cooldown := 0.0
+var cave_seed := 1
+var legacy_cave := false
+var underground_records: Array=[]
 
 func start(village: Node2D, rooms: Node2D, items: Node) -> void:
 	world = village
 	interiors = rooms
 	inventory = items
-	world.extra_homes.mine = {"id": "mine", "name": "地下矿洞", "door": DOOR, "description": "石矿与铁矿分布的地下洞穴。"}
+	cave_seed=world.resource_seed
+	underground_records=Cave.generate(cave_seed)
+	world.extra_homes.mine = {"id": "mine", "name": "地下矿洞", "door": DOOR, "description": "扩建矿洞：24个区块；石头每区块必有，煤矿40%，铁矿10%。"}
 	interiors.special_rooms.mine = _make_room
 	var entrance := Entrance.new()
 	entrance.position = DOOR - Vector2(0, 18)
 	world.objects.add_child(entrance)
 	for x in [-27, 27]: world._body(entrance, Vector2(x, -5), Vector2(16, 25))
 	world._body(entrance, Vector2(0, -27), Vector2(60, 8))
-	world.points.mine = {"position": DOOR, "radius": 25.0, "label": "东山矿洞", "action": "进入地下", "description": "带镐子下矿，可采石头与铁矿。"}
+	world.points.mine = {"position": DOOR, "radius": 25.0, "label": "东山矿洞", "action": "进入地下", "description": "带镐子下矿，可采石头、煤矿与铁矿。"}
 	world._label("东山矿洞", DOOR + Vector2(-27, -55))
 	for record: Dictionary in SURFACE:
 		var ore := create_ore(record)
@@ -103,7 +109,7 @@ func add_procedural(record: Dictionary) -> Node2D:
 func _make_room() -> Node2D:
 	var room := Underground.new()
 	room.mining = self
-	room.configure(world.extra_homes.mine, {"size": Vector2(624,264), "floor": Color("66634f"), "furniture": [], "mats": []}, [])
+	room.configure(world.extra_homes.mine, {"size": Cave.SIZE, "floor": Color("66634f"), "furniture": [], "mats": []}, interiors.layout_overrides.get("mine",[]))
 	return room
 
 func create_ore(record: Dictionary) -> Node2D:
@@ -159,19 +165,26 @@ func strike(actor: CharacterBody2D, ore: Node2D) -> bool:
 	if surface.has(ore.resource_id) or procedural.has(ore.resource_id):
 		_update_point(ore)
 		if not ore.visible: world.refresh_obstacles()
+	if actor.room_id=="mine": interiors.rooms.mine.rebuild_navigation()
 	message.emit("获得" + str(inventory.Catalog.ITEMS[ore.kind].name) + "×" + str(reward) if next_hit == ore.strikes else "采集 %d/%d" % [next_hit, ore.strikes])
 	return true
 
 func export_state() -> Dictionary:
-	return {"progress": progress.duplicate()}
+	return {"cave_version":2,"cave_seed":cave_seed,"legacy_cave":legacy_cave,"progress": progress.duplicate()}
 
-func restore(data: Dictionary) -> void:
+func restore(data: Dictionary, seed_hint := 1) -> void:
+	cave_seed=maxi(1,int(data.get("cave_seed",seed_hint)))
+	legacy_cave=bool(data.get("legacy_cave",false))
+	if not data.has("cave_version"):
+		for key: String in data.get("progress",{}):
+			if key.begins_with("mine:"): legacy_cave=true; break
+	underground_records=Cave.generate(cave_seed,UNDERGROUND if legacy_cave else [])
 	progress.clear()
 	# Keep generated IDs even when their chunks are not loaded.
 	for id: String in data.get("progress", {}):
 		if id.begins_with("gen1:") and id.contains(":stone:"):
 			progress[id] = clampi(int(data.progress[id]), 0, 3)
-	for record: Dictionary in SURFACE + UNDERGROUND:
+	for record: Dictionary in SURFACE + underground_records:
 		progress[record.id] = clampi(int(data.get("progress", {}).get(record.id, 0)), 0, 4 if record.kind == "iron_ore" else 3)
 	cooldown = 0
 	for ore: Node2D in surface.values() + procedural.values():

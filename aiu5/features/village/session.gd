@@ -149,12 +149,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else: close_attributes()
 		get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.pressed and event.keycode in [KEY_T,KEY_V,KEY_J,KEY_X] and not roster_open and not inventory.opened and not editor.opened:
+	if event is InputEventKey and event.pressed and event.keycode in [KEY_T,KEY_V,KEY_J,KEY_X,KEY_Z,KEY_H,KEY_K,KEY_L] and not roster_open and not inventory.opened and not editor.opened:
 		match event.keycode:
 			KEY_T: production.open_near()
 			KEY_V: production.gather_sand()
 			KEY_J: combat.fire(world.active_resident.get_global_mouse_position())
 			KEY_X: combat.demolish()
+			KEY_Z: magic.skills.cast(2,world.active_resident.get_global_mouse_position())
+			KEY_H: magic.skills.cast(3,world.active_resident.get_global_mouse_position())
+			KEY_K: magic.skills.cast(4,world.active_resident.get_global_mouse_position())
+			KEY_L: magic.skills.cast(5,world.active_resident.get_global_mouse_position())
 	elif event.is_action_pressed("till") or event.is_action_pressed("plant"):
 		if not inventory.opened and not editor.opened and not roster_open:
 			if event.is_action_pressed("till"): homestead.till(world.active_resident, grounds)
@@ -303,6 +307,8 @@ func _interact_impl() -> void:
 			_set_notice("已回到村落。")
 		elif context.get("id", "") == "ore":
 			mining.strike(world.active_resident, context.ore)
+		elif context.get("id", "") == "campfire":
+			magic.skills.interact_camp()
 		elif context.get("id", "") == "workbench":
 			production.open_near()
 		elif context.get("id", "") == "stove":
@@ -337,10 +343,14 @@ func _interact_impl() -> void:
 		return
 	var bench: Dictionary = grounds.nearby(world.active_resident)
 	if not bench.is_empty() and (nearest == "" or nearest.begins_with("npc:")):
-		production.open_near()
+		if bench.id=="campfire": magic.skills.interact_camp()
+		else: production.open_near()
 		return
 	var home: Dictionary = world.home_data(nearest)
 	if not home.is_empty():
+		if home.get("skill_hut",false) and home.get("owner","")!=world.active_resident.resident_id:
+			_set_notice("这间土屋只允许施法者进入。")
+			return
 		overview = false
 		world.set_overview(false)
 		interiors.enter(world.active_resident, home)
@@ -415,7 +425,7 @@ func snapshot() -> Dictionary:
 	if not inside and is_instance_valid(grounds) and (nearest == "" or nearest.begins_with("npc:")):
 		var bench: Dictionary = grounds.nearby(world.active_resident)
 		if not bench.is_empty():
-			prompt = "E 建筑台 · 建造房屋 / 箭楼" if bench.id=="building_bench" else "E 工作台 · 分类合成"
+			prompt = "E 建筑台 · 建造房屋 / 箭楼" if bench.id=="building_bench" else ("E 篝火 · 点亮 / 熄灭" if bench.id=="campfire" else "E 工作台 · 分类合成")
 			interaction_detail = bench.description
 	if is_instance_valid(vitals):
 		water_full = inventory.has_item(world.active_resident.resident_id, "water_bucket")
@@ -426,6 +436,7 @@ func snapshot() -> Dictionary:
 		entry["vitals"] = {}
 		for stat in ["life", "hunger", "thirst", "health", "mana"]:
 			entry.vitals[stat] = stats.get(stat, 10)
+		entry.vitals["max_life"]=vitals.max_life(str(entry.id))
 		entry["frozen"] = int(entry.index) != selected
 	return {
 		"weapon": magic.weapon_snapshot(world.active_resident.resident_id) if is_instance_valid(magic) else {},
@@ -437,6 +448,8 @@ func snapshot() -> Dictionary:
 			"available": magic.awakening_error(world.active_resident.resident_id) == "" if is_instance_valid(magic) else false},
 		"offering": offerings.preview() if is_instance_valid(offerings) else {},
 		"vitals": vitals.ensure(world.active_resident.resident_id).duplicate(true) if is_instance_valid(vitals) else {},
+		"max_life":vitals.max_life(world.active_resident.resident_id),
+		"skill_status":magic.skills.snapshot(world.active_resident.resident_id),
 		"inventory": inventory.snapshot(), "furnishing": editor.snapshot(),
 		"resident": world.active_resident.resident_name, "selected": selected,
 		"inside": inside, "room_name": str(world.home_data(world.active_resident.room_id).get("name", "")), "founder_names": world.founder_names(),
@@ -481,7 +494,7 @@ func use_selected() -> void:
 			close_inventory()
 			toggle_furnishing()
 			editor.choose_gift_bed(int(selection.index))
-	elif item in ["workbench", "fence", "building_bench", "cabinet", "table", "chair", "chest"]:
+	elif item in ["campfire","workbench", "fence", "building_bench", "cabinet", "table", "chair", "chest"]:
 		close_inventory()
 		toggle_furnishing()
 		editor.choose(item)

@@ -4,7 +4,7 @@ Godot 4.7.2 Windows村落生存游戏，工程目录仍为aiu5。摄像头赐予
 
 ## 安装与运行
 
-下载GitHub v0.6.0的 `AIU5-Setup-0.6.0-win64.exe`，安装后从开始菜单 **沙盘上的生活** 启动。安装器升级原AIU5安装位置，保留玩家存档。
+下载GitHub v0.7.0的 `AIU5-Setup-0.7.0-win64.exe`，安装后从开始菜单 **沙盘上的生活** 启动。安装器升级原AIU5安装位置，保留玩家存档。
 
 源码运行：
 
@@ -14,7 +14,7 @@ Godot_v4.7.2-stable_win64_console.exe --path D:\aiu5
 
 源码需配套models首版模型与runtime摄像头环境，安装版已随附。Windows打包见[交付说明](packaging/windows/README.md)。技术环境变量仍以AIU5_开头。改名后继续使用 `%APPDATA%\Godot\app_userdata\AIU5 · 赤沙村`，已有村落与角色存档不迁移、不删除。
 
-全部65种物品的来源见 [物品获取路径](docs/ITEM_SOURCES.md)，游戏背包详情也会显示。
+全部67种物品的来源见 [物品获取路径](docs/ITEM_SOURCES.md)，游戏背包详情也会显示。
 
 ## 当前规则
 
@@ -27,6 +27,10 @@ Godot_v4.7.2-stable_win64_console.exe --path D:\aiu5
 - 每次击杀奖励25魔法点，归击杀角色；未觉醒先累计。C→属性→成就，每项完成奖励100魔法点，具体成就待定。
 - B背包，E互动，Q锄地，G播种/收获，F家具部署，J攻击，鼠标瞄准，T冶炼，V装沙，C属性，M全图，Esc暂停。
 
+- 四系五级技能已实现：一级被动，Z武器赋能，H生活技能，K防护/持续技能，L高阶技能；规则见[元素技能](docs/ELEMENTAL_SKILLS.md)。火系四级持续15秒。
+- 工作台制作篝火：石头2＋木头1＋煤矿1；F部署，E切换点亮/熄灭，照亮96×96世界像素。
+- 矿洞1920×960世界像素，共24区块；每区块有石矿，煤矿40%、铁矿10%独立判定。采尽不刷新，旧矿脉进度保留。
+
 ## 模块与验证
 
 scenes/main.gd仅装配模块和信号；features按库存、制作、养殖、森林、起步采集、战斗、魔法、成就和UI划分。各模块README记录接口、存档与边界。UI只发送动作与读取快照，经营和奖励规则归后端模块。
@@ -34,7 +38,7 @@ scenes/main.gd仅装配模块和信号；features按库存、制作、养殖、�
 主要回归：
 
 ```powershell
-Godot_v4.7.2-stable_win64_console.exe --headless --path D:\aiu5 --script res://tests/rules_update_smoke.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --path D:\aiu5 --script res://tests/elemental_smoke.gd
 ```
 
 测试均使用隔离存档，不写玩家数据。摄像头18类首版模型的实物准确率仍需逐类验收。第三方资源见[THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)。

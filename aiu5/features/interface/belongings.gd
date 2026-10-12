@@ -166,7 +166,7 @@ func _present(state: Dictionary) -> void:
 	inventory_root.visible = items["open"]
 	toolbar.visible = editing["open"]
 	for id: String in furniture_buttons:
-		furniture_buttons[id].visible = (id != "building_bench" and not editing.get("outdoors",false)) or (editing.get("outdoors",false) and id in ["workbench","fence","building_bench"])
+		furniture_buttons[id].visible = id=="campfire" if editing.get("mine",false) else ((id!="building_bench" and not editing.get("outdoors",false)) or (editing.get("outdoors",false) and id in ["campfire","workbench","fence","building_bench"]))
 	edit_info.visible = editing["open"]
 	edit_info.text = editing["hint"]
 	rotate_button.disabled = not editing["holding"]

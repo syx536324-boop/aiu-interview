@@ -97,7 +97,7 @@ func demolish(actor: CharacterBody2D) -> bool:
 		message.emit("拆毁自建建筑需要装备石斧或铁斧，靠近门口按 X。")
 		return false
 	var id: String = session.world.nearest_point(actor.position)
-	return hit(id,session.magic.Catalog.Gear.damage(weapon),true) if records.has(id) else false
+	return hit(id,session.magic.Catalog.Gear.damage(weapon)+session.magic.skills.attack_bonus(actor.resident_id),true) if records.has(id) else false
 func export_state() -> Dictionary:
 	return {"next_id": next_id, "records": records.duplicate(true)}
 func restore(data: Dictionary) -> void:

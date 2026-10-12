@@ -1,4 +1,4 @@
-# Presents character equipment, magic progress, placeholder skills and altar awakening through signals.
+# Presents character equipment, magic progress, elemental skills and altar awakening through signals.
 extends CanvasLayer
 
 signal close_requested
@@ -32,6 +32,7 @@ var level_tab: Button
 var tree_tab: Button
 var gear_buttons: Dictionary = {}
 var skill_buttons: Array[Button] = []
+var skill_descriptions: Array[Label] = []
 var branches: Array[Button] = []
 var wires: Control
 var picker_title: Label
@@ -52,12 +53,11 @@ var styles: Dictionary = {}
 class Wires extends Control:
 	var learned := -1
 	func _draw() -> void:
-		for i in range(5):
-			draw_line(Vector2(252, 36 + i * 26), Vector2(252, 40 + i * 26), Color("b9c57a") if learned > i + 1 else Color("806f51"), 2)
-		var color := Color("b9c57a") if learned == 6 else Color("806f51")
-		draw_line(Vector2(252, 166), Vector2(252, 180), color, 2)
-		draw_line(Vector2(104, 180), Vector2(400, 180), color, 2)
-		for x in [104, 252, 400]: draw_line(Vector2(x, 180), Vector2(x, 188), color, 2)
+		for i in range(4):
+			draw_line(Vector2(70,70+i*32),Vector2(70,76+i*32),Color("b9c57a") if learned>i+1 else Color("806f51"),2)
+		var color := Color("b9c57a") if learned==5 else Color("806f51")
+		draw_line(Vector2(70,198),Vector2(70,202),color,2)
+		draw_line(Vector2(70,202),Vector2(400,202),color,2)
 
 func _ready() -> void:
 	layer = 3
@@ -146,16 +146,19 @@ func _build_tree() -> void:
 	wires.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tree_root.add_child(wires)
 	skill_points = _label(tree_root, "技能点：0", Vector2(0, 4), 13)
-	_label(tree_root, "每个技能消耗10点\n主干必须依次点亮", Vector2(0, 28), 11)
-	_label(tree_root, "占位技能\n具体效果待补充", Vector2(350, 16), 11)
-	for i in range(6):
-		var button := _button(tree_root, "主干 %d · 10点" % (i + 1), Rect2(188, 14 + i * 26, 128, 22))
+	_label(tree_root, "依次点亮，每级10技能点 · 主动技能在游戏中按快捷键施放", Vector2(0, 23), 10)
+	for i in range(5):
+		var button := _button(tree_root, "一级", Rect2(0, 44+i*32, 140, 26))
 		button.add_theme_font_size_override("font_size", 10)
 		button.pressed.connect(func() -> void:
 			if current.get("skills", []).size() > i: unlock_requested.emit(str(current.skills[i].id)))
 		skill_buttons.append(button)
+		var detail := _label(tree_root,"",Vector2(151,44+i*32),10)
+		detail.size=Vector2(350,31)
+		detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		skill_descriptions.append(detail)
 	for i in range(3):
-		var button := _button(tree_root, "分支%s · 待补充" % ["一", "二", "三"][i], Rect2(40 + i * 148, 188, 128, 30))
+		var button := _button(tree_root, "分支%s · 待补充" % ["一", "二", "三"][i], Rect2(0 + i * 170, 206, 158, 22))
 		button.add_theme_font_size_override("font_size", 10)
 		button.disabled = true
 		branches.append(button)
@@ -262,13 +265,16 @@ func _present(state: Dictionary) -> void:
 			widgets.hint.text = "空" if gear.item == "" else "已穿戴"
 			widgets.button.disabled = not current.editable
 			widgets.button.tooltip_text = str(gear.equipped_name) + " · 点击选择材质 / 穿戴 / 卸下"
-		skill_points.text = "技能点：%d" % int(current.skill_points)
+		skill_points.text = "技能点：%d · 魔力：%d/10" % [int(current.skill_points),int(current.mana)]
 		for i in range(skill_buttons.size()):
 			var skill: Dictionary = current.skills[i]
-			skill_buttons[i].text = str(skill.name) + (" · 已点亮" if skill.learned else " · 10点")
+			skill_buttons[i].text = "%d %s%s" % [i+1,skill.name," ✓" if skill.learned else " · 10点"]
+			var prefix := "被动 · " if i==0 else ("[%s] %d魔力 · " % [skill.key,skill.mana_cost])
+			skill_descriptions[i].text=prefix+str(skill.description)
+			skill_buttons[i].tooltip_text=skill_descriptions[i].text
 			skill_buttons[i].disabled = not skill.can_unlock
 			skill_buttons[i].add_theme_stylebox_override("disabled", _style(Color("526449") if skill.learned else Color("41392d")))
-			branches[mini(i, 2)].tooltip_text = "主干已完成，分支技能以后补充。" if current.branches_ready else "依次点亮六个主干技能后开放；技能以后补充。"
+			branches[mini(i, 2)].tooltip_text = "主干已完成，分支技能以后补充。" if current.branches_ready else "依次点亮五个主干技能后开放；分支内容待定。"
 		if wires.learned != current.unlocked.size():
 			wires.learned = current.unlocked.size()
 			wires.queue_redraw()

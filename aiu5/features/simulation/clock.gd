@@ -24,7 +24,13 @@ func flush() -> void:
 	if session.production.is_processing(): session.production.elapse(delta)
 	if is_instance_valid(session.forest) and session.forest.is_processing(): session.forest.elapse(delta)
 	if is_instance_valid(session.foraging) and session.foraging.is_processing(): session.foraging.elapse(delta)
-	if session.vitals.is_processing(): session.vitals.advance(delta)
+	if session.vitals.is_processing():
+		var left := delta
+		while left>0.00001:
+			var step := minf(0.5,left)
+			left-=step
+			session.vitals.advance(step)
+			session.magic.skills.advance(step)
 	if is_instance_valid(session.day_night): session.day_night.advance(delta)
 	flushing = false
 

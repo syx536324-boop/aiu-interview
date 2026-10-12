@@ -10,6 +10,7 @@ var mining: Node
 var inventory: Node
 var session: Node
 var interiors: Node2D
+var iron_id := ""
 
 func _initialize() -> void:
 	OS.set_environment("AIU5_STATE_PATH", PATH)
@@ -66,6 +67,7 @@ func blocked(at: Vector2) -> bool:
 
 func run_checks() -> void:
 	await load_game()
+	mining.restore({"cave_version":2,"cave_seed":42},42)
 	check(world.SIZE == Vector2(2400, 1600), "expanded map has ample space for future tribes")
 	check(blocked(Vector2(45, 840)) and not blocked(Vector2(45, 900)), "river has physical water barrier with a passable bridge gap")
 	check(blocked(Vector2(2200, 500)) and not blocked(mining.DOOR), "high mountains block movement while cave approach stays open")
@@ -113,6 +115,7 @@ func run_checks() -> void:
 	for candidate in room.objects.get_children():
 		if candidate is Ore and candidate.kind == "iron_ore":
 			iron = candidate
+			iron_id = candidate.resource_id
 			break
 	world.active_resident.position = iron.position + Vector2(0, 15)
 	for i in range(3):
@@ -136,7 +139,7 @@ func run_checks() -> void:
 	await frames(3)
 	await load_game()
 	check(world.active_resident.room_id == "mine" and world.active_resident.position == saved_position and count_item("iron_ore") == 2, "relaunch resumes underground position and ore inventory")
-	check(mining.progress["mine:7"] == 4 and not mining.surface["surface:1"].visible, "underground and surface depletion both survive relaunch")
+	check(mining.progress.get(iron_id,0) == 4 and not mining.surface["surface:1"].visible, "underground and surface depletion both survive relaunch")
 	room = interiors.rooms.mine
 	world.active_resident.position = room.exit_point()
 	await key(KEY_E)

@@ -24,6 +24,7 @@ var view_label: Label
 var population_label: Label
 var help_label: Label
 var belongings_hint: Label
+var skill_hint: Label
 var roster_root: ColorRect
 var roster_info: Label
 var roster_box: VBoxContainer
@@ -81,6 +82,9 @@ func _ready() -> void:
 	belongings_hint = _text(root, "B 背包  F 布置  Q 锄地  G 种/收", Vector2(12, 64), 10, Color("f6dfa7"))
 	belongings_hint.add_theme_color_override("font_outline_color", Color("493c2d"))
 	belongings_hint.add_theme_constant_override("outline_size", 3)
+	skill_hint=_text(root,"Z 赋能 · H 三级 · K 四级 · L 五级",Vector2(12,112),10,Color("f6dfa7"))
+	skill_hint.add_theme_color_override("font_outline_color",Color("493c2d"))
+	skill_hint.add_theme_constant_override("outline_size",3)
 	_panel(root, Rect2(0, 28, 640, 27), Color("312c25"))
 	var labels := {"life": "生命", "hunger": "饥饿", "thirst": "饥渴", "health": "健康", "mana": "魔力"}
 	var colors := [Color("bf6960"), Color("c6a25c"), Color("6caaaf"), Color("82aa72"), Color("9980cc")]
@@ -136,8 +140,11 @@ func _present(state: Dictionary) -> void:
 	var values: Dictionary = state.get("vitals", {})
 	var names := {"life": "生命", "hunger": "饥饿", "thirst": "饥渴", "health": "健康", "mana": "魔力"}
 	for key: String in stat_bars:
+		var limit := float(state.get("max_life",10)) if key=="life" else 10.0
+		stat_bars[key].maximum=limit
 		stat_bars[key].value = values.get(key, 10)
-		stat_labels[key].text = "%s %d/10" % [names[key], int(values.get(key, 10))]
+		stat_bars[key].queue_redraw()
+		stat_labels[key].text = "%s %s/%d" % [names[key],str(snappedf(float(values.get(key,10)),0.1)),int(limit)]
 	disease_label.text = "肠胃炎 跑速-30%" if values.get("ill", false) else "当前角色计时"
 	disease_label.tooltip_text = "仅操控者每3分钟消耗1格饥饿和饥渴；其他角色五项状态与生存计时锁定。"
 	if values.get("low_health", false): disease_label.text = "低健康 %d秒" % ceili(1800 - float(values.get("low_time", 0)))
@@ -157,6 +164,14 @@ func _present(state: Dictionary) -> void:
 	prompt_panel.visible = prompt_label.visible
 	view_label.visible = not editing
 	belongings_hint.visible = not editing
+	skill_hint.visible=weapon_button.visible
+	var effects: Dictionary=state.get("skill_status",{})
+	var b: Dictionary=effects.get("buffs",{})
+	var parts: PackedStringArray=[]
+	for field in ["empower","shield","regen"]:
+		if float(b.get(field,0))>0: parts.append("%s %d秒" % [{"empower":"赋能","shield":"水盾","regen":"回春"}[field],ceili(float(b[field]))])
+	if float(effects.get("hut_remaining",0))>0: parts.append("土屋 %d秒" % ceili(float(effects.hut_remaining)))
+	skill_hint.text="Z赋能 H三级 K四级 L五级"+("\n"+" · ".join(parts) if not parts.is_empty() else "")
 	crop_label.visible = not editing and not state["overview"] and not state["inventory"]["open"] and crop_label.text != ""
 	if editing:
 		help_label.text = "左键 选取 / 放置   R 旋转   右键 / Esc 取消选择   Delete 移除   F 完成布置"
@@ -357,7 +372,7 @@ func _update_roster(state: Dictionary) -> void:
 		var values: Dictionary = entry.get("vitals", {})
 		var mode := "已阵亡" if entry.get("dead", false) else ("状态锁定" if entry.get("frozen", false) else "正在操控")
 		var location := "已阵亡 · 可在祭坛献祭复活" if entry.get("dead", false) else str(entry["area"]) + " · " + mode
-		roster_buttons[i].text = "%d  %s · %s\n     %s\n     生命 %d/10  饥饿 %d/10  饥渴 %d/10  健康 %d/10  魔力 %d/10" % [i + 1, entry["name"], entry["role"], location, values.get("life", 10), values.get("hunger", 10), values.get("thirst", 10), values.get("health", 10), values.get("mana", 10)]
+		roster_buttons[i].text = "%d  %s · %s\n     %s\n     生命 %s/%d  饥饿 %d/10  饥渴 %d/10  健康 %d/10  魔力 %d/10" % [i + 1, entry["name"], entry["role"], location, str(snappedf(float(values.get("life",10)),0.1)),int(values.get("max_life",10)), values.get("hunger", 10), values.get("thirst", 10), values.get("health", 10), values.get("mana", 10)]
 		roster_buttons[i].add_theme_stylebox_override("normal", _button_style(Color("786343") if i == state["selected"] else Color("554735")))
 
 func _button_style(color: Color) -> StyleBoxFlat:

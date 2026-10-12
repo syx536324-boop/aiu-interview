@@ -3,6 +3,7 @@ extends CharacterBody2D
 var combat: Node
 var enemy_id := ""
 var hp := 30.0
+var thirst := 10.0
 var cooldown := 0.0
 var pursuit := 0.0
 var sprite: Sprite2D
@@ -32,10 +33,11 @@ func _physics_process(delta: float) -> void:
 	cooldown = maxf(0,cooldown-delta)
 	pursuit = maxf(0,pursuit-delta)
 	var session: Node = combat.session
+	if session.magic.skills.rooted(enemy_id): velocity=Vector2.ZERO; return
 	var actor: CharacterBody2D = session.world.active_resident
 	var home: Dictionary = session.world.home_data(actor.room_id)
 	var occupied_building: bool = home.get("built",false) and not home.get("ruined",false)
-	if actor.dead or (actor.room_id != "" and not occupied_building): return
+	if actor.dead or home.get("skill_hut",false) or (actor.room_id != "" and not occupied_building): return
 	var target: Vector2 = home.door if occupied_building else actor.global_position
 	var gap := global_position.distance_to(target)
 	if gap > 110 and pursuit <= 0: return
@@ -46,11 +48,10 @@ func _physics_process(delta: float) -> void:
 		cooldown = 2.0
 		if occupied_building: session.construction.hit(actor.room_id,10)
 		else:
-			var stats: Dictionary = session.vitals.ensure(actor.resident_id)
-			stats.life = maxf(0,float(stats.life)-1)
-			session.vitals._sync_actors()
-			session.vitals.deaths_changed.emit()
+			session.vitals.hurt(actor.resident_id,1)
 func _draw() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-3,-28),Vector2(3,-28),Vector2(0,-25)]),Color("e37657"))
 	draw_rect(Rect2(-10,-22,20,3),Color("392d27"))
 	draw_rect(Rect2(-10,-22,20*hp/30.0,3),Color("bf7060"))
+
+	if thirst<10: draw_rect(Rect2(-10,-18,20*thirst/10.0,2),Color("72b8ce"))

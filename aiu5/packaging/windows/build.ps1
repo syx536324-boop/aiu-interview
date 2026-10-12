@@ -21,4 +21,4 @@ foreach ($taskFolder in @('models','runtime','services\gift_camera')) {
 Copy-Item -LiteralPath "$taskProject\THIRD_PARTY_NOTICES.md","$PSScriptRoot\README.md" -Destination $taskOutput
 & $ISCC "/DPackageDir=$taskOutput" "/DOutputDir=$taskProject\exports" "$PSScriptRoot\installer.iss"
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed' }
-Get-FileHash -LiteralPath "$taskProject\exports\AIU5-Setup-0.6.0-win64.exe"
+Get-FileHash -LiteralPath "$taskProject\exports\AIU5-Setup-0.7.0-win64.exe"

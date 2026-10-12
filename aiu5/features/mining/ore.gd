@@ -41,6 +41,8 @@ func _draw() -> void:
 		for p in [Vector2(-5, -14), Vector2(4, -11), Vector2(-2, -5)]:
 			draw_rect(Rect2(p, Vector2(5, 3)), Color("bc7752"))
 			draw_rect(Rect2(p + Vector2(1, 0), Vector2(2, 1)), Color("e6a473"))
+	if kind=="coal":
+		for at in [Vector2(-5,-14),Vector2(4,-11),Vector2(-2,-5)]: draw_rect(Rect2(at,Vector2(6,4)),Color("292f31"))
 	if hits > 0:
 		draw_line(Vector2(-3, -17), Vector2(0, -9), Color("49483f"), 1)
 		draw_line(Vector2(0, -9), Vector2(-5, -4), Color("49483f"), 1)

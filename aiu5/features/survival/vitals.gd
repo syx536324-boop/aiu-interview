@@ -13,6 +13,7 @@ var inventory: Node
 var states: Dictionary = {}
 var online := 0.0
 var clock_driven := false
+var magic: Node
 
 func start(village: Node2D, belongings: Node) -> void:
 	world = village
@@ -24,7 +25,7 @@ func ensure(id: String) -> Dictionary:
 	if not states.has(id):
 		states[id] = {"life": 10, "hunger": 10, "thirst": 10, "health": 10, "mana": 10,
 			"active_time": 0.0,
-			"need_time": 0.0, "damage_time": 0.0, "low_health": false,
+			"need_time": 0.0, "hunger_time":0.0, "thirst_time":0.0, "damage_time": 0.0, "low_health": false,
 			"low_time": 0.0, "ill": false, "raw_meals": []}
 	return states[id]
 
@@ -50,17 +51,19 @@ func advance(delta: float) -> void:
 			if was_low:
 				s.damage_time += step
 				if s.damage_time >= DAMAGE_INTERVAL:
-					s.life = maxi(0, int(s.life) - 1)
+					s.life = maxf(0, float(s.life) - damage( id,1))
 					s.damage_time -= DAMAGE_INTERVAL
 			else:
 				s.damage_time = 0.0
-			s.need_time += step
-			if s.need_time >= NEED_INTERVAL:
-				s.hunger = maxi(0, int(s.hunger) - 1)
-				s.thirst = maxi(0, int(s.thirst) - 1)
-				s.need_time -= NEED_INTERVAL
+			s.need_time = fmod(float(s.need_time)+step,NEED_INTERVAL)
+			for stat in ["hunger","thirst"]:
+				var timer: String=stat+"_time"
+				s[timer]=float(s.get(timer,0))+step*(magic.skills.need_rate(id,stat) if is_instance_valid(magic) else 1.0)
+				while float(s[timer])+0.000001 >= NEED_INTERVAL:
+					s[stat]=maxi(0,int(s[stat])-1)
+					s[timer]=maxf(0,float(s[timer])-NEED_INTERVAL)
 			var already_low: bool = s.low_health
-			_health_band(s)
+			_health_band(s, id)
 			if already_low and s.low_health:
 				s.low_time += step
 				if s.low_time >= HEALTH_DEADLINE:
@@ -72,12 +75,12 @@ func advance(delta: float) -> void:
 	if died:
 		deaths_changed.emit()
 
-func _health_band(s: Dictionary) -> void:
+func _health_band(s: Dictionary, id: String = "") -> void:
 	if s.health <= 3:
 		if not s.low_health:
 			s.low_health = true
 			s.low_time = 0.0
-			s.life = maxi(0, int(s.life) - 5)
+			s.life = maxf(0,float(s.life)-damage(id,5))
 	else:
 		s.low_health = false
 		s.low_time = 0.0
@@ -115,11 +118,11 @@ func use_food(id: String, item: String, selected_index := -1) -> bool:
 	if drinking: s.thirst = mini(10, int(s.thirst) + Water.THIRST_PER_DRINK)
 	match item:
 		"restorative_soup":
-			s.life = 10
+			s.life = max_life(id)
 			s.health = 10
 			s.ill = false
 		"qi_soup":
-			s.life = mini(10,int(s.life)+3)
+			s.life = minf(max_life(id),float(s.life)+3)
 			s.health = mini(10,int(s.health)+5)
 			if s.health >= 7: s.ill = false
 		"apple", "carrot": s.hunger = mini(10, int(s.hunger) + 2)
@@ -135,7 +138,7 @@ func use_food(id: String, item: String, selected_index := -1) -> bool:
 			if s.raw_meals.size() >= 3 and not s.ill:
 				s.ill = true
 				s.health = maxi(0, int(s.health) - 3)
-	_health_band(s)
+	_health_band(s, id)
 	if s.hunger > 1 and s.thirst > 1:
 		s.damage_time = 0.0
 	_sync_actors()
@@ -153,6 +156,7 @@ func revive(id: String) -> bool:
 	# A fresh life has no starvation debt, illness or pending low-health deadline.
 	states.erase(id)
 	ensure(id)
+	states[id].life=max_life(id)
 	_sync_actors()
 	return true
 
@@ -162,10 +166,24 @@ func _sync_actors() -> void:
 	for actor in world.controllable:
 		var s := ensure(actor.resident_id)
 		actor.dead = s.life <= 0
-		actor.run_multiplier = 0.7 if s.ill else 1.0
+		actor.run_multiplier = (0.7 if s.ill else 1.0)*(magic.skills.run_rate(actor.resident_id) if is_instance_valid(magic) else 1.0)
 		actor.modulate = Color(0.5, 0.5, 0.5, 0.55) if actor.dead else Color.WHITE
 		actor.collision_layer = 0 if actor.dead else 2
 
+func max_life(id: String) -> float:
+	return magic.skills.max_life(id) if is_instance_valid(magic) else 10.0
+func damage(id: String, raw: float) -> float:
+	return raw*(magic.skills.damage_rate(id) if is_instance_valid(magic) else 1.0)
+func hurt(id: String, raw: float) -> void:
+	var s := ensure(id)
+	s.life=maxf(0,float(s.life)-damage(id,raw))
+	_sync_actors()
+	deaths_changed.emit()
+func heal(id: String, amount: float) -> void:
+	var s := ensure(id)
+	if s.life<=0: return
+	s.life=minf(max_life(id),float(s.life)+maxf(0,amount))
+	_sync_actors()
 func export_state() -> Dictionary:
 	return {"online": online, "residents": states.duplicate(true)}
 
@@ -176,9 +194,9 @@ func restore(data: Dictionary) -> void:
 		var s := ensure(actor.resident_id)
 		var source: Dictionary = data.get("residents", {}).get(actor.resident_id, {})
 		for key in ["life", "hunger", "thirst", "health", "mana"]:
-			s[key] = clampi(int(source.get(key, 10)), 0, 10)
-		for key in ["need_time", "damage_time", "low_time"]:
-			s[key] = maxf(0, float(source.get(key, 0)))
+			s[key] = clampf(float(source.get(key,10)),0,max_life(actor.resident_id) if key=="life" else 10)
+		for key in ["need_time", "damage_time", "low_time", "hunger_time", "thirst_time"]:
+			s[key] = maxf(0, float(source.get(key,source.get("need_time",0) if key in ["hunger_time","thirst_time"] else 0)))
 		s.low_health = bool(source.get("low_health", false))
 		s.ill = bool(source.get("ill", false))
 		s.raw_meals = source.get("raw_meals", []).duplicate()

@@ -5,10 +5,16 @@ signal message(text: String)
 const Catalog := preload("res://features/magic/catalog.gd")
 var session: Node
 var states: Dictionary = {}
+const SkillRuntime := preload("res://features/magic/skills.gd")
+const SkillCatalog := preload("res://features/magic/skill_catalog.gd")
+var skills: Node
 
 func start(controller: Node) -> void:
 	session = controller
 	for actor in session.world.controllable: ensure(actor.resident_id)
+	skills=SkillRuntime.new()
+	add_child(skills)
+	skills.start(self)
 
 func ensure(id: String) -> Dictionary:
 	if not states.has(id): states[id] = Catalog.fresh()
@@ -50,10 +56,12 @@ func _reject(text: String) -> bool:
 	message.emit(text)
 	return false
 
-func _commit(id: String, previous: Dictionary, bag: Array, text: String) -> bool:
+func _commit(id: String, previous: Dictionary, bag: Array, text: String, vitals_before: Dictionary = {}) -> bool:
 	if not session.persistence.save_now():
 		states[id] = previous
 		session.inventory.bags[id] = bag
+		if not vitals_before.is_empty(): session.vitals.states[id]=vitals_before
+		session.vitals._sync_actors()
 		session.inventory.changed.emit()
 		return _reject("存档失败，属性和装备操作已撤销，物品与点数保留。")
 	session.inventory.changed.emit()
@@ -90,15 +98,18 @@ func unlock(id: String, skill: String) -> bool:
 	if not _begin(id): return false
 	var state := ensure(id)
 	var index := Catalog.TRUNK.find(skill)
-	if state.element == "" or index < 0: return _reject("请先觉醒；三个分支的技能将在以后补充。")
+	if state.element == "" or index < 0: return _reject("请先觉醒，并选择有效的主干技能。")
 	if state.unlocked.has(skill): return _reject("该技能已经点亮，不会重复消耗。")
 	if index != state.unlocked.size(): return _reject("必须从主干第一个技能开始，依次点亮。")
 	if state.skill_points < Catalog.SKILL_COST: return _reject("技能点不足，每个技能需要10点。")
 	var previous := state.duplicate(true)
 	var bag: Array = session.inventory.ensure_bag(id).duplicate(true)
+	var vitals_before: Dictionary=session.vitals.ensure(id).duplicate(true)
 	state.skill_points -= Catalog.SKILL_COST
 	state.unlocked.append(skill)
-	return _commit(id, previous, bag, "已点亮主干技能%d，消耗10技能点；具体技能效果待补充。" % (index + 1))
+	if index==0 and state.element=="wood": session.vitals.heal(id,1)
+	session.vitals._sync_actors()
+	return _commit(id, previous, bag, "已点亮%s，消耗10技能点。" % SkillCatalog.entry(str(state.element),index+1).name, vitals_before)
 
 func claim_gear(id: String) -> bool:
 	if not _begin(id): return false
@@ -150,7 +161,7 @@ func consume_weapon(id: String) -> bool:
 
 func weapon_snapshot(id: String) -> Dictionary:
 	var item := str(ensure(id).equipment.weapon)
-	return {"item":item, "name":session.inventory.Catalog.ITEMS[item].name if item != "" else "空", "attack":Catalog.Gear.damage(item), "editable":_error(id)=="", "wear":ensure(id).weapon_wear.duplicate(), "durability_text":Catalog.Wear.describe(ensure(id).weapon_wear)+Catalog.Wear.Origin.describe(ensure(id).weapon_wear)}
+	return {"item":item, "name":session.inventory.Catalog.ITEMS[item].name if item != "" else "空", "attack":Catalog.Gear.damage(item)+(skills.attack_bonus(id) if item!="" else 0), "editable":_error(id)=="", "wear":ensure(id).weapon_wear.duplicate(), "durability_text":Catalog.Wear.describe(ensure(id).weapon_wear)+Catalog.Wear.Origin.describe(ensure(id).weapon_wear)}
 
 func snapshot(id: String) -> Dictionary:
 	var actor := _actor(id)
@@ -174,9 +185,12 @@ func snapshot(id: String) -> Dictionary:
 	var skills: Array[Dictionary] = []
 	for i in range(Catalog.TRUNK.size()):
 		var skill: String = Catalog.TRUNK[i]
-		skills.append({"id": skill, "name": "主干 %d" % (i + 1), "learned": state.unlocked.has(skill),
-			"can_unlock": result.editable and state.element != "" and i == state.unlocked.size() and state.skill_points >= Catalog.SKILL_COST})
+		var entry: Dictionary=SkillCatalog.entry(str(state.element),i+1)
+		entry.merge({"id":skill,"learned":state.unlocked.has(skill),"can_unlock":result.editable and state.element!="" and i==state.unlocked.size() and state.skill_points>=Catalog.SKILL_COST})
+		skills.append(entry)
 	result["skills"] = skills
+	result["skill_effects"]=self.skills.snapshot(id)
+	result["mana"]=session.vitals.ensure(id).mana
 	result["branches_ready"] = state.unlocked.size() == Catalog.TRUNK.size()
 	return result
 
@@ -193,7 +207,7 @@ func _gear_choices(id: String, slot: String) -> Array:
 	return result
 
 func export_state() -> Dictionary:
-	return {"version": 1, "residents": states.duplicate(true)}
+	return {"version": 2, "residents": states.duplicate(true), "effects":skills.export_state()}
 
 func restore(data: Dictionary) -> void:
 	states.clear()
@@ -201,3 +215,5 @@ func restore(data: Dictionary) -> void:
 	for actor in session.world.controllable:
 		var source: Variant = residents.get(actor.resident_id, {}) if residents is Dictionary else {}
 		states[actor.resident_id] = Catalog.restore_state(source if source is Dictionary else {})
+
+	skills.restore(data.get("effects",{}))

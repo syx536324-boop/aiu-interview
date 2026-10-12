@@ -1,4 +1,4 @@
-# Defines four exclusive elements, level costs, equipment slots and the placeholder skill trunk.
+# Defines four exclusive elements, level costs, equipment slots and the five elemental trunk skills.
 extends RefCounted
 
 const MAX_LEVEL := 100
@@ -15,7 +15,7 @@ const EQUIPMENT := {
 const Wear := preload("res://features/combat/durability.gd")
 const Gear := preload("res://features/combat/weapon_catalog.gd")
 const WEAPONS := Gear.WEAPONS
-const TRUNK := ["trunk_1", "trunk_2", "trunk_3", "trunk_4", "trunk_5", "trunk_6"]
+const TRUNK := ["trunk_1", "trunk_2", "trunk_3", "trunk_4", "trunk_5"]
 
 static func required(level: int) -> int:
 	return 0 if level >= MAX_LEVEL else 100 * (floori(float(maxi(1, level)) / 10.0) + 1)
@@ -45,7 +45,9 @@ static func restore_state(source: Dictionary) -> Dictionary:
 			for id: String in TRUNK:
 				if not saved.has(id) or (state.unlocked.size() + 1) * SKILL_COST > earned: break
 				state.unlocked.append(id)
-		state.skill_points = clampi(int(source.get("skill_points", 0)), 0, earned - state.unlocked.size() * SKILL_COST)
+		# Version-1 six-node saves refund the removed sixth node exactly once.
+		var refund := SKILL_COST if saved is Array and saved.has("trunk_6") and state.unlocked.size()==5 and earned>=60 else 0
+		state.skill_points = clampi(int(source.get("skill_points", 0))+refund, 0, earned - state.unlocked.size() * SKILL_COST)
 	var gear: Variant = source.get("equipment", {})
 	if gear is Dictionary:
 		for slot: String in EQUIPMENT:

@@ -2,9 +2,10 @@
 extends Control
 
 var tint := Color("b6a274")
+var maximum := 10.0
 var value := 10.0:
 	set(next):
-		var normalized := clampf(next, 0, 10)
+		var normalized := clampf(next, 0, maximum)
 		if value != normalized:
 			value = normalized
 			queue_redraw()
@@ -13,8 +14,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _draw() -> void:
-	var width := size.x / 10
-	for i in range(10):
+	var cells := int(maximum)
+	var width := size.x / cells
+	for i in range(cells):
 		var cell := Rect2(i * width, 0, width - 1, size.y)
 		draw_rect(cell, Color("51483a"))
 		if value > i:

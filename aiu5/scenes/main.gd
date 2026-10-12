@@ -32,6 +32,7 @@ func _ready() -> void:
 	$Offerings.start($Session)
 	$Session.magic = $Magic
 	$Magic.start($Session)
+	$Vitals.magic = $Magic
 	$Harvesting.equipment = $Magic
 	$Mining.equipment = $Magic
 	$Magic.message.connect($Session._set_notice)

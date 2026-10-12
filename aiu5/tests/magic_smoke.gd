@@ -147,7 +147,7 @@ func run() -> void:
 	# Skill economy and prerequisites remain separate from the ten-point mana stat.
 	session.show_attributes("ali")
 	await click(ui.tree_tab)
-	check(ui.tree_root.visible and ui.skill_buttons.size() == 6 and ui.branches.size() == 3, "skill tab contains six trunk nodes followed by three pending branches")
+	check(ui.tree_root.visible and ui.skill_buttons.size() == 5 and ui.branches.size() == 3, "skill tab contains five trunk nodes followed by three pending branches")
 	check(magic.award_points("ali", 75) and magic.ensure("ali").level == 2 and magic.ensure("ali").skill_points == 5, "first upgrade awards five skill points")
 	check(not magic.unlock("ali", "trunk_1") and magic.ensure("ali").skill_points == 5, "five points cannot pay a ten-point skill")
 	check(magic.award_points("ali", 100), "second upgrade supplies ten points")
@@ -156,15 +156,15 @@ func run() -> void:
 	check(magic.ensure("ali").unlocked == ["trunk_1"] and magic.ensure("ali").skill_points == 0, "real skill click spends exactly ten points")
 	check(not magic.unlock("ali", "trunk_1") and not magic.unlock("ali", "branch_1"), "duplicates and undefined branch skills do not spend points")
 	check(magic.award_points("ali", 1300) and magic.ensure("ali").level == 13 and magic.ensure("ali").skill_points == 50, "multi-level gain carries magic remainder and awards each upgrade once")
-	for i in range(1, 6): await click(ui.skill_buttons[i])
-	check(magic.ensure("ali").unlocked.size() == 6 and magic.ensure("ali").skill_points == 0 and ui.current.branches_ready and ui.branches.all(func(b: Button) -> bool: return b.disabled), "six sequential skills use sixty points and expose three undefined branch entrances")
+	for i in range(1, 5): await click(ui.skill_buttons[i])
+	check(magic.ensure("ali").unlocked.size() == 5 and magic.ensure("ali").skill_points == 10 and ui.current.branches_ready and ui.branches.all(func(b: Button) -> bool: return b.disabled), "five sequential skills use fifty points and expose three undefined branch entrances")
 	var before_magic: Dictionary = magic.ensure("ali").duplicate(true)
 	items.path = blocked_path
 	check(not magic.award_points("ali", 200), "magic award fails if save fails")
 	items.path = path
 	check(magic.ensure("ali") == before_magic, "failed award preserves experience and skill points")
 	var before_vitals: Dictionary = session.vitals.ensure("ali").duplicate(true)
-	check(magic.award_points("ali", 100000) and magic.ensure("ali").level == 100 and magic.ensure("ali").xp == 0 and magic.ensure("ali").skill_points == 435, "level cap retains all earned unspent points")
+	check(magic.award_points("ali", 100000) and magic.ensure("ali").level == 100 and magic.ensure("ali").xp == 0 and magic.ensure("ali").skill_points == 445, "level cap retains all earned unspent points")
 	var at_cap: Dictionary = magic.ensure("ali").duplicate(true)
 	check(magic.award_points("ali", 100) and magic.ensure("ali")==at_cap and session.vitals.ensure("ali") == before_vitals, "magic progress never drains or restores survival mana")
 	await click(ui.level_tab)

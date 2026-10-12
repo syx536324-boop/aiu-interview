@@ -1,6 +1,6 @@
 # 魔法属性、升级、装备与技能
 
-`catalog.gd` 定义木/水/火/土、1–100级费用、四个装备部位与六个占位主干节点。`progression.gd` 以稳定角色ID持有状态，没有逐帧或离线模拟；魔法等级/经验/技能点与survival的0–10魔力是独立数据。
+`catalog.gd` 定义木/水/火/土、1–100级费用、四个装备部位与五个主干节点。`progression.gd` 以稳定角色ID持有状态，没有逐帧或离线模拟；魔法等级/经验/技能点与survival的0–10魔力是独立数据。
 
 祭台正面R打开四系选择，确认后永久觉醒其中之一；起始lv.1、0技能点；此前累计的击杀/成就魔法点在觉醒时一次结算。只有当前存活角色在祭台前可觉醒，E继续负责祭台存档/祭礼。C→对应角色“属性”可以查看其他角色而不切换操控，阵亡角色只读。
 
@@ -8,7 +8,7 @@
 
 头部/盔甲/护腿/靴子槽分别接受对应的皮制或铁制装备，材料数量见inventory/catalog.gd与production/smith_catalog.gd；不提供免费领取。穿戴从该角色自己的背包移出，卸下返还同一背包；容量不足保留原装备。装备暂不提供数值加成，不修改角色行走图像。
 
-公共接口：`start(session)`连接会话；`awaken(id, element)`、`award_points(id, amount)`、`unlock(id, skill)`、`claim_gear(id)`、`equip(id, slot, item)`返回bool；`snapshot(id)`提供显示数据；`export_state()`/`restore(data)`处理持久化。`message`发出操作结果。击杀获得25魔法点，已定义成就每项100点；未觉醒先累计，事件通过credit_points与实际动作同次提交。六个技能仅占位，无战斗效果。
+公共接口：`start(session)`连接会话；`awaken(id, element)`、`award_points(id, amount)`、`unlock(id, skill)`、`claim_gear(id)`、`equip(id, slot, item)`返回bool；`snapshot(id)`提供显示数据；`export_state()`/`restore(data)`处理持久化。`message`发出操作结果。击杀获得25魔法点，已定义成就每项100点；未觉醒先累计，事件通过credit_points与实际动作同次提交。五级技能名称、费用和效果由skill_catalog定义；skills执行动作、效果计时与存档，skill_visual显示效果。详细规则见../../docs/ELEMENTAL_SKILLS.md。
 
 所有修改在规则/容量校验后立即自动保存，失败撤销魔法数据与背包；暂停、阵亡、读档过程中禁止修改。单人献祭复活保留属性/经验/装备；全员阵亡或主动祭台回退恢复完整快照。旧档无magic字段时默认未觉醒、lv.1、空装备，不改变已有物品。
 
@@ -33,3 +33,7 @@ equipment_catalog.SLOTS定义皮制、铁制装备与四个部位的兼容表；
 ## 经验来源
 
 击杀每只生物25魔法点；成就每项每角色一次100点，具体成就待定。未觉醒时pending_points持久累计，觉醒时一次结算；credit_points只改变状态，调用者与事件一起原子保存。取消免费基础装备领取，只提供皮制与铁制。魔力生命值与魔法经验保持独立。
+
+## 元素技能执行
+
+skills.cast(rank, target)验证当前角色、目标和魔力，成功后与实际动作共同保存；失败回滚。一级被动由survival应用，二级赋能独立于武器魔法属性，三至五级使用H/K/L。simulation以在线时间推进，暂停和离线不消耗效果；export_state/restore保留buff、火球、敌人状态和临时土屋。旧六节点保留前五级并仅一次退还第六级10技能点。魔力不自动恢复。elemental_smoke覆盖实际效果、计时边界、存档及失败回滚。

@@ -19,7 +19,7 @@ func start(village: Node2D, farming: Node, records: Array) -> void:
 	world = village
 	homestead = farming
 	for record: Dictionary in records:
-		if record.get("kind", "") in ["workbench", "fence", "building_bench"]:
+		if record.get("kind", "") in ["workbench", "fence", "building_bench", "campfire"]:
 			add_fixture(record)
 	world.refresh_obstacles()
 
@@ -73,13 +73,13 @@ func nearby(actor: CharacterBody2D) -> Dictionary:
 	var nearest: Dictionary = {}
 	var distance := 22.0
 	for fixture in fixtures:
-		if fixture.kind not in ["workbench","building_bench"]: continue
+		if fixture.kind not in ["workbench","building_bench","campfire"]: continue
 		var bounds: Rect2 = fixture.collision_bounds()
 		var point: Vector2 = actor.position + Vector2(0, -3)
 		var gap := point.distance_to(point.clamp(bounds.position, bounds.end))
 		if gap < distance:
 			distance = gap
-			nearest = {"id": fixture.kind, "fixture": fixture, "label": fixture.display_name(), "action": "建造" if fixture.kind=="building_bench" else "分类合成", "description": "E投入材料建造木屋、石屋、铁屋或箭楼" if fixture.kind=="building_bench" else "E打开分类界面，选物品后确认合成；制作需60秒"}
+			nearest = {"id": fixture.kind, "fixture": fixture, "label": fixture.display_name(), "action": "点亮 / 熄灭" if fixture.kind=="campfire" else "建造" if fixture.kind=="building_bench" else "分类合成", "description": "E切换点亮/熄灭；照明96×96世界像素，火系三级H可点亮。" if fixture.kind=="campfire" else "E投入材料建造木屋、石屋、铁屋或箭楼" if fixture.kind=="building_bench" else "E打开分类界面，选物品后确认合成；制作需60秒"}
 	return nearest
 
 func land_error(bounds: Rect2, actor: Node2D, building := true, original: Node2D = null) -> String:
@@ -105,7 +105,7 @@ func land_error(bounds: Rect2, actor: Node2D, building := true, original: Node2D
 	return ""
 
 func placement_error(ghost: Node2D, original: Node2D = null) -> String:
-	if ghost.kind not in ["workbench", "fence", "building_bench"]: return "户外支持部署工作台和围栏。"
+	if ghost.kind not in ["workbench", "fence", "building_bench", "campfire"]: return "户外支持部署工作台和围栏。"
 	var error := land_error(ghost.visual_bounds(), world.active_resident, true, original)
 	if error != "": return error
 	var original_obstacles: Array[Rect2] = world.logical_obstacles(world.gate_visual.open)

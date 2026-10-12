@@ -205,6 +205,10 @@ func nearby(local_position: Vector2) -> Dictionary:
 		nearest.id = "workbench"
 		nearest.action = "分类合成"
 		nearest.description = "E打开分类界面 → 选择物品 → 确认合成；制作需60秒"
+	if not nearest.is_empty() and nearest.has("fixture") and nearest.fixture.kind=="campfire":
+		nearest.id="campfire"
+		nearest.action="点亮 / 熄灭"
+		nearest.description="照明96×96世界像素；火系三级H可点亮。"
 	for mat: Rect2 in definition["mats"]:
 		if mat.grow(5).has_point(local_position) and nearest.is_empty():
 			nearest = {"id": "mat", "label": "草席", "action": "查看", "description": "干草与苇叶编成的草席，铺在木地板上供村民歇息。"}

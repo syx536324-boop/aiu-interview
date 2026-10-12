@@ -78,7 +78,7 @@ func restore_session(data: Dictionary) -> void:
 		room.queue_free()
 	interiors.rooms.clear()
 	interiors.layout_overrides = inventory.layouts
-	mining.restore(data.get("mining", {}))
+	mining.restore(data.get("mining", {}),int(data.get("resource_world",{}).get("seed",world.resource_seed)))
 	grounds.restore(inventory.layouts.get("outdoors", []))
 	session.achievements.restore(data.get("achievements",{}))
 	session.foraging.restore(data.get("foraging",{}))
@@ -86,6 +86,7 @@ func restore_session(data: Dictionary) -> void:
 	session.production.restore(data.get("production",{}))
 	session.combat.restore(data.get("combat",{}))
 	session.forest.restore(data.get("forest",{}))
+	session.magic.restore(data.get("magic", {}))
 	for actor in world.residents:
 		var saved: Dictionary = data.get("actors", {}).get(actor.resident_id, {})
 		if saved.is_empty(): continue
@@ -103,7 +104,6 @@ func restore_session(data: Dictionary) -> void:
 	var names: Dictionary = data.get("names", {})
 	if names.has("male") and names.has("female"): world.apply_founder_names(names.male, names.female)
 	vitals.restore(data.get("vitals", {}))
-	session.magic.restore(data.get("magic", {}))
 	if is_instance_valid(session.day_night): session.day_night.restore(data.get("day_night",{}))
 	homestead.restore(data.get("homestead", {}))
 	session.gate_open = bool(data.get("gate", false))

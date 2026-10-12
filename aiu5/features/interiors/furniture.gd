@@ -1,7 +1,9 @@
 # Renders primitive wooden furniture with plank joints, wooden pegs and distinct shapes.
 extends Node2D
 
-const NAMES := {"building_bench":"建筑台", "workbench": "工作台", "fence": "围栏", "stove": "灶台", "bed": "木床", "table": "木桌", "chair": "木椅", "cabinet": "木柜", "chest": "木箱"}
+const NAMES := {"campfire":"篝火","building_bench":"建筑台", "workbench": "工作台", "fence": "围栏", "stove": "灶台", "bed": "木床", "table": "木桌", "chair": "木椅", "cabinet": "木柜", "chest": "木箱"}
+var lit := false
+var lamp: PointLight2D
 var gift_origin: Dictionary = {}
 var public_fixture := false
 var kind := "table"
@@ -30,6 +32,7 @@ func configure(data: Array) -> void:
 func configure_record(record: Dictionary) -> void:
 	configure([record["kind"], Vector2(record["at"][0], record["at"][1]), Vector2(record["size"][0], record["size"][1]), int(record.get("variant", 0))])
 	gift_origin = record.get("gift_origin", {}).duplicate(true)
+	lit = bool(record.get("lit",false))
 	public_fixture = bool(record.get("public_fixture",false))
 	fixture_id = record["id"]
 	orientation = int(record.get("orientation", 0)) % 4
@@ -46,8 +49,25 @@ func visual_bounds() -> Rect2:
 
 func record() -> Dictionary:
 	var at := visual_bounds().position
-	return {"public_fixture":public_fixture,"gift_origin":gift_origin.duplicate(true), "id": fixture_id, "kind": kind, "at": [at.x, at.y], "size": [base_size.x, base_size.y], "variant": variant, "orientation": orientation}
+	return {"lit":lit,"public_fixture":public_fixture,"gift_origin":gift_origin.duplicate(true), "id": fixture_id, "kind": kind, "at": [at.x, at.y], "size": [base_size.x, base_size.y], "variant": variant, "orientation": orientation}
 
+func _ready() -> void:
+	if kind!="campfire" or preview: return
+	# Light texture dimensions are world units; camera zoom changes only its screen footprint.
+	var image := Image.create(96,96,false,Image.FORMAT_RGBA8)
+	image.fill(Color.WHITE)
+	lamp=PointLight2D.new()
+	lamp.texture=ImageTexture.create_from_image(image)
+	lamp.texture_scale=1.0
+	lamp.position=Vector2(0,-8)
+	lamp.color=Color("ffe4b0")
+	lamp.energy=0.8
+	lamp.enabled=lit
+	add_child(lamp)
+func set_lit(value: bool) -> void:
+	lit=value
+	if is_instance_valid(lamp): lamp.enabled=value
+	queue_redraw()
 func is_storage() -> bool:
 	return kind == "cabinet" or kind == "chest"
 
@@ -77,6 +97,13 @@ func _draw() -> void:
 		draw_rect(Rect2(x - 1, y - 1, size.x + 2, size.y + 2), Color(0.25, 0.8, 0.4, 0.35) if preview_valid else Color(0.95, 0.25, 0.2, 0.45))
 	draw_rect(Rect2(x, -3, size.x, 4), Color(0.18, 0.11, 0.07, 0.25))
 	match kind:
+		"campfire":
+			for at in [Vector2(-9,-7),Vector2(-6,-2),Vector2(5,-2),Vector2(9,-7),Vector2(0,-12)]: draw_circle(at,3,Color("7f8175"))
+			draw_line(Vector2(-6,-5),Vector2(6,-2),wood,3)
+			draw_line(Vector2(-5,-2),Vector2(6,-6),wood,3)
+			if lit:
+				draw_colored_polygon(PackedVector2Array([Vector2(-5,-5),Vector2(-2,-14),Vector2(0,-10),Vector2(3,-23),Vector2(6,-5)]),Color("ea823b"))
+				draw_colored_polygon(PackedVector2Array([Vector2(-2,-5),Vector2(1,-15),Vector2(3,-5)]),Color("f8d86c"))
 		"building_bench":
 			draw_rect(Rect2(x,y,size.x,size.y),Color("a78b62"),false,1)
 			for corner in [Vector2(x,y),Vector2(-x-5,y),Vector2(x,-5),Vector2(-x-5,-5)]: _board(Rect2(corner,Vector2(5,5)))
@@ -155,4 +182,5 @@ func _draw() -> void:
 		draw_rect(Rect2(x - 1, y - 1, size.x + 2, size.y + 2), Color("91df98") if preview_valid else Color("f07865"), false, 1)
 
 func display_name() -> String:
-	return ("魔法·" if gift_origin.get("is_magical", false) else "") + str(NAMES.get(kind, "木家具"))
+	var title := ("魔法·" if gift_origin.get("is_magical",false) else "")+str(NAMES.get(kind,"木家具"))
+	return title+(" · 点亮" if lit else " · 熄灭") if kind=="campfire" else title

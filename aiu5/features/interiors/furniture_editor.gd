@@ -4,7 +4,7 @@ extends Node
 signal changed
 signal message(text: String)
 const Furniture := preload("res://features/interiors/furniture.gd")
-const DEPLOYABLE := ["workbench","fence","building_bench","bed","cabinet","table","chair","chest"]
+const DEPLOYABLE := ["campfire","workbench","fence","building_bench","bed","cabinet","table","chair","chest"]
 const Catalog := preload("res://features/interiors/furniture_catalog.gd")
 var world: Node2D
 var interiors: Node2D
@@ -29,7 +29,7 @@ func start(village: Node2D, rooms: Node2D, items: Node) -> void:
 	inventory = items
 
 func open() -> bool:
-	if world.active_resident.room_id == "mine" or world.home_data(world.active_resident.room_id).get("tower",false):
+	if world.home_data(world.active_resident.room_id).get("tower",false) or world.home_data(world.active_resident.room_id).get("skill_hut",false):
 		message.emit("矿洞内先专注采矿，家具可在地表和房屋布置。")
 		return false
 	var id: String = world.active_resident.room_id
@@ -60,8 +60,9 @@ func choose(kind: String) -> void:
 	if not opened:
 		return
 	cancel_selection()
+	if world.active_resident.room_id=="mine" and kind!="campfire": return
 	if kind == "building_bench" and room != grounds: return
-	if kind == "stove" or (room == grounds and kind not in ["workbench", "fence", "building_bench"]):
+	if kind == "stove" or (room == grounds and kind not in ["campfire","workbench", "fence", "building_bench"]):
 		return
 	if kind in DEPLOYABLE and not inventory.has_item(world.active_resident.resident_id, kind):
 		message.emit("背包没有该部署物品。")
@@ -206,7 +207,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func snapshot() -> Dictionary:
-	return {"outdoors": room == grounds, "open": opened, "hint": hint, "holding": is_instance_valid(ghost), "selected": ghost.display_name() if is_instance_valid(ghost) else "", "existing": is_instance_valid(original)}
+	return {"mine":world.active_resident.room_id=="mine","outdoors": room == grounds, "open": opened, "hint": hint, "holding": is_instance_valid(ghost), "selected": ghost.display_name() if is_instance_valid(ghost) else "", "existing": is_instance_valid(original)}
 
 func choose_gift_bed(index: int) -> void:
 	if not opened or room == grounds: return
