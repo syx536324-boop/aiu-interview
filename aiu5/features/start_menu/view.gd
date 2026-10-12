@@ -1,6 +1,7 @@
 # Presents start, save-picker, new-save and pause panels; actions are emitted to the controller.
 extends CanvasLayer
 
+signal gift_details_requested
 signal continue_requested
 signal new_requested
 signal create_requested(title: String)
@@ -9,6 +10,7 @@ signal back_requested
 signal resume_requested
 signal return_requested
 signal quit_requested
+const GiftDetails := preload("res://features/start_menu/gift_details.gd")
 const Backdrop := preload("res://features/start_menu/backdrop.gd")
 var root: Control
 var panel: PanelContainer
@@ -91,18 +93,30 @@ func _page(title: String, bounds: Rect2) -> VBoxContainer:
 func show_home(has_saves: bool, warning := "") -> void:
 	screen = "home"
 	visible = true
-	var column := _page("沙盘上的生活", Rect2(184, 92, 272, 255))
+	var column := _page("沙盘上的生活", Rect2(184, 58, 272, 290))
 	var subtitle := _label(column, "沙海之中，建起自己的村落", 11, Color("c1ad88"))
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	continue_button = _button(column, "继续游戏", func() -> void: continue_requested.emit())
 	continue_button.disabled = not has_saves
 	_button(column, "创建新存档", func() -> void: new_requested.emit())
+	_button(column, "赐予详情", func() -> void: gift_details_requested.emit())
 	message = _label(column, warning, 10, Color("e6b28c"))
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	message.custom_minimum_size.y = 24
 	var foot := _label(root, "每一座村落，都有自己的故事。", 11, Color("f1dfb6"))
 	foot.position = Vector2(230, 371)
 	if has_saves: continue_button.grab_focus()
+
+func show_gift_details(entries: Array[Dictionary]) -> void:
+	screen = "gifts"
+	visible = true
+	var column := _page("赐予详情 · 18类物体", Rect2(28, 12, 584, 376))
+	_label(column, "在祭台识别实物，每次赐予1件或1只。向下滚动查看全部。", 11, Color("c1ad88"))
+	var details := GiftDetails.new()
+	column.add_child(details)
+	details.populate(entries)
+	_label(column, "符文代表魔法赐予来源；当前额外属性待定。", 10, Color("bfb0d0"))
+	_button(column, "返回开始界面  [Esc]", func() -> void: back_requested.emit()).grab_focus()
 
 func show_slots(slots: Array[Dictionary]) -> void:
 	screen = "slots"

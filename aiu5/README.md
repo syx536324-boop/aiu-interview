@@ -4,7 +4,7 @@ Godot 4.7.2 Windows村落生存游戏，工程目录仍为aiu5。摄像头赐予
 
 ## 安装与运行
 
-下载GitHub v0.7.0的 `AIU5-Setup-0.7.0-win64.exe`，安装后从开始菜单 **沙盘上的生活** 启动。安装器升级原AIU5安装位置，保留玩家存档。
+下载GitHub v0.7.1的 `AIU5-Setup-0.7.1-win64.exe`，安装后从开始菜单 **沙盘上的生活** 启动。安装器升级原AIU5安装位置，保留玩家存档。
 
 源码运行：
 
@@ -13,6 +13,8 @@ Godot_v4.7.2-stable_win64_console.exe --path D:\aiu5
 ```
 
 源码需配套models首版模型与runtime摄像头环境，安装版已随附。Windows打包见[交付说明](packaging/windows/README.md)。技术环境变量仍以AIU5_开头。改名后继续使用 `%APPDATA%\Godot\app_userdata\AIU5 · 赤沙村`，已有村落与角色存档不迁移、不删除。
+
+开始界面“赐予详情”展示全部18类奖励和符文图标，可滚动查看；普通与赐予实例按来源使用不同图标。祭台摄像头可赐予的18类物体、对应物品及操作步骤见[游戏玩法介绍](游戏玩法介绍.md)。
 
 全部67种物品的来源见 [物品获取路径](docs/ITEM_SOURCES.md)，游戏背包详情也会显示。
 
@@ -42,3 +44,5 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path D:\aiu5 --script res://t
 ```
 
 测试均使用隔离存档，不写玩家数据。摄像头18类首版模型的实物准确率仍需逐类验收。第三方资源见[THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)。
+
+0.7.1采用已确认的透明像素沙盘图标，统一游戏窗口、Windows程序文件、安装器和开始菜单；图标原图及七尺寸ICO见assets/branding。

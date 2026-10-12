@@ -18,7 +18,8 @@ foreach ($taskFolder in @('models','runtime','services\gift_camera')) {
     & robocopy "$taskProject\$taskFolder" $taskSidecarTarget /MIR /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
     if ($LASTEXITCODE -gt 7) { throw "Sidecar copy failed: $taskFolder" }
 }
+Copy-Item -LiteralPath "$taskProject\assets\branding\game-icon.ico" -Destination $taskOutput
 Copy-Item -LiteralPath "$taskProject\THIRD_PARTY_NOTICES.md","$PSScriptRoot\README.md" -Destination $taskOutput
 & $ISCC "/DPackageDir=$taskOutput" "/DOutputDir=$taskProject\exports" "$PSScriptRoot\installer.iss"
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed' }
-Get-FileHash -LiteralPath "$taskProject\exports\AIU5-Setup-0.7.0-win64.exe"
+Get-FileHash -LiteralPath "$taskProject\exports\AIU5-Setup-0.7.1-win64.exe"

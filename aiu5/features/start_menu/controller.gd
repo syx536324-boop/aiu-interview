@@ -1,6 +1,7 @@
 # Coordinates the menu, save library and game lifetime without owning game simulation or UI layout.
 extends Node
 
+const GiftCatalog := preload("res://features/gifts/catalog.gd")
 const Library := preload("res://features/save_slots/library.gd")
 const View := preload("res://features/start_menu/view.gd")
 const Game := preload("res://scenes/main.tscn")
@@ -17,6 +18,7 @@ func _ready() -> void:
 	view = View.new()
 	add_child(view)
 	view.continue_requested.connect(func() -> void: view.show_slots(library.slots()))
+	view.gift_details_requested.connect(func() -> void: view.show_gift_details(GiftCatalog.entries()))
 	view.new_requested.connect(func() -> void: view.show_new("赤沙村 " + str(library.slots().size() + 1)))
 	view.create_requested.connect(create_game)
 	view.load_requested.connect(continue_game)

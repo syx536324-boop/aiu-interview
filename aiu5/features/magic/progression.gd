@@ -161,7 +161,7 @@ func consume_weapon(id: String) -> bool:
 
 func weapon_snapshot(id: String) -> Dictionary:
 	var item := str(ensure(id).equipment.weapon)
-	return {"item":item, "name":session.inventory.Catalog.ITEMS[item].name if item != "" else "空", "attack":Catalog.Gear.damage(item)+(skills.attack_bonus(id) if item!="" else 0), "editable":_error(id)=="", "wear":ensure(id).weapon_wear.duplicate(), "durability_text":Catalog.Wear.describe(ensure(id).weapon_wear)+Catalog.Wear.Origin.describe(ensure(id).weapon_wear)}
+	return {"item":item, "magical":Catalog.Wear.Origin.magical(ensure(id).weapon_wear), "name":session.inventory.Catalog.ITEMS[item].name if item != "" else "空", "attack":Catalog.Gear.damage(item)+(skills.attack_bonus(id) if item!="" else 0), "editable":_error(id)=="", "wear":ensure(id).weapon_wear.duplicate(), "durability_text":Catalog.Wear.describe(ensure(id).weapon_wear)+Catalog.Wear.Origin.describe(ensure(id).weapon_wear)}
 
 func snapshot(id: String) -> Dictionary:
 	var actor := _actor(id)
@@ -177,6 +177,7 @@ func snapshot(id: String) -> Dictionary:
 	for slot: String in Catalog.EQUIPMENT:
 		var item := str(Catalog.EQUIPMENT[slot].item)
 		gear.append({"slot": slot, "name": Catalog.EQUIPMENT[slot].name, "item": state.equipment[slot],
+			"magical":Catalog.Wear.Origin.magical(state.equipment_records.get(slot,{})),
 			"available_item": item, "available": session.inventory.has_item(id, item),
 			"equipped_name":(session.inventory.Catalog.ITEMS[state.equipment[slot]].name+Catalog.Wear.Origin.describe(state.equipment_records.get(slot,{}))) if state.equipment[slot]!="" else "空",
 			"choices":_gear_choices(id,slot)})

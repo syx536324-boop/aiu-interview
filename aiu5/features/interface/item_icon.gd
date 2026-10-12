@@ -3,16 +3,31 @@ extends Control
 
 const Water := preload("res://features/inventory/water_catalog.gd")
 
+const GiftIcons := preload("res://features/interface/gift_icon_atlas.gd")
+const Origin := preload("res://features/gifts/provenance.gd")
 var item := ""
+var magical := false
+var gift_texture: Texture2D
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-func set_item(id: String) -> void:
+func set_item(id: String, is_magical := false) -> void:
+	if item == id and magical == is_magical: return
 	item = id
+	magical = is_magical
+	gift_texture = GiftIcons.texture(item) if magical else null
 	queue_redraw()
 
+func set_record(record: Dictionary) -> void:
+	set_item(str(record.get("item", "")), Origin.magical(record))
+
 func _draw() -> void:
+	if gift_texture != null:
+		draw_texture_rect(gift_texture, Rect2(Vector2.ZERO, size), false)
+		if item == "water_cup":
+			draw_line(Vector2(size.x * 0.24, size.y * 0.35), Vector2(size.x * 0.58, size.y * 0.35), Color("70d9ed"), 2)
+		return
 	var wood := Color("bb8953")
 	var edge := Color("49372b")
 	var steel := Color("adc1bd")

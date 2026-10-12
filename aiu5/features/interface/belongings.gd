@@ -233,7 +233,7 @@ func _update_slots(buttons: Array[Button], slots: Array, side: String, selected:
 		button.set_meta("slot_index",index)
 		var slot: Dictionary = slots[index]
 		var id := str(slot.get("item", ""))
-		button.get_node("Icon").set_item(id)
+		button.get_node("Icon").set_record(slot)
 		button.get_node("ItemName").text = Catalog.ITEMS[id]["name"] if id != "" else ""
 		button.get_node("ItemName").add_theme_font_size_override("font_size", 9 if id != "" and str(Catalog.ITEMS[id].name).length() >= 4 else 10)
 		button.get_node("Count").text = str(slot["count"]) if id != "" and slot["count"] > 1 else ""

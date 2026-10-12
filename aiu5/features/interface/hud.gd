@@ -127,7 +127,7 @@ func _present(state: Dictionary) -> void:
 	var cycle: Dictionary = state.get("day_night",{})
 	clock_label.text = "第%d天 %s\n%s" % [int(cycle.get("day",1)),cycle.get("clock","08:00"),cycle.get("phase","白昼")]
 	var weapon: Dictionary = state.get("weapon",{})
-	weapon_icon.set_item(str(weapon.get("item","")))
+	weapon_icon.set_item(str(weapon.get("item","")), bool(weapon.get("magical", false)))
 	weapon_label.text = str(weapon.get("name","武器")) if weapon.get("item", "") != "" else "武器"
 	weapon_button.tooltip_text = "%s · 攻击%d · 点击卸回背包 · J 攻击 / E 采集" % [weapon.get("name",""),weapon.get("attack",0)] if weapon.get("item", "") != "" else "武器位 · 点击打开背包，选择镐子、斧、剑或弓装备"
 	weapon_durability.visible = weapon.get("item","") != ""

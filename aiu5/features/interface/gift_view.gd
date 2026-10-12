@@ -1,5 +1,6 @@
 # Presents altar rituals, in-memory camera previews and candidate selection through backend actions.
 extends CanvasLayer
+const GiftIcons := preload("res://features/interface/gift_icon_atlas.gd")
 var font := SystemFont.new()
 var overlay: ColorRect
 var altar_panel: Control
@@ -110,7 +111,11 @@ func _present(state: Dictionary) -> void:
 		var button := Button.new()
 		button.text = ("✓ " if str(state.selected) == str(candidate.id) else "") + "%s  %d%%" % [candidate.name,roundi(float(candidate.confidence)*100)]
 		_style_button(button)
-		button.custom_minimum_size = Vector2(204,32)
+		button.custom_minimum_size = Vector2(204,38)
+		button.icon = GiftIcons.texture(str(candidate.item))
+		button.expand_icon = true
+		button.add_theme_constant_override("icon_max_width", 30)
+		button.add_theme_constant_override("h_separation", 6)
 		button.disabled = not state.frozen
 		button.pressed.connect(func() -> void: gifts.select_candidate(str(candidate.id)))
 		choices.add_child(button)

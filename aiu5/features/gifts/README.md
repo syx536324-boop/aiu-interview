@@ -7,3 +7,5 @@
 仅赐予实例具有 `origin=player_gift/is_magical=true/magic_attribute=null/gift_event_id`。普通与魔法物品分开存放；装备、耐久、修复、柜箱和退出续玩保留来源。所有赐予均写入自动存档，失败回滚；不会自动更新祭台回退点。
 
 接口：`start(session,camera)`、`open_menu()`、`begin_camera()`、`accept_snapshot(data)`、`freeze_frame()`、`select_candidate(id)`、`confirm()`、`close()`，`changed(snapshot)`供UI订阅。`inventory.gift_events`防止同一确认重复提交；跨仪式展示同一实物仍可再次赐予，未擅自增加实物去重玩法。
+
+catalog.entries()为开始菜单提供18类识别名称、实际奖励、数量与去向，无需启动摄像头。具体使用方法见../../游戏玩法介绍.md。

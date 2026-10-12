@@ -261,7 +261,7 @@ func _present(state: Dictionary) -> void:
 		awaken_button.tooltip_text = str(current.awakening_hint)
 		for gear: Dictionary in current.gear:
 			var widgets: Dictionary = gear_buttons[gear.slot]
-			if widgets.icon.item != gear.item: widgets.icon.set_item(str(gear.item))
+			widgets.icon.set_item(str(gear.item), bool(gear.get("magical", false)))
 			widgets.hint.text = "空" if gear.item == "" else "已穿戴"
 			widgets.button.disabled = not current.editable
 			widgets.button.tooltip_text = str(gear.equipped_name) + " · 点击选择材质 / 穿戴 / 卸下"
