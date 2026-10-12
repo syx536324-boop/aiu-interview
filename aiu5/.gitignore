@@ -35,3 +35,17 @@ coverage/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Godot generated cache and export credentials
+.godot/
+export_credentials.cfg
+*.translation
+exports/
+
+models/*.pt
+runtime/
+export_templates/
+packaging/windows/tools/
+packaging/windows/wheels/
+services/gift_camera/__pycache__/
+Ultralytics/

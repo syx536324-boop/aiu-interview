@@ -1,0 +1,23 @@
+path: D:/AIU5-YOLO训练资料/公开数据/dataset-v1
+train: train-balanced.txt
+val: images/val
+test: images/test
+names:
+  0: cup
+  1: knife
+  2: bowl
+  3: bed
+  4: book
+  5: scissors
+  6: bird
+  7: dog
+  8: apple
+  9: carrot
+  10: sword
+  11: axe
+  12: pickaxe
+  13: bow
+  14: armor
+  15: helmet
+  16: leggings
+  17: boots

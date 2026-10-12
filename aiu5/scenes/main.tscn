@@ -1,0 +1,135 @@
+[gd_scene load_steps=35 format=3]
+
+[ext_resource type="Script" path="res://scenes/main.gd" id="1_bootstrap"]
+[ext_resource type="PackedScene" path="res://features/village/world.tscn" id="2_world"]
+[ext_resource type="PackedScene" path="res://features/village/session.tscn" id="3_session"]
+[ext_resource type="PackedScene" path="res://features/interface/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://features/interiors/interiors.tscn" id="5_interiors"]
+[ext_resource type="PackedScene" path="res://features/inventory/inventory.tscn" id="6_inventory"]
+[ext_resource type="PackedScene" path="res://features/interiors/furniture_editor.tscn" id="7_editor"]
+[ext_resource type="PackedScene" path="res://features/interface/belongings.tscn" id="8_belongings"]
+[ext_resource type="PackedScene" path="res://features/harvesting/harvesting.tscn" id="9_harvesting"]
+
+[ext_resource type="Script" path="res://features/survival/vitals.gd" id="10_vitals"]
+[ext_resource type="Script" path="res://features/homestead/homestead.gd" id="11_homestead"]
+[ext_resource type="Script" path="res://features/homestead/grounds.gd" id="12_grounds"]
+[ext_resource type="Script" path="res://features/persistence/checkpoints.gd" id="13_persistence"]
+
+[ext_resource type="Script" path="res://features/livestock/livestock.gd" id="14_livestock"]
+[ext_resource type="Script" path="res://features/mining/mining.gd" id="15_mining"]
+[ext_resource type="Script" path="res://features/landscape/landscape.gd" id="16_landscape"]
+
+[ext_resource type="Script" path="res://features/streaming/streaming.gd" id="17_streaming"]
+[ext_resource type="Script" path="res://features/simulation/clock.gd" id="18_clock"]
+
+[ext_resource type="Script" path="res://features/altar_display/display.gd" id="19_display"]
+
+[ext_resource type="Script" path="res://features/world_resources/resources.gd" id="20_resources"]
+
+[ext_resource type="Script" path="res://features/altar_display/offerings.gd" id="21_offerings"]
+
+[ext_resource type="Script" path="res://features/magic/progression.gd" id="22_magic"]
+[ext_resource type="Script" path="res://features/interface/attributes.gd" id="23_attributes"]
+
+[ext_resource type="Script" path="res://features/construction/construction.gd" id="24_construction"]
+[ext_resource type="Script" path="res://features/production/production.gd" id="25_production"]
+[ext_resource type="Script" path="res://features/combat/combat.gd" id="26_combat"]
+[ext_resource type="Script" path="res://features/interface/workshop.gd" id="27_workshop"]
+[ext_resource type="Script" path="res://features/forest/forest.gd" id="28_forest"]
+
+[ext_resource type="Script" path="res://features/gifts/gifts.gd" id="29_gifts"]
+[ext_resource type="Script" path="res://features/gifts/camera_bridge.gd" id="30_camera"]
+[ext_resource type="Script" path="res://features/interface/gift_view.gd" id="31_gift_view"]
+
+[ext_resource type="Script" path="res://features/day_night/cycle.gd" id="32_day_night"]
+
+[ext_resource type="Script" path="res://features/achievements/achievements.gd" id="33_achievements"]
+[ext_resource type="Script" path="res://features/foraging/foraging.gd" id="34_foraging"]
+
+[node name="AIU5" type="Node"]
+script = ExtResource("1_bootstrap")
+
+[node name="Forest" type="Node" parent="."]
+script = ExtResource("28_forest")
+
+[node name="World" parent="." instance=ExtResource("2_world")]
+
+[node name="Interiors" parent="." instance=ExtResource("5_interiors")]
+
+[node name="Session" parent="." instance=ExtResource("3_session")]
+
+[node name="Inventory" parent="." instance=ExtResource("6_inventory")]
+
+[node name="Harvesting" parent="." instance=ExtResource("9_harvesting")]
+
+[node name="FurnitureEditor" parent="." instance=ExtResource("7_editor")]
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="Belongings" parent="." instance=ExtResource("8_belongings")]
+
+[node name="Vitals" type="Node" parent="."]
+script = ExtResource("10_vitals")
+
+[node name="Homestead" type="Node" parent="."]
+script = ExtResource("11_homestead")
+
+[node name="Grounds" type="Node2D" parent="."]
+script = ExtResource("12_grounds")
+
+[node name="Persistence" type="Node" parent="."]
+script = ExtResource("13_persistence")
+
+[node name="Livestock" type="Node" parent="."]
+script = ExtResource("14_livestock")
+
+[node name="Mining" type="Node" parent="."]
+script = ExtResource("15_mining")
+
+[node name="Landscape" type="Node" parent="."]
+script = ExtResource("16_landscape")
+
+[node name="Simulation" type="Node" parent="."]
+script = ExtResource("18_clock")
+
+[node name="Streaming" type="Node" parent="."]
+script = ExtResource("17_streaming")
+
+[node name="AltarDisplay" type="Node" parent="."]
+script = ExtResource("19_display")
+
+[node name="WorldResources" type="Node" parent="."]
+script = ExtResource("20_resources")
+
+[node name="Offerings" type="Node" parent="."]
+script = ExtResource("21_offerings")
+
+[node name="Magic" type="Node" parent="."]
+script = ExtResource("22_magic")
+
+[node name="Attributes" type="CanvasLayer" parent="."]
+script = ExtResource("23_attributes")
+
+[node name="Construction" type="Node" parent="."]
+script = ExtResource("24_construction")
+[node name="Production" type="Node" parent="."]
+script = ExtResource("25_production")
+[node name="Combat" type="Node" parent="."]
+script = ExtResource("26_combat")
+[node name="Workshop" type="CanvasLayer" parent="."]
+script = ExtResource("27_workshop")
+
+[node name="Gifts" type="Node" parent="."]
+script = ExtResource("29_gifts")
+[node name="GiftCamera" type="Node" parent="."]
+script = ExtResource("30_camera")
+[node name="GiftView" type="CanvasLayer" parent="."]
+script = ExtResource("31_gift_view")
+
+[node name="DayNight" type="Node" parent="."]
+script = ExtResource("32_day_night")
+
+[node name="Achievements" type="Node" parent="."]
+script = ExtResource("33_achievements")
+[node name="Foraging" type="Node" parent="."]
+script = ExtResource("34_foraging")

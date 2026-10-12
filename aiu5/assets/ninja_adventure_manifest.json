@@ -1,0 +1,44 @@
+{
+  "name": "Ninja Adventure Asset Pack",
+  "authors": [
+    "Pixel-boy",
+    "AAA"
+  ],
+  "source_url": "https://pixel-boy.itch.io/ninja-adventure-asset-pack",
+  "license": "CC0-1.0",
+  "file_count": 2234,
+  "total_bytes": 109941567.0,
+  "verification": "Every copied file matched the original SHA256",
+  "categories": [
+    {
+      "category": "Actor",
+      "files": 1366,
+      "bytes": 3963318.0
+    },
+    {
+      "category": "Audio",
+      "files": 188,
+      "bytes": 100090942.0
+    },
+    {
+      "category": "Backgrounds",
+      "files": 61,
+      "bytes": 375071.0
+    },
+    {
+      "category": "FX",
+      "files": 105,
+      "bytes": 307881.0
+    },
+    {
+      "category": "Items",
+      "files": 142,
+      "bytes": 191716.0
+    },
+    {
+      "category": "Ui",
+      "files": 361,
+      "bytes": 483221.0
+    }
+  ]
+}

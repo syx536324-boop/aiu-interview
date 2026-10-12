@@ -8,7 +8,7 @@ AIU 系列项目按并列目录整理。已有项目独立安装依赖、独立�
 | [aiu2/](aiu2/) | YOLO 视觉应用 | 示例训练、摄像头实时推理、GPU/CPU 自动切换、C++ ONNX Runtime 实验 |
 | [aiu3/](aiu3/) | STM32 硬件实践 | STM32F103C8T6、PC13 LED、CubeMX/CMake 固件、串口枚举 |
 | [aiu4/](aiu4/) | 华小牛研究 Harness | 高质量 AI 论文检索、阅读、评阅卡和可选逐段中英翻译 |
-| [aiu5/](aiu5/) | AIU5 新项目 | 项目说明、Git 忽略规则与版本管理；具体功能待开发 |
+| [aiu5/](aiu5/) | 沙盘上的生活 | Godot 村落生存游戏：制作、种植、养殖、成就栏与摄像头赐予；Windows 安装包见 aiu5 发布页 |
 
 ## 从哪里开始
 

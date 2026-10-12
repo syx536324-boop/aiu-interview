@@ -1,0 +1,491 @@
+{
+  "schema_version": 1,
+  "status": "prototype_integrated_actual_object_validation_pending",
+  "training_images": 545,
+  "annotation_files": 683,
+  "trained_custom_model": true,
+  "camera_integrated": true,
+  "classes": [
+    {
+      "class_id": 0,
+      "class_name": "cup",
+      "name_zh": "杯子",
+      "source": "coco_selected",
+      "coco_original_id": 41,
+      "category": "工具",
+      "game_kind": "inventory",
+      "game_id": "wooden_cup",
+      "note": "复用现有木质水杯；识别不判断杯中是否有水",
+      "images_by_split": {
+        "train": 90,
+        "val": 24,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 166,
+        "val": 42,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 1,
+      "class_name": "knife",
+      "name_zh": "刀",
+      "source": "coco_selected",
+      "coco_original_id": 43,
+      "category": "武器",
+      "game_kind": "inventory",
+      "game_id": "knife",
+      "note": "刀独立于剑；默认攻击1，沿用武器耐久",
+      "images_by_split": {
+        "train": 73,
+        "val": 20,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 107,
+        "val": 28,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 2,
+      "class_name": "bowl",
+      "name_zh": "碗",
+      "source": "coco_selected",
+      "coco_original_id": 45,
+      "category": "工具",
+      "game_kind": "inventory",
+      "game_id": "bowl",
+      "note": "新增普通容器；暂不增加新的烹饪规则",
+      "images_by_split": {
+        "train": 99,
+        "val": 24,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 163,
+        "val": 40,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 3,
+      "class_name": "bed",
+      "name_zh": "床",
+      "source": "coco_selected",
+      "coco_original_id": 59,
+      "category": "家具",
+      "game_kind": "furniture",
+      "game_id": "bed",
+      "note": "复用房间内可布置的床，不是背包物品",
+      "images_by_split": {
+        "train": 50,
+        "val": 15,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 55,
+        "val": 19,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 4,
+      "class_name": "book",
+      "name_zh": "书本",
+      "source": "coco_selected",
+      "coco_original_id": 73,
+      "category": "书籍",
+      "game_kind": "inventory",
+      "game_id": "book",
+      "note": "复用现有书本",
+      "images_by_split": {
+        "train": 56,
+        "val": 13,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 167,
+        "val": 42,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 5,
+      "class_name": "scissors",
+      "name_zh": "剪刀",
+      "source": "coco_selected",
+      "coco_original_id": 76,
+      "category": "工具",
+      "game_kind": "inventory",
+      "game_id": "scissors",
+      "note": "新增工具；剪切玩法待定",
+      "images_by_split": {
+        "train": 43,
+        "val": 9,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 62,
+        "val": 13,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 6,
+      "class_name": "bird",
+      "name_zh": "鸟",
+      "source": "coco_selected",
+      "coco_original_id": 14,
+      "category": "动物",
+      "game_kind": "animal",
+      "game_id": "bird",
+      "note": "活体实体；目前村里一只鸟，不放入背包",
+      "images_by_split": {
+        "train": 43,
+        "val": 11,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 87,
+        "val": 23,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 7,
+      "class_name": "dog",
+      "name_zh": "狗",
+      "source": "coco_selected",
+      "coco_original_id": 16,
+      "category": "动物",
+      "game_kind": "animal",
+      "game_id": "dog",
+      "note": "活体实体；目前村里一只狗，不放入背包",
+      "images_by_split": {
+        "train": 47,
+        "val": 14,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 53,
+        "val": 15,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 8,
+      "class_name": "apple",
+      "name_zh": "苹果",
+      "source": "coco_selected",
+      "coco_original_id": 47,
+      "category": "食物",
+      "game_kind": "inventory",
+      "game_id": "apple",
+      "note": "普通食物，食用恢复饥饿2",
+      "images_by_split": {
+        "train": 32,
+        "val": 8,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 93,
+        "val": 18,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 9,
+      "class_name": "carrot",
+      "name_zh": "胡萝卜",
+      "source": "coco_selected",
+      "coco_original_id": 51,
+      "category": "食物",
+      "game_kind": "inventory",
+      "game_id": "carrot",
+      "note": "去重，仅一类；普通食物，食用恢复饥饿2",
+      "images_by_split": {
+        "train": 58,
+        "val": 10,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 212,
+        "val": 41,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 10,
+      "custom_local_id": 0,
+      "class_name": "sword",
+      "name_zh": "剑",
+      "source": "custom",
+      "coco_original_id": null,
+      "category": "武器",
+      "game_kind": "inventory",
+      "game_id": "wood_sword",
+      "note": "木剑、石剑、铁剑共用识别类；材质以后由玩法确定",
+      "images_by_split": {
+        "train": 35,
+        "val": 6,
+        "test": 4
+      },
+      "instances_by_split": {
+        "train": 36,
+        "val": 6,
+        "test": 4
+      }
+    },
+    {
+      "class_id": 11,
+      "custom_local_id": 1,
+      "class_name": "axe",
+      "name_zh": "斧",
+      "source": "custom",
+      "coco_original_id": null,
+      "category": "武器",
+      "game_kind": "inventory",
+      "game_id": "stone_axe",
+      "note": "石斧、铁斧共用识别类；不要把镐标为斧",
+      "images_by_split": {
+        "train": 7,
+        "val": 1,
+        "test": 1
+      },
+      "instances_by_split": {
+        "train": 7,
+        "val": 1,
+        "test": 1
+      }
+    },
+    {
+      "class_id": 12,
+      "custom_local_id": 2,
+      "class_name": "pickaxe",
+      "name_zh": "镐子",
+      "source": "custom",
+      "coco_original_id": null,
+      "category": "武器",
+      "game_kind": "inventory",
+      "game_id": "pickaxe",
+      "note": "十字/弯尖镐头；也作为采矿工具",
+      "images_by_split": {
+        "train": 8,
+        "val": 2,
+        "test": 1
+      },
+      "instances_by_split": {
+        "train": 10,
+        "val": 2,
+        "test": 1
+      }
+    },
+    {
+      "class_id": 13,
+      "custom_local_id": 3,
+      "class_name": "bow",
+      "name_zh": "弓",
+      "source": "custom",
+      "coco_original_id": null,
+      "category": "武器",
+      "game_kind": "inventory",
+      "game_id": "bow",
+      "note": "弓本体；箭不单独训练，也不随识别自动生成",
+      "images_by_split": {
+        "train": 3,
+        "val": 1,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 3,
+        "val": 1,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 14,
+      "custom_local_id": 4,
+      "class_name": "armor",
+      "name_zh": "盔甲",
+      "source": "custom",
+      "coco_original_id": null,
+      "category": "装备",
+      "game_kind": "inventory",
+      "game_id": "armor",
+      "note": "只框躯干盔甲，不包含头盔、护腿、靴子",
+      "images_by_split": {
+        "train": 9,
+        "val": 1,
+        "test": 1
+      },
+      "instances_by_split": {
+        "train": 9,
+        "val": 1,
+        "test": 1
+      }
+    },
+    {
+      "class_id": 15,
+      "custom_local_id": 5,
+      "class_name": "helmet",
+      "name_zh": "头盔",
+      "source": "custom",
+      "coco_original_id": null,
+      "category": "装备",
+      "game_kind": "inventory",
+      "game_id": "hood",
+      "note": "模型识别头盔；当前基础装备槽ID为hood，材质待定",
+      "images_by_split": {
+        "train": 53,
+        "val": 11,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 90,
+        "val": 17,
+        "test": 0
+      }
+    },
+    {
+      "class_id": 16,
+      "custom_local_id": 6,
+      "class_name": "leggings",
+      "name_zh": "护腿",
+      "source": "custom",
+      "coco_original_id": null,
+      "category": "装备",
+      "game_kind": "inventory",
+      "game_id": "leggings",
+      "note": "左右护腿独立出现时分别框选，同一类别",
+      "images_by_split": {
+        "train": 24,
+        "val": 2,
+        "test": 1
+      },
+      "instances_by_split": {
+        "train": 27,
+        "val": 2,
+        "test": 2
+      }
+    },
+    {
+      "class_id": 17,
+      "custom_local_id": 7,
+      "class_name": "boots",
+      "name_zh": "靴子",
+      "source": "custom",
+      "coco_original_id": null,
+      "category": "装备",
+      "game_kind": "inventory",
+      "game_id": "boots",
+      "note": "每只靴子一个框，左右同类；同次赐予数量规则以后确定",
+      "images_by_split": {
+        "train": 47,
+        "val": 11,
+        "test": 0
+      },
+      "instances_by_split": {
+        "train": 111,
+        "val": 26,
+        "test": 0
+      }
+    }
+  ],
+  "validation_images": 130,
+  "test_images": 8,
+  "dataset_path": "D:/AIU5-YOLO训练资料/公开数据/dataset-v1",
+  "quality": "公开照片初版；真实摄像头未验收；补充框为AI复核的近似框",
+  "appearance_guidance": {
+    "names_have_toy_prefix": false,
+    "class_ids_unchanged": true,
+    "primary_domain": "physical_toy_photo",
+    "secondary_domain": "3D_render",
+    "rules": [
+      "识别名称仍为剑、斧、镐子、弓、盔甲、头盔、护腿、靴子。",
+      "实物玩具照片优先；3D预览单独记录来源与许可，只用作补充。",
+      "同一实体玩具或同一3D模型的不同角度、裁剪图和衍生图不得跨训练/验证/测试集。",
+      "不把游戏截图、像素图标或无真实框选的满屏猜测标签当作摄像头训练样本。",
+      "整个人偶上的头盔、躯干盔甲、护腿、靴子分别标注；仅肩甲、腕甲不标成躯干盔甲。"
+    ],
+    "classes": [
+      {
+        "class_id": 10,
+        "name_zh": "剑",
+        "appearance": "积木短剑、泡沫剑、我的世界像素实体剑；剑柄、护手与剑刃可辨认。"
+      },
+      {
+        "class_id": 11,
+        "name_zh": "斧",
+        "appearance": "积木斧、塑料斧、像素实体斧；斧刃呈宽刃形，不能把镐头当斧刃。"
+      },
+      {
+        "class_id": 12,
+        "name_zh": "镐子",
+        "appearance": "积木镐、泡沫像素镐；横向镐头与握柄完整可见。"
+      },
+      {
+        "class_id": 13,
+        "name_zh": "弓",
+        "appearance": "玩具弓、积木弓、像素实体弓；保留弓臂与弦，排除弩和只有箭的照片。"
+      },
+      {
+        "class_id": 14,
+        "name_zh": "盔甲",
+        "appearance": "积木胸甲、儿童角色扮演胸甲、Q版胸甲；完整人偶需要按躯干部件框选。"
+      },
+      {
+        "class_id": 15,
+        "name_zh": "头盔",
+        "appearance": "积木头盔、儿童塑料头盔、像素实体头盔；普通帽子、面罩、皇冠不自动当头盔。"
+      },
+      {
+        "class_id": 16,
+        "name_zh": "护腿",
+        "appearance": "积木腿甲、塑料护胫、像素实体腿甲；护腿是腿部防具，排除普通长裤。"
+      },
+      {
+        "class_id": 17,
+        "name_zh": "靴子",
+        "appearance": "玩具人物靴子、角色扮演靴、像素实体靴；每只分别框选，排除一般便鞋。"
+      }
+    ]
+  },
+  "toy_supplement": {
+    "path": "D:\\AIU5-YOLO训练资料\\玩具风补充",
+    "source_database": "D:/数据库",
+    "accepted_images": 9,
+    "physical_toy_photos": 2,
+    "model_renders": 7,
+    "game_integration_approved": false,
+    "training_status": "finished",
+    "experimental_model": "D:\\AIU5-YOLO训练资料\\玩具风补充\\模型交付\\gifts18-toy-supplement-v2.pt",
+    "promotion_decision": "keep_v1"
+  },
+  "user_supplement_20261011": {
+    "path": "D:\\AIU5-YOLO训练资料\\用户补充_20261011",
+    "prepared_dataset": "D:\\AIU5-YOLO训练资料\\用户补充_20261011\\dataset-v3",
+    "accepted_images": 12,
+    "class_counts": {
+      "bow": 7,
+      "axe": 5
+    },
+    "training_status": "prepared_not_trained",
+    "model_changed": false,
+    "split_policy": "All new screenshots train-only; same-video/same-toy groups kept together",
+    "license_note": "User-provided screenshot source rights not independently verified"
+  },
+  "selected_openimages_20261012": {
+    "path": "D:\\AIU5-YOLO训练资料\\筛选补训_20261012",
+    "dataset": "D:\\AIU5-YOLO训练资料\\筛选补训_20261012\\dataset-v4",
+    "accepted_images": 35,
+    "class_counts": {
+      "斧头": 16,
+      "弓": 19
+    },
+    "user_screenshots_included": 12,
+    "training_status": "ready",
+    "camera_integrated": false
+  }
+}

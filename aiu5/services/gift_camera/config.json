@@ -1,0 +1,5 @@
+{
+  "python": "res://runtime/pythonw.exe",
+  "model": "res://models/gifts18-prototype-v1.pt",
+  "camera": 0
+}

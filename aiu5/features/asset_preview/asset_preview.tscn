@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ninja_adventure/Example 5 ( Old Version).png" id="1_reference"]
+
+[node name="AssetPreview" type="Control"]
+layout_mode=3
+anchors_preset=15
+anchor_right=1.0
+anchor_bottom=1.0
+grow_horizontal=2
+grow_vertical=2
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode=1
+anchors_preset=15
+anchor_right=1.0
+anchor_bottom=1.0
+grow_horizontal=2
+grow_vertical=2
+theme_override_constants/margin_left=24
+theme_override_constants/margin_top=20
+theme_override_constants/margin_right=24
+theme_override_constants/margin_bottom=20
+
+[node name="Content" type="VBoxContainer" parent="Margin"]
+layout_mode=2
+theme_override_constants/separation=12
+
+[node name="Title" type="Label" parent="Margin/Content"]
+layout_mode=2
+theme_override_colors/font_color=Color(0.91, 0.94, 0.84, 1)
+theme_override_font_sizes/font_size=24
+text="AIU5 · 自然村落"
+horizontal_alignment=1
+
+[node name="Description" type="Label" parent="Margin/Content"]
+layout_mode=2
+theme_override_colors/font_color=Color(0.66, 0.75, 0.65, 1)
+theme_override_font_sizes/font_size=14
+text="Ninja Adventure 素材预览 · Pixel-boy / AAA · CC0"
+horizontal_alignment=1
+
+[node name="Reference" type="TextureRect" parent="Margin/Content"]
+custom_minimum_size=Vector2(320, 240)
+layout_mode=2
+size_flags_vertical=3
+texture=ExtResource("1_reference")
+expand_mode=1
+stretch_mode=3
+
+[node name="Caption" type="Label" parent="Margin/Content"]
+layout_mode=2
+theme_override_colors/font_color=Color(0.66, 0.75, 0.65, 1)
+theme_override_font_sizes/font_size=14
+text="作者提供的场景参考图；当前工程用于查看已导入素材。"
+horizontal_alignment=1

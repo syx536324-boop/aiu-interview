@@ -1,0 +1,9 @@
+﻿class_id,custom_local_id,class_name,name_zh,category,game_kind,game_id,coco_original_id,note
+10,0,sword,剑,武器,inventory,wood_sword,,木剑、石剑、铁剑共用识别类；材质以后由玩法确定
+11,1,axe,斧,武器,inventory,stone_axe,,石斧、铁斧共用识别类；不要把镐标为斧
+12,2,pickaxe,镐子,武器,inventory,pickaxe,,十字/弯尖镐头；也作为采矿工具
+13,3,bow,弓,武器,inventory,bow,,弓本体；箭不单独训练，也不随识别自动生成
+14,4,armor,盔甲,装备,inventory,armor,,只框躯干盔甲，不包含头盔、护腿、靴子
+15,5,helmet,头盔,装备,inventory,hood,,模型识别头盔；当前基础装备槽ID为hood，材质待定
+16,6,leggings,护腿,装备,inventory,leggings,,左右护腿独立出现时分别框选，同一类别
+17,7,boots,靴子,装备,inventory,boots,,每只靴子一个框，左右同类；同次赐予数量规则以后确定
