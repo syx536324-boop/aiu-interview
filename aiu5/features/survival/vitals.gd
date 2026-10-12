@@ -8,6 +8,7 @@ const NEED_INTERVAL := 180.0
 const DAMAGE_INTERVAL := 10.0
 const HEALTH_DEADLINE := 1800.0
 const RAW_WINDOW := 600.0
+const MANA_INTERVAL := 60.0
 var world: Node2D
 var inventory: Node
 var states: Dictionary = {}
@@ -24,7 +25,7 @@ func start(village: Node2D, belongings: Node) -> void:
 func ensure(id: String) -> Dictionary:
 	if not states.has(id):
 		states[id] = {"life": 10, "hunger": 10, "thirst": 10, "health": 10, "mana": 10,
-			"active_time": 0.0,
+			"active_time": 0.0, "mana_recovery_time": 0.0,
 			"need_time": 0.0, "hunger_time":0.0, "thirst_time":0.0, "damage_time": 0.0, "low_health": false,
 			"low_time": 0.0, "ill": false, "raw_meals": []}
 	return states[id]
@@ -68,12 +69,25 @@ func advance(delta: float) -> void:
 				s.low_time += step
 				if s.low_time >= HEALTH_DEADLINE:
 					s.life = 0
+			if s.life > 0: _recover_mana(id, s, step)
 			_prune_meals(s)
 			if s.life <= 0:
 				died = true
 	_sync_actors()
 	if died:
 		deaths_changed.emit()
+
+func _recover_mana(id: String, stats: Dictionary, delta: float) -> void:
+	var limit := float(max_mana(id))
+	stats.mana = clampf(float(stats.mana), 0, limit)
+	if stats.mana >= limit:
+		stats.mana_recovery_time = 0.0
+		return
+	stats.mana_recovery_time = float(stats.get("mana_recovery_time", 0)) + delta
+	while float(stats.mana_recovery_time) + 0.000001 >= MANA_INTERVAL and stats.mana < limit:
+		stats.mana = minf(limit, float(stats.mana) + 1)
+		stats.mana_recovery_time = maxf(0, float(stats.mana_recovery_time) - MANA_INTERVAL)
+	if stats.mana >= limit: stats.mana_recovery_time = 0.0
 
 func _health_band(s: Dictionary, id: String = "") -> void:
 	if s.health <= 3:
@@ -157,6 +171,7 @@ func revive(id: String) -> bool:
 	states.erase(id)
 	ensure(id)
 	states[id].life=max_life(id)
+	states[id].mana=max_mana(id)
 	_sync_actors()
 	return true
 
@@ -169,6 +184,9 @@ func _sync_actors() -> void:
 		actor.run_multiplier = (0.7 if s.ill else 1.0)*(magic.skills.run_rate(actor.resident_id) if is_instance_valid(magic) else 1.0)
 		actor.modulate = Color(0.5, 0.5, 0.5, 0.55) if actor.dead else Color.WHITE
 		actor.collision_layer = 0 if actor.dead else 2
+
+func max_mana(id: String) -> int:
+	return magic.max_mana(id) if is_instance_valid(magic) else 10
 
 func max_life(id: String) -> float:
 	return magic.skills.max_life(id) if is_instance_valid(magic) else 10.0
@@ -193,8 +211,10 @@ func restore(data: Dictionary) -> void:
 	for actor in world.controllable:
 		var s := ensure(actor.resident_id)
 		var source: Dictionary = data.get("residents", {}).get(actor.resident_id, {})
-		for key in ["life", "hunger", "thirst", "health", "mana"]:
+		for key in ["life", "hunger", "thirst", "health"]:
 			s[key] = clampf(float(source.get(key,10)),0,max_life(actor.resident_id) if key=="life" else 10)
+		s.mana = clampf(float(source.get("mana", 10)), 0, max_mana(actor.resident_id))
+		s.mana_recovery_time = clampf(float(source.get("mana_recovery_time", 0)), 0, MANA_INTERVAL) if s.mana < max_mana(actor.resident_id) else 0.0
 		for key in ["need_time", "damage_time", "low_time", "hunger_time", "thirst_time"]:
 			s[key] = maxf(0, float(source.get(key,source.get("need_time",0) if key in ["hunger_time","thirst_time"] else 0)))
 		s.low_health = bool(source.get("low_health", false))

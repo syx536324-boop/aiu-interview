@@ -98,6 +98,10 @@ func _ready() -> void:
 		bar.tint = colors[index]
 		root.add_child(bar)
 		stat_bars[key] = bar
+		if key == "mana":
+			stat_labels[key].add_theme_font_size_override("font_size", 9)
+			bar.position.x = x + 74
+			bar.size.x = 25
 		index += 1
 	disease_label = _text(root, "", Vector2(534, 31), 10, Color("f1a97a"))
 	weapon_button = Button.new()
@@ -140,11 +144,12 @@ func _present(state: Dictionary) -> void:
 	var values: Dictionary = state.get("vitals", {})
 	var names := {"life": "生命", "hunger": "饥饿", "thirst": "饥渴", "health": "健康", "mana": "魔力"}
 	for key: String in stat_bars:
-		var limit := float(state.get("max_life",10)) if key=="life" else 10.0
+		var limit := float(state.get("max_life",10)) if key=="life" else (float(state.get("max_mana",10)) if key=="mana" else 10.0)
 		stat_bars[key].maximum=limit
 		stat_bars[key].value = values.get(key, 10)
 		stat_bars[key].queue_redraw()
 		stat_labels[key].text = "%s %s/%d" % [names[key],str(snappedf(float(values.get(key,10)),0.1)),int(limit)]
+	stat_labels["mana"].text = "魔力 %d/%d" % [int(values.get("mana",10)), int(state.get("max_mana",10))]
 	disease_label.text = "肠胃炎 跑速-30%" if values.get("ill", false) else "当前角色计时"
 	disease_label.tooltip_text = "仅操控者每3分钟消耗1格饥饿和饥渴；其他角色五项状态与生存计时锁定。"
 	if values.get("low_health", false): disease_label.text = "低健康 %d秒" % ceili(1800 - float(values.get("low_time", 0)))
@@ -372,7 +377,7 @@ func _update_roster(state: Dictionary) -> void:
 		var values: Dictionary = entry.get("vitals", {})
 		var mode := "已阵亡" if entry.get("dead", false) else ("状态锁定" if entry.get("frozen", false) else "正在操控")
 		var location := "已阵亡 · 可在祭坛献祭复活" if entry.get("dead", false) else str(entry["area"]) + " · " + mode
-		roster_buttons[i].text = "%d  %s · %s\n     %s\n     生命 %s/%d  饥饿 %d/10  饥渴 %d/10  健康 %d/10  魔力 %d/10" % [i + 1, entry["name"], entry["role"], location, str(snappedf(float(values.get("life",10)),0.1)),int(values.get("max_life",10)), values.get("hunger", 10), values.get("thirst", 10), values.get("health", 10), values.get("mana", 10)]
+		roster_buttons[i].text = "%d  %s · %s\n     %s\n     生命 %s/%d  饥饿 %d/10  饥渴 %d/10  健康 %d/10  魔力 %d/%d" % [i + 1, entry["name"], entry["role"], location, str(snappedf(float(values.get("life",10)),0.1)),int(values.get("max_life",10)), values.get("hunger", 10), values.get("thirst", 10), values.get("health", 10), values.get("mana", 10), int(values.get("max_mana",10))]
 		roster_buttons[i].add_theme_stylebox_override("normal", _button_style(Color("786343") if i == state["selected"] else Color("554735")))
 
 func _button_style(color: Color) -> StyleBoxFlat:

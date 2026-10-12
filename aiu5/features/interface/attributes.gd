@@ -265,7 +265,7 @@ func _present(state: Dictionary) -> void:
 			widgets.hint.text = "空" if gear.item == "" else "已穿戴"
 			widgets.button.disabled = not current.editable
 			widgets.button.tooltip_text = str(gear.equipped_name) + " · 点击选择材质 / 穿戴 / 卸下"
-		skill_points.text = "技能点：%d · 魔力：%d/10" % [int(current.skill_points),int(current.mana)]
+		skill_points.text = "技能点：%d · 魔力：%d/%d" % [int(current.skill_points),int(current.mana),int(current.get("max_mana",10))]
 		for i in range(skill_buttons.size()):
 			var skill: Dictionary = current.skills[i]
 			skill_buttons[i].text = "%d %s%s" % [i+1,skill.name," ✓" if skill.learned else " · 10点"]

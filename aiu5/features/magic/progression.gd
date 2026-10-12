@@ -20,6 +20,9 @@ func ensure(id: String) -> Dictionary:
 	if not states.has(id): states[id] = Catalog.fresh()
 	return states[id]
 
+func max_mana(id: String) -> int:
+	return Catalog.mana_limit(int(ensure(id).level))
+
 func _actor(id: String) -> CharacterBody2D:
 	for actor in session.world.controllable:
 		if actor.resident_id == id: return actor
@@ -192,6 +195,7 @@ func snapshot(id: String) -> Dictionary:
 	result["skills"] = skills
 	result["skill_effects"]=self.skills.snapshot(id)
 	result["mana"]=session.vitals.ensure(id).mana
+	result["max_mana"]=max_mana(id)
 	result["branches_ready"] = state.unlocked.size() == Catalog.TRUNK.size()
 	return result
 

@@ -437,6 +437,7 @@ func snapshot() -> Dictionary:
 		for stat in ["life", "hunger", "thirst", "health", "mana"]:
 			entry.vitals[stat] = stats.get(stat, 10)
 		entry.vitals["max_life"]=vitals.max_life(str(entry.id))
+		entry.vitals["max_mana"]=vitals.max_mana(str(entry.id))
 		entry["frozen"] = int(entry.index) != selected
 	return {
 		"weapon": magic.weapon_snapshot(world.active_resident.resident_id) if is_instance_valid(magic) else {},
@@ -449,6 +450,7 @@ func snapshot() -> Dictionary:
 		"offering": offerings.preview() if is_instance_valid(offerings) else {},
 		"vitals": vitals.ensure(world.active_resident.resident_id).duplicate(true) if is_instance_valid(vitals) else {},
 		"max_life":vitals.max_life(world.active_resident.resident_id),
+		"max_mana":vitals.max_mana(world.active_resident.resident_id),
 		"skill_status":magic.skills.snapshot(world.active_resident.resident_id),
 		"inventory": inventory.snapshot(), "furnishing": editor.snapshot(),
 		"resident": world.active_resident.resident_name, "selected": selected,

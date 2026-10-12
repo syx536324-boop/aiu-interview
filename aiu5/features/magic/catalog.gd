@@ -3,6 +3,8 @@ extends RefCounted
 
 const MAX_LEVEL := 100
 const POINTS_PER_LEVEL := 5
+const BASE_MANA := 10
+const MANA_PER_LEVEL := 5
 const SKILL_COST := 10
 const ELEMENTS := {
 	"wood": {"name": "木", "color": "8ebc75"}, "water": {"name": "水", "color": "72b8ce"},
@@ -16,6 +18,9 @@ const Wear := preload("res://features/combat/durability.gd")
 const Gear := preload("res://features/combat/weapon_catalog.gd")
 const WEAPONS := Gear.WEAPONS
 const TRUNK := ["trunk_1", "trunk_2", "trunk_3", "trunk_4", "trunk_5"]
+
+static func mana_limit(level: int) -> int:
+	return BASE_MANA + (clampi(level, 1, MAX_LEVEL) - 1) * MANA_PER_LEVEL
 
 static func required(level: int) -> int:
 	return 0 if level >= MAX_LEVEL else 100 * (floori(float(maxi(1, level)) / 10.0) + 1)

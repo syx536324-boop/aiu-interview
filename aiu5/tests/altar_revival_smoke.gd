@@ -22,6 +22,13 @@ func check(ok: bool, label: String) -> void:
 		failures.append(label)
 		push_error("CHECK FAILED: " + label)
 
+func _same_stats(actual: Dictionary, expected: Dictionary) -> bool:
+	# JSON reload normalizes numeric types; compare each value, not strict Dictionary type identity.
+	if actual.size() != expected.size(): return false
+	for field: String in expected:
+		if not actual.has(field) or actual[field] != expected[field]: return false
+	return true
+
 func frames(count := 2) -> void:
 	for i in range(count): await process_frame
 
@@ -69,8 +76,10 @@ func run() -> void:
 	var chief: Dictionary = vitals.ensure("chief_priest")
 	check(a.mana == 10 and h.mana == 10 and chief.mana == 10, "all new residents start at ten mana")
 	a.need_time = 179.5
+	a.hunger_time = 179.5
+	a.thirst_time = 179.5
 	h.merge({"life": 8, "hunger": 1, "thirst": 1, "health": 3, "mana": 7,
-		"need_time": 179.5, "damage_time": 9.5, "low_health": true, "low_time": 1799.5,
+		"need_time": 179.5, "hunger_time":179.5, "thirst_time":179.5, "damage_time": 9.5, "low_health": true, "low_time": 1799.5,
 		"ill": true, "active_time": 120.0, "raw_meals": [110.0, 115.0]}, true)
 	var frozen := h.duplicate(true)
 	chief.health = 2
@@ -79,7 +88,7 @@ func run() -> void:
 	vitals.advance(180.5)
 	check(h == frozen, "inactive five stats, starvation, low-health deadline and meal clock freeze exactly")
 	check(chief == chief_frozen, "inactive newly low health cannot apply the five-life entry penalty")
-	check(a.hunger == 8 and a.thirst == 8 and a.mana == 10, "only active needs advance and mana has no drain or recovery")
+	check(a.hunger == 8 and a.thirst == 8 and a.mana == 10, "only active needs advance and full mana stays capped")
 	session.simulation.pending = 0.25
 	var before: float = a.active_time
 	session.select_resident(1)
@@ -129,7 +138,7 @@ func run() -> void:
 	await key(KEY_C)
 	var hud: Node = game.get_node("HUD")
 	check(session.roster_open and hud.stat_bars.size() == 5, "real C opens roster and HUD contains five bars")
-	check(hud.roster_buttons[0].text.contains("魔力 6/10") and hud.roster_buttons[1].text.contains("生命 0/10") and hud.roster_buttons[1].disabled, "roster displays independent mana and dead resident values")
+	check(hud.roster_buttons[0].text.contains("魔力 6/10") and hud.roster_buttons[1].text.contains("生命 0.0/10") and hud.roster_buttons[1].disabled, "roster displays independent mana and dead resident values")
 	await key(KEY_C)
 	# Merely depositing items never revives anyone.
 	items.ensure_container("altar:display")[0] = {"item": "bread", "count": 3}
@@ -173,7 +182,7 @@ func run() -> void:
 	check(ui.sacrifice_button.disabled and ui.sacrifice_target.disabled and ui.sacrifice_target.get_item_text(0) == "没有阵亡角色", "altar disables sacrifice when nobody remains dead")
 	frozen = h.duplicate(true)
 	vitals.advance(180)
-	check(h == frozen and vitals.ensure("ali").mana == 6, "revived inactive resident stays frozen and active mana does not regenerate")
+	check(h == frozen and vitals.ensure("ali").mana == 9, "revived inactive resident stays frozen and active mana recovers one per minute")
 	# Distance validation remains authoritative even if a UI action is forged.
 	vitals.ensure("chief_priest").life = 0
 	vitals._sync_actors()
@@ -186,7 +195,7 @@ func run() -> void:
 	game.queue_free()
 	await frames(4)
 	await load_game()
-	check(vitals.ensure("ali").mana == 6 and vitals.ensure("heya") == frozen and vitals.ensure("chief_priest").life == 0, "restart preserves mana, revived resident and the other current death")
+	check(vitals.ensure("ali").mana == 9 and _same_stats(vitals.ensure("heya"), frozen) and vitals.ensure("chief_priest").life == 0, "restart preserves mana, revived resident and the other current death")
 	check(items.ensure_container("altar:display")[0].count == 2 and items.ensure_container("altar:display")[1].is_empty(), "restart neither refunds nor consumes sacrifice twice")
 	check(vitals.online == saved.vitals.online, "restart never adds offline survival time")
 	# Existing all-party checkpoint rollback is still authoritative when nobody can sacrifice.
