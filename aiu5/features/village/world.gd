@@ -62,6 +62,7 @@ func _ready() -> void:
 	objects.y_sort_enabled = true
 	add_child(objects)
 	_build_boundaries()
+	_build_cliff()
 	_build_landmarks()
 	_build_pen()
 	_scatter_desert_props()
@@ -72,7 +73,7 @@ func _ready() -> void:
 	camera.name = "FollowingCamera"
 	camera.zoom = Vector2(0.9, 0.9)
 	camera.limit_left = int(MIN.x)
-	camera.limit_top = 0
+	camera.limit_top = int(MIN.y)
 	camera.limit_right = int(SIZE.x)
 	camera.limit_bottom = int(SIZE.y)
 	add_child(camera)
@@ -248,10 +249,30 @@ func _body(parent: Node2D, center: Vector2, size: Vector2) -> StaticBody2D:
 	return body
 
 func _build_boundaries() -> void:
-	_body(self, Vector2(BOUNDS.get_center().x, 4), Vector2(BOUNDS.size.x, 8))
+	_body(self, Vector2(BOUNDS.get_center().x, MIN.y + 4), Vector2(BOUNDS.size.x, 8))
 	_body(self, Vector2(BOUNDS.get_center().x, SIZE.y - 4), Vector2(BOUNDS.size.x, 8))
-	_body(self, Vector2(MIN.x + 4, SIZE.y / 2), Vector2(8, SIZE.y))
-	_body(self, Vector2(SIZE.x - 4, SIZE.y / 2), Vector2(8, SIZE.y))
+	_body(self, Vector2(MIN.x + 4, BOUNDS.get_center().y), Vector2(8, BOUNDS.size.y))
+	_body(self, Vector2(SIZE.x - 4, BOUNDS.get_center().y), Vector2(8, BOUNDS.size.y))
+
+# The plateau cliff is segmented so a cloud ladder can open a local gap through it.
+const CLIFF_SEGMENT := 40.0
+var cliff_bodies: Dictionary = {}
+var cliff_open: Dictionary = {}
+
+func _build_cliff() -> void:
+	var cliff: Rect2 = Layout.CLIFF
+	for i in range(int(ceil(cliff.size.x / CLIFF_SEGMENT))):
+		var x: float = cliff.position.x + float(i) * CLIFF_SEGMENT
+		cliff_bodies[i] = _body(self, Vector2(x + CLIFF_SEGMENT / 2.0, cliff.get_center().y), Vector2(CLIFF_SEGMENT, cliff.size.y))
+
+func open_cliff(x: float) -> void:
+	var index := int((x - Layout.CLIFF.position.x) / CLIFF_SEGMENT)
+	for offset in [-1, 0, 1]:
+		var i: int = index + offset
+		if not cliff_bodies.has(i) or cliff_open.has(i): continue
+		cliff_open[i] = true
+		cliff_bodies[i].collision_layer = 0
+	_rebuild_navigation(gate_visual.open)
 
 func _prop(texture: Texture2D, region: Rect2, top_left: Vector2, collision_size := Vector2.ZERO) -> Node2D:
 	var prop := Node2D.new()

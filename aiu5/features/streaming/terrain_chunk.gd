@@ -8,10 +8,12 @@ var paths: Array[Vector2] = []
 var grains: Array[Vector2] = []
 var stones: Array[Vector2] = []
 var dunes: Array = []
+var plateau := false
 
 func configure(bounds: Rect2) -> void:
 	area = bounds
 	position = area.position
+	plateau = Layout.PLATEAU.intersects(area)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 5109 + int(area.position.x) * 7919 + int(area.position.y) * 104729
 	var seen: Dictionary = {}
@@ -75,6 +77,18 @@ func _draw() -> void:
 		if Rect2(212, 224, 92, 60).has_point(point): continue
 		draw_rect(Rect2(point, Vector2(3, 2)), Color("c39a64"))
 		draw_rect(Rect2(point, Vector2(2, 1)), Color("efd09a"))
+	if plateau:
+		# Cool grey highland rock instead of desert sand; the southern cliff is drawn by landscape/view.
+		for y in range(floori(area.position.y / 16) * 16, ceili(area.end.y), 16):
+			for x in range(floori(area.position.x / 16) * 16, ceili(area.end.x), 16):
+				var rock := Rect2(x, y, 16, 16)
+				var solid := rock.intersection(area)
+				draw_texture_rect_region(FLOOR, solid, Rect2(Vector2(16, 16) + solid.position - rock.position, solid.size), Color(0.70, 0.73, 0.78))
+		for i in range(grains.size()): draw_rect(Rect2(grains[i], Vector2(2 if i % 4 == 0 else 1, 1)), Color("9aa0a6") if i % 3 == 0 else Color("6d6f72"))
+		for point in stones:
+			draw_rect(Rect2(point, Vector2(3, 2)), Color("8b8f93"))
+			draw_rect(Rect2(point, Vector2(2, 1)), Color("c3c8cc"))
+		return
 	var pen := Rect2(386, 211, 92, 60).intersection(area)
 	if pen.has_area():
 		draw_rect(pen, Color("c49b6c"))

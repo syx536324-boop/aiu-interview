@@ -14,7 +14,7 @@ func set_watered(value: bool) -> void:
 	watered = value
 
 func cell(at: Vector2) -> Vector2i:
-	return Vector2i(floori(at.x / SIZE.x), floori(at.y / SIZE.y)).clamp(Vector2i(-8, 0), Vector2i(7, 7))
+	return Vector2i(floori(at.x / SIZE.x), floori(at.y / SIZE.y)).clamp(Vector2i(-8, -8), Vector2i(7, 7))
 
 func distance(a: Vector2i, b: Vector2i) -> int:
 	return maxi(absi(a.x - b.x), absi(a.y - b.y))
@@ -30,7 +30,7 @@ func focus(at: Vector2, immediate := false) -> void:
 		if distance(id, center) > 2 and not bounds.grow(100).intersects(Rect2(Vector2(center - Vector2i(2, 2)) * SIZE, SIZE * 5)):
 			chunks[id].free()
 			chunks.erase(id)
-	for y in range(maxi(0, center.y - 2), mini(8, center.y + 3)):
+	for y in range(maxi(-8, center.y - 2), mini(8, center.y + 3)):
 		for x in range(maxi(-8, center.x - 2), mini(8, center.x + 3)):
 			var id := Vector2i(x, y)
 			if not chunks.has(id): pending.append(id)

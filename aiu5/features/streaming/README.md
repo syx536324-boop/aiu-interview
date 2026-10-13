@@ -18,3 +18,7 @@ world_resources与focus同步：外两圈准备资源描述、近3×3建立物�
 森林接入focus，地面区块x=-8..7，y=0..7；地图由overview.project映射负坐标，等比例绘出两侧地貌，建筑标签避让，草药屋自动标注。简图不创建远区林木，M仍暂停forest在线时钟。
 
 全图新增铁匠铺、青木村四房及青木祭台标注；只读取固定坐标，打开地图不实例化远处房间或树木。
+
+## 探索迷雾
+
+全图使用 320×200 的探索格：`streaming.focus()` 与打开全图时把当前已加载的区块记为「此刻探索过」，点亮持续 30 秒后重新变黑；`Layout.HOME_LIT`（赤沙村核心）常亮。`overview.gd` 的 Fog 层只绘制未点亮格，并设为 PROCESS_MODE_ALWAYS，使全图暂停期间迷雾仍按真实时间衰减。验证：tests/ladder_smoke.gd。

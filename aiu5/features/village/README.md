@@ -30,4 +30,8 @@ world.settlement决定建筑和居民集合，world.homes是当前村落实际�
 武器框：画面下方偏右单格武器位，每个角色独立保存。点击空框打开背包，选镐子、斧、剑或弓后点“装备武器”；点击已装备框卸回背包（背包满则保留）。J使用已装备武器进行攻击。magic.equip_weapon负责原子物品交换及保存失败回滚，weapon_snapshot向HUD提供显示数据，session协调操作，main只连接信号。旧存档缺weapon时为空，背包内弓箭仍保留。
 
 
-武器与工具更新：weapon_catalog定义镐子1、木剑1、石剑3、铁剑5、石斧2、铁斧4、弓10的基础攻击及分类。单格装备支持这些武器，equip_weapon仍原子交换并持久化。木斧从物品表移除，inventory._sanitize_slots和magic.restore_state将旧木斧转换为石斧。必须装备镐子采矿、装备斧砍树；桑树空手E采叶，持斧E砍树，其他武器不能采叶。森林树木沿用每2次1木头、4次砍完，resource_hits保持稳定ID，重载不复原。J近战29单位、0.6秒间隔、视线和朝向检查；弓每次成功发射扣背包1箭，失败不扣；X拆自建房按当前斧攻击和房屋防御计算。
+武器与工具更新：weapon_catalog定义镐子1、木剑1、石剑3、铁剑5、石斧2、铁斧4、弓1的基础攻击及分类。单格装备支持这些武器，equip_weapon仍原子交换并持久化。木斧从物品表移除，inventory._sanitize_slots和magic.restore_state将旧木斧转换为石斧。必须装备镐子采矿、装备斧砍树；桑树空手E采叶，持斧E砍树，其他武器不能采叶。森林树木沿用每2次1木头、4次砍完，resource_hits保持稳定ID，重载不复原。J近战29单位、0.6秒间隔、视线和朝向检查；弓每次成功发射扣背包1箭，失败不扣；X拆自建房按当前斧攻击和房屋防御计算。
+
+## 地图翻倍与山地高原
+
+`Layout.MIN.y` 由 0 改为 -1600、BOUNDS 变为 4800×3200：地图向北翻倍。北半部东侧是山地高原（`Layout.PLATEAU`，2400×1600，与沙漠同面积），由南缘断崖（`Layout.CLIFF`）隔开，只能靠云梯通行；高原区块由 terrain_chunk 以冷灰岩地绘制，landscape/view 画断崖与向北延伸的东部山体。相机 limit_top、顶部边界墙、terrain 分块钳制（y -8..7）、land/landscape 的 render_region 与全图投影都随之更新。

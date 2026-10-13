@@ -15,9 +15,38 @@ var signature := ""
 var build_count := 0
 const MAP_RECT := Rect2(104, 90, 432, 288)
 const SCALE := 0.09
+# Exploration fog: a chunk stays lit for thirty seconds after it was loaded; the home village is always lit.
+const FOG_SECONDS := 30
+const FOG_CELL := Vector2(320, 200)
+var lit: Dictionary = {}
+var fog
+
+class Fog extends Control:
+	const CELL := Vector2(320, 200)
+	const SCALE := 0.09
+	const SECONDS := 30.0
+	var lit: Dictionary = {}
+	var origin := Vector2.ZERO
+	var home := Rect2()
+	func _ready() -> void:
+		process_mode = Node.PROCESS_MODE_ALWAYS
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+	func _process(_delta: float) -> void:
+		queue_redraw()
+	func _draw() -> void:
+		var now := Time.get_ticks_msec()
+		for cy in range(-8, 8):
+			for cx in range(-8, 8):
+				var id := Vector2i(cx, cy)
+				var area := Rect2(Vector2(id) * CELL, CELL)
+				if home.intersects(area): continue
+				if lit.has(id) and now - int(lit[id]) <= int(SECONDS * 1000.0): continue
+				draw_rect(Rect2((area.position - origin) * SCALE, area.size * SCALE), Color(0.02, 0.02, 0.03, 0.92))
+
 
 static func project(at: Vector2) -> Vector2:
-	return (at - Layout.MIN) * SCALE + Vector2(0, 72)
+	# The doubled map (4800x3200) fits the 432x288 panel exactly at this scale.
+	return (at - Layout.MIN) * SCALE
 
 class Captions extends Control:
 	var entries: Array[Dictionary] = []
@@ -98,6 +127,11 @@ func start(village: Node2D, outdoor: Node2D, crops: Node) -> void:
 	background.size = MAP_RECT.size
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(background)
+	fog = Fog.new()
+	fog.position = MAP_RECT.position
+	fog.origin = Layout.MIN
+	fog.home = Layout.HOME_LIT
+	add_child(fog)
 	captions = Captions.new()
 	captions.position = MAP_RECT.position
 	captions.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -110,6 +144,7 @@ func start(village: Node2D, outdoor: Node2D, crops: Node) -> void:
 	_label("游戏已暂停 · M / Esc 返回", Vector2(335, 64), 11)
 	_label("北", Vector2(545, 96), 12)
 	_label("红点：外部落敌人",Vector2(104,76),9)
+	_label("黑：未探索 · 走过点亮30秒",Vector2(376,76),9)
 	_label("西岸森林", Vector2(110, 108), 11)
 	_label("沙漠", Vector2(480, 108), 11)
 	_label("东山", Vector2(548, 241), 11)
@@ -126,8 +161,16 @@ func _label(text: String, at: Vector2, font_size: int) -> void:
 	label.position = at
 	add_child(label)
 
+func mark_loaded() -> void:
+	# Every chunk the streamer has loaded counts as explored at this moment.
+	var now := Time.get_ticks_msec()
+	if not is_instance_valid(world) or not is_instance_valid(world.terrain): return
+	for id: Vector2i in world.terrain.chunks.keys(): lit[id] = now
+	if fog: fog.lit = lit
+
 func present() -> void:
 	# Only static changes invalidate the map; opening it never instantiates distant terrain/rooms.
+	mark_loaded()
 	var homes: Array = world.homes.map(func(home: Dictionary) -> Array: return [home.id, home.name, home.at, home.region.size, home.door])
 	var next := JSON.stringify([homes, grounds.export_layout(), farming.plots.map(func(p: Dictionary) -> Array: return [p.x, p.y, p.w, p.h])])
 	if texture == null or signature != next:

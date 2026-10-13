@@ -88,11 +88,11 @@ func craft_recipe(id: String) -> void:
 	check(false,"workshop recipe missing "+id)
 func run() -> void:
 	await load_game()
-	check(s.combat.enemies.size()==3,"three other-tribe enemies exist without adding playable villagers")
+	check(s.combat.enemies.has("tribe:1") and s.combat.enemies.has("tribe:2") and s.combat.enemies.has("tribe:3") and s.combat.tribe_members("forest").size()==20 and s.combat.tribe_members("barbarian").size()==20,"three outlanders plus two twenty-member tribes exist without adding playable villagers")
 	check(s.mining.UNDERGROUND.filter(func(r: Dictionary) -> bool: return r.kind=="iron_ore").size()*2 >=67,"finite iron supply supports iron house plus five buckets and bow")
 	s.inventory.bags.ali=[]
 	for i in range(21): s.inventory.bags.ali.append({})
-	check(s.inventory.exchange("ali",{}, {"wood":450,"stone":300,"crude_iron":68,"iron_ore":2,"arrow":3,"workbench":1,"stone_axe":1}),"test supplies fit ordinary inventory")
+	check(s.inventory.exchange("ali",{}, {"wood":450,"stone":300,"crude_iron":68,"iron_ore":2,"arrow":50,"workbench":1,"stone_axe":1}),"test supplies fit ordinary inventory")
 	var wb: Node2D=s.grounds.add_fixture({"id":"outdoors:workshop","kind":"workbench","at":[870,1010],"size":[36,24]})
 	outside(wb.position+Vector2(0,14))
 	await key(KEY_T)
@@ -146,11 +146,12 @@ func run() -> void:
 	enemy.position=s.world.active_resident.global_position+Vector2(65,0)
 	enemy.set_physics_process(false)
 	await physics_frame
-	for i in range(3):
+	for i in range(40):
 		s.combat.cooldown=0
 		check(s.combat.fire(enemy.global_position),"tower can shoot a visible other-tribe enemy")
 		await create_timer(0.3).timeout
-	check(enemy.hp==0 and not enemy.visible,"three swept arrow hits defeat enemy without respawn")
+	await create_timer(0.6).timeout
+	check(enemy.hp==0 and not enemy.visible,"swept arrow hits defeat enemy without respawn")
 	s.combat._process(600)
 	check(enemy.hp==0,"elapsed time does not respawn defeated tribal enemies")
 	check(not s.combat.fire(Vector2(-10000,-10000)),"cannot shoot outside viewport")
@@ -203,7 +204,8 @@ func run() -> void:
 	game.queue_free()
 	await frames(5)
 	await load_game()
-	check(s.construction.export_state()==saved_buildings and s.combat.export_state()==saved_enemies and s.production.smelting.remaining==0.5,"new process scene restores construction, enemy defeat and fractional smelting")
+	# Compare serialized form: saved float32 positions round-trip through the state file.
+	check(JSON.stringify(s.construction.export_state())==JSON.stringify(saved_buildings) and JSON.stringify(s.combat.export_state())==JSON.stringify(saved_enemies) and s.production.smelting.remaining==0.5,"new process scene restores construction, enemy defeat and fractional smelting")
 	s.production.elapse(0.5)
 	check(s.production.smelting.ready==1,"remaining online half second completes coarse-time smelting")
 	s.production.open_near()

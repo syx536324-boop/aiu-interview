@@ -43,7 +43,7 @@ func screenshot(name: String) -> void:
 	check(get_viewport().get_texture().get_image().save_png(directory + "/" + name + ".png") == OK, "capture " + name)
 
 func run() -> void:
-	check(ProjectSettings.get_setting("application/config/version") == "0.7.3", "release version")
+	check(ProjectSettings.get_setting("application/config/version") == "0.7.4", "release version")
 	await load_game()
 	var magic: Node = session.magic
 	var vitals: Node = session.vitals

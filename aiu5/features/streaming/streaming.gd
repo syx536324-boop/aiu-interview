@@ -55,6 +55,7 @@ func focus(immediate := false) -> void:
 			session.landscape.view.queue_redraw()
 	session.resources.focus(at, indoors)
 	if is_instance_valid(session.forest): session.forest.focus(at, indoors)
+	if is_instance_valid(overview): overview.mark_loaded()
 	_register_new()
 	session.livestock.active_animals.clear()
 	active_count = 0

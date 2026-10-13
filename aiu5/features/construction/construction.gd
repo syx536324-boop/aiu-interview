@@ -3,6 +3,8 @@ extends Node
 signal message(text: String)
 const Catalog := preload("res://features/construction/catalog.gd")
 const Building := preload("res://features/construction/building.gd")
+const Ladder := preload("res://features/construction/ladder.gd")
+const Layout := preload("res://features/village/layout.gd")
 const Room := preload("res://features/interiors/room.gd")
 const Roof := preload("res://features/construction/roof.gd")
 var session: Node
@@ -24,15 +26,28 @@ func build(actor: CharacterBody2D, bench: Node2D, kind: String) -> bool:
 		return false
 	var id := "built:" + str(next_id)
 	next_id += 1
-	records[id] = {"id": id, "kind": kind, "at": [at.x, at.y], "hp": definition.hp, "max_hp": definition.hp, "defense": definition.defense}
-	session.grounds.remove_fixture(bench)
+	var ladder: bool = bool(definition.get("ladder", false))
+	var spot := at
+	if ladder:
+		# Cloud ladders sit on the plateau cliff at the builder's position; the bench is kept.
+		spot = Vector2(clampf(actor.position.x, Layout.CLIFF.position.x + 24, Layout.CLIFF.end.x - 24), Layout.CLIFF.end.y)
+	records[id] = {"id": id, "kind": kind, "at": [spot.x, spot.y], "hp": definition.hp, "max_hp": definition.hp, "defense": definition.defense}
+	if not ladder: session.grounds.remove_fixture(bench)
 	_attach(id)
 	session.world.refresh_obstacles()
-	return session.production.commit(before, "建成%s，建筑台已消耗。" % definition.name)
+	return session.production.commit(before, "建成%s%s。" % [definition.name, "" if ladder else "，建筑台已消耗"])
 func _attach(id: String) -> void:
 	var record: Dictionary = records[id]
 	var at := Vector2(record.at[0], record.at[1])
 	var definition: Dictionary = Catalog.BUILDINGS[record.kind]
+	if bool(definition.get("ladder", false)):
+		var ladder := Ladder.new()
+		ladder.name = id.replace(":", "_")
+		ladder.position = at
+		session.world.objects.add_child(ladder)
+		nodes[id] = ladder
+		session.world.open_cliff(at.x)
+		return
 	var ruined := float(record.hp) <= 0
 	var name := str(definition.name) + ("废墟" if ruined else "")
 	var home := {"id": id, "name": name, "at": at, "region": Rect2(Vector2.ZERO, Catalog.FOOTPRINT), "door": at + Vector2(48, 91),

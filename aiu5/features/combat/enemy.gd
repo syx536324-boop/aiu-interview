@@ -7,6 +7,32 @@ var thirst := 10.0
 var cooldown := 0.0
 var pursuit := 0.0
 var sprite: Sprite2D
+# Tribe membership: raider (the three fixed outlanders), forest or barbarian.
+var tribe := "raider"
+var role := "charger"
+var territory := Rect2()
+var chief_id := ""
+var shot_cooldown := 0.0
+var mana := 0
+const ROLE_NAMES := {"civilian": "平民", "archer": "弓箭手", "charger": "冲锋手", "chief": "村长"}
+const TRIBE_NAMES := {"raider": "外部落", "forest": "森林部落", "barbarian": "野蛮部落"}
+
+func configure_tribe(tribe_name: String, npc_role: String, area: Rect2, max_hp := 20.0) -> void:
+	tribe = tribe_name
+	role = npc_role
+	territory = area
+	hp = max_hp
+func label() -> String:
+	return str(TRIBE_NAMES.get(tribe, tribe)) + " · " + str(ROLE_NAMES.get(role, role))
+func aggro_range() -> float:
+	if role == "civilian": return 60.0
+	if tribe == "barbarian": return 210.0   # hostile: attacks whatever enters its sight
+	if tribe == "forest": return 80.0       # unknown: only reacts at close range
+	return 110.0
+func attack_reach() -> float:
+	if role == "archer": return 160.0
+	if role == "chief": return 200.0
+	return 13.0
 func _ready() -> void:
 	collision_layer = 8
 	collision_mask = 1 | 2 | 8
@@ -32,6 +58,7 @@ func refresh() -> void:
 func _physics_process(delta: float) -> void:
 	cooldown = maxf(0,cooldown-delta)
 	pursuit = maxf(0,pursuit-delta)
+	shot_cooldown = maxf(0,shot_cooldown-delta)
 	var session: Node = combat.session
 	if session.magic.skills.rooted(enemy_id): velocity=Vector2.ZERO; return
 	var actor: CharacterBody2D = session.world.active_resident
@@ -40,14 +67,33 @@ func _physics_process(delta: float) -> void:
 	if actor.dead or home.get("skill_hut",false) or (actor.room_id != "" and not occupied_building): return
 	var target: Vector2 = home.door if occupied_building else actor.global_position
 	var gap := global_position.distance_to(target)
-	if gap > 110 and pursuit <= 0: return
-	if gap > 13:
-		velocity = global_position.direction_to(target) * 32
+	if gap > aggro_range() and pursuit <= 0: return
+	# Tribe members never chase beyond their own territory, so they cannot raid the village.
+	if territory.has_area() and not territory.grow(8).has_point(target):
+		if not territory.grow(-4).has_point(global_position):
+			velocity = global_position.direction_to(territory.get_center()) * 32
+			move_and_slide()
+		return
+	var reach := attack_reach()
+	if gap > reach:
+		var step := global_position.direction_to(target) * 32
+		if territory.has_area():
+			var next := global_position + step * delta
+			if not territory.grow(-4).has_point(next): velocity = Vector2.ZERO; return
+		velocity = step
 		move_and_slide()
 	elif cooldown <= 0:
 		cooldown = 2.0
 		if occupied_building: session.construction.hit(actor.room_id,10)
 		else:
+			if role == "archer" or role == "chief":
+				# Ranged tribe members shoot from cover; the chief spends mana like a player would.
+				if role == "chief" and chief_id != "":
+					if mana < 5:
+						mana = mini(session.magic.max_mana(chief_id), mana + 1)
+						return
+					mana -= 5
+				shot_cooldown = 2.0
 			session.vitals.hurt(actor.resident_id,1)
 func _draw() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-3,-28),Vector2(3,-28),Vector2(0,-25)]),Color("e37657"))

@@ -6,6 +6,15 @@ const Arrow := preload("res://features/combat/arrow.gd")
 const Gear := preload("res://features/combat/weapon_catalog.gd")
 const Swing := preload("res://features/combat/swing.gd")
 const SPAWNS := {"tribe:1":Vector2(1200,950),"tribe:2":Vector2(1550,1100),"tribe:3":Vector2(1750,900)}
+# Two tribes of twenty: twelve civilians, four archers and four chargers each. Their territories
+# keep them from raiding the player's village on their own.
+const TRIBES := {
+	"forest": {"area": Rect2(-1400, 640, 400, 340), "hp": 20.0},
+	"barbarian": {"area": Rect2(200, -1500, 2000, 1300), "hp": 20.0}
+}
+const TRIBE_ROLES := {"civilian": 12, "archer": 4, "charger": 4}
+const CHIEF_ELEMENT := {"forest": "wood", "barbarian": "fire"}
+const Layout := preload("res://features/village/layout.gd")
 var session: Node
 var enemies: Dictionary = {}
 var cooldown := 0.0
@@ -19,6 +28,53 @@ func start(controller: Node) -> void:
 		enemy.position = SPAWNS[id]
 		session.world.objects.add_child(enemy)
 		enemies[id] = enemy
+	for name: String in TRIBES: _spawn_tribe(name, TRIBES[name].area, TRIBES[name].hp)
+	_spawn_chief("forest", Layout.FOREST_ALTAR + Vector2(36, -24))
+	_spawn_chief("barbarian", Vector2(1200, -760))
+	_configure_chief("forest_chief", CHIEF_ELEMENT["forest"])
+
+func _spawn_tribe(name: String, area: Rect2, hp_value: float) -> void:
+	# Twelve civilians, four archers and four chargers, spread deterministically over the territory.
+	var index := 0
+	for npc_role: String in TRIBE_ROLES:
+		for i in range(int(TRIBE_ROLES[npc_role])):
+			var member := Enemy.new()
+			member.combat = self
+			member.enemy_id = "%s:%d" % [name, index]
+			member.configure_tribe(name, npc_role, area, hp_value)
+			member.position = area.position + Vector2(float(index % 5) + 0.5, float(index / 5) + 0.5) * Vector2(area.size.x / 5.0, area.size.y / 4.0)
+			session.world.objects.add_child(member)
+			enemies[member.enemy_id] = member
+			index += 1
+
+func _spawn_chief(name: String, at: Vector2) -> void:
+	var chief := Enemy.new()
+	chief.combat = self
+	chief.enemy_id = name + ":chief"
+	chief.configure_tribe(name, "chief", TRIBES[name].area, 30.0)
+	chief.chief_id = name + "_chief"
+	chief.position = at
+	session.world.objects.add_child(chief)
+	enemies[chief.enemy_id] = chief
+	_configure_chief(chief.chief_id, CHIEF_ELEMENT[name])
+	chief.mana = session.magic.max_mana(chief.chief_id)
+
+func _configure_chief(id: String, element: String) -> void:
+	# Chiefs follow the same rules as the player: level nine, the first four trunk skills and capped mana.
+	var state: Dictionary = session.magic.ensure(id)
+	state.element = element
+	state.level = 9
+	state.xp = 0
+	state.pending_points = 0
+	state.skill_points = 0
+	state.unlocked = ["trunk_1", "trunk_2", "trunk_3", "trunk_4"]
+
+func tribe_members(name: String) -> Array:
+	var result: Array = []
+	for id: String in enemies:
+		var member: CharacterBody2D = enemies[id]
+		if member.tribe == name and member.role != "chief": result.append(member)
+	return result
 func _process(delta: float) -> void:
 	cooldown = maxf(0,cooldown-delta)
 	demolition_cooldown = maxf(0,demolition_cooldown-delta)

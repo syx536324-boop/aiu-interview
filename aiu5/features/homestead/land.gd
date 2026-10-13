@@ -3,7 +3,7 @@ extends Node2D
 
 var plots: Array = []
 var focus_index := -1
-var render_region := Rect2(0, 0, 2400, 1600)
+var render_region := Rect2(-2400, -1600, 4800, 3200)
 const LAKE := Rect2(64, 170, 84, 70)
 
 func focus(index: int) -> void:

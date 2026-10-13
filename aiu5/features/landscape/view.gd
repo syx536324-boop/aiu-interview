@@ -3,7 +3,7 @@ extends Node2D
 
 const Geography := preload("res://features/landscape/layout.gd")
 
-var render_region := Rect2(0, 0, 2400, 1600)
+var render_region := Rect2(-2400, -1600, 4800, 3200)
 
 func _draw() -> void:
 	var forest_plaza: Rect2 = preload("res://features/village/layout.gd").FOREST_PLAZA
@@ -22,11 +22,17 @@ func _draw() -> void:
 		_draw_rect(Rect2(8, y - 12, width, 24), Color("654c33"))
 		for x in range(10, 8 + width, 5): _draw_rect(Rect2(x, y - 10, 3, 20), Color("bc9460"))
 		for side in [-12, 11]: _draw_rect(Rect2(7, y + side, width + 2, 2), Color("e0ba7a"))
-	for y in range(-80, 1600, 180):
+	for y in range(-1600, 1600, 180):
 		_draw_colored_polygon(PackedVector2Array([Vector2(2080, y + 210), Vector2(2160, y + 35), Vector2(2250, y - 10), Vector2(2380, y + 100), Vector2(2400, y + 210)]), Color("8c806b"))
 		_draw_colored_polygon(PackedVector2Array([Vector2(2160, y + 35), Vector2(2250, y - 10), Vector2(2290, y + 160), Vector2(2200, y + 100)]), Color("b4a58a"))
 		_draw_colored_polygon(PackedVector2Array([Vector2(2250, y - 10), Vector2(2380, y + 100), Vector2(2400, y + 210), Vector2(2290, y + 160)]), Color("706c5e"))
 		for offset in [Vector2(20, 80), Vector2(65, 140)]: _draw_line(Vector2(2130, y) + offset, Vector2(2150, y - 12) + offset, Color("c0af8b"), 2)
+	# Southern cliff of the mountain plateau; a deployed cloud ladder opens a gap through it.
+	var cliff: Rect2 = preload("res://features/village/layout.gd").CLIFF
+	_draw_rect(cliff.grow(6), Color("6d675e"))
+	_draw_rect(cliff, Color("8d867b"))
+	for x in range(int(cliff.position.x), int(cliff.end.x), 24):
+		_draw_line(Vector2(x, cliff.position.y + 4), Vector2(x + 12, cliff.end.y - 3), Color("5f5a52"), 2)
 	var plaza := Geography.PLAZA
 	_draw_rect(plaza.grow(3), Color("ae8a60"))
 	_draw_rect(plaza, Color("c7ad7a"))

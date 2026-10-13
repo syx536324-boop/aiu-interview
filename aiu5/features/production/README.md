@@ -29,7 +29,7 @@ start(session)、open_near、perform、gather_sand、elapse、snapshot、export_
 铁匠铺室内炉旁 E/T 冶炼，每份铁矿30在线秒生成1粗铁，需回同一炉领取。smith_smelting 与原灶房 smelting 独立，暂停/离线均不推进。furnace_state() 提供当前炉；export_state()/restore() 保留旧 remaining/ready 键，另增 blacksmith 子状态；事务仍通过 commit 保存失败回滚。UI继续读取 snapshot() 并发出 perform 请求。两个草药屋的工作台均支持汤剂。
 
 
-武器与工具更新：weapon_catalog定义镐子1、木剑1、石剑3、铁剑5、石斧2、铁斧4、弓10的基础攻击及分类。单格装备支持这些武器，equip_weapon仍原子交换并持久化。木斧从物品表移除，inventory._sanitize_slots和magic.restore_state将旧木斧转换为石斧。必须装备镐子采矿、装备斧砍树；桑树空手E采叶，持斧E砍树，其他武器不能采叶。森林树木沿用每2次1木头、4次砍完，resource_hits保持稳定ID，重载不复原。J近战29单位、0.6秒间隔、视线和朝向检查；弓每次成功发射扣背包1箭，失败不扣；X拆自建房按当前斧攻击和房屋防御计算。
+武器与工具更新：weapon_catalog定义镐子1、木剑1、石剑3、铁剑5、石斧2、铁斧4、弓1的基础攻击及分类。单格装备支持这些武器，equip_weapon仍原子交换并持久化。木斧从物品表移除，inventory._sanitize_slots和magic.restore_state将旧木斧转换为石斧。必须装备镐子采矿、装备斧砍树；桑树空手E采叶，持斧E砍树，其他武器不能采叶。森林树木沿用每2次1木头、4次砍完，resource_hits保持稳定ID，重载不复原。J近战29单位、0.6秒间隔、视线和朝向检查；弓每次成功发射扣背包1箭，失败不扣；X拆自建房按当前斧攻击和房屋防御计算。
 
 工作台E分类配方（选择后确认，制作60秒）：石斧/石剑=木头1+石头2；木剑=木头3；铁斧/铁剑=木头1+粗铁2；箭×10=木头2+粗铁1。镐子和弓沿用原配方。
 
