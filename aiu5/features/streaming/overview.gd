@@ -174,7 +174,7 @@ func present() -> void:
 	# Only static changes invalidate the map; opening it never instantiates distant terrain/rooms.
 	mark_loaded()
 	var homes: Array = world.homes.map(func(home: Dictionary) -> Array: return [home.id, home.name, home.at, home.region.size, home.door])
-	var next := JSON.stringify([homes, grounds.export_layout(), farming.plots.map(func(p: Dictionary) -> Array: return [p.x, p.y, p.w, p.h])])
+	var next := JSON.stringify([homes, grounds.export_layout(), world.haze.visited, farming.plots.map(func(p: Dictionary) -> Array: return [p.x, p.y, p.w, p.h])])
 	if texture == null or signature != next:
 		signature = next
 		_build()
@@ -208,6 +208,10 @@ func _build() -> void:
 	for i in range(210):
 		_fill(image,Rect2(Vector2(rng.randf_range(-2350,-50),rng.randf_range(-1560,1560)),Vector2(20,26)),Color("3b6345"))
 	_fill(image, Layout.MOUNTAINS_EAST, Color("4b5259"))
+	if not world.haze.visited:
+		# The highlands stay fogged on the map until the player actually reaches them.
+		_fill(image, Layout.PLATEAU, Color("79818a"))
+		_fill(image, Layout.MOUNTAINS_EAST, Color("79818a"))
 	_fill(image, Rect2(12, 0, 24, 600), Color("518d96"))
 	_fill(image, Rect2(12, 600, 88, 1000), Color("518d96"))
 	_fill(image, Geography.MOUNTAINS.grow(60), Color("837b67"))

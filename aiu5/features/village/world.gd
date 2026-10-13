@@ -8,6 +8,7 @@ const Trough := preload("res://features/village/trough.gd")
 const Navigation := preload("res://features/village/navigation.gd")
 const Layout := preload("res://features/village/layout.gd")
 const Altar := preload("res://features/village/altar.gd")
+const Haze := preload("res://features/weather/haze.gd")
 const Resident := preload("res://features/actors/resident.gd")
 const Pig := preload("res://features/actors/pig.gd")
 const DESERT := preload("res://assets/ninja_adventure/Backgrounds/Tilesets/TilesetDesert.png")
@@ -33,6 +34,7 @@ var homes: Array[Dictionary] = []
 var terrain: Node2D
 var objects: Node2D
 var camera: Camera2D
+var haze: Node2D
 var residents: Array[CharacterBody2D] = []
 var controllable: Array[CharacterBody2D] = []
 var houses: Array[Node2D] = []
@@ -63,6 +65,9 @@ func _ready() -> void:
 	add_child(objects)
 	_build_boundaries()
 	_build_cliff()
+	haze = Haze.new()
+	add_child(haze)
+	haze.start(self)
 	_build_landmarks()
 	_build_pen()
 	_scatter_desert_props()

@@ -20,6 +20,9 @@ var session: Node
 var enemies: Dictionary = {}
 var cooldown := 0.0
 var demolition_cooldown := 0.0
+func reach(weapon: String) -> float:
+	# Haze on the highlands shortens ranged reach; melee distance is unaffected.
+	return Gear.attack_range(weapon) * session.world.haze.range_scale()
 func start(controller: Node) -> void:
 	session = controller
 	for id: String in SPAWNS:
@@ -110,7 +113,7 @@ func fire(target: Vector2) -> bool:
 	arrow.combat = self
 	arrow.actor_id = actor.resident_id
 	arrow.direction = origin.direction_to(target)
-	arrow.distance_left = minf(Gear.attack_range(weapon),origin.distance_to(target)+12)
+	arrow.distance_left = minf(reach(weapon),origin.distance_to(target)+12)
 	if roof:
 		for body in session.interiors.rooms[actor.room_id].find_children("*","StaticBody2D",true,false): arrow.excluded.append(body.get_rid())
 		for body in session.construction.nodes[actor.room_id].find_children("*","StaticBody2D",true,false): arrow.excluded.append(body.get_rid())
@@ -131,7 +134,7 @@ func attack_clicked(at: Vector2) -> bool:
 			clicked=enemy
 			break
 	if not is_instance_valid(clicked): return false
-	if actor.global_position.distance_to(clicked.global_position)>Gear.attack_range(weapon):
+	if actor.global_position.distance_to(clicked.global_position)>reach(weapon):
 		message.emit("目标超出武器攻击范围。")
 		return false
 	if not Rect2(Vector2.ZERO,Vector2(640,400)).has_point(actor.get_canvas_transform()*clicked.global_position): return false
@@ -145,7 +148,7 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 	var before: Dictionary = session.inventory.export_data()
 	var direction := actor.global_position.direction_to(target)
 	var candidate: CharacterBody2D
-	var nearest := Gear.attack_range(weapon)+0.0001
+	var nearest := reach(weapon)+0.0001
 	for enemy: CharacterBody2D in enemies.values()+session.livestock.animals:
 		if enemy.hp <= 0 or enemy.get_parent() == null: continue
 		var gap := actor.global_position.distance_to(enemy.global_position)

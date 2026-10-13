@@ -44,6 +44,7 @@ func run() -> void:
 	for i in range(400):
 		walker.velocity = Vector2(56, 0); walker.move_and_slide(); await physics_frame
 	check(not layout.PLATEAU.has_point(walker.global_position), "the plateau is sealed against the western roundabout")
+	check(not world.haze.visited and is_equal_approx(world.haze.range_scale(), 1.0), "highlands start hazed without shortening desert reach")
 	# A bench plus 100 wood builds the cloud ladder at the character's x.
 	var bench: Node2D = s.grounds.add_fixture({"id":"outdoors:ladder-bench","kind":"building_bench","at":[1060,760],"size":[96,80],"variant":0,"orientation":0})
 	s.world.active_resident.position = bench.visual_bounds().position + Vector2(48, 60)
@@ -60,6 +61,13 @@ func run() -> void:
 	var gap := 0
 	for key in world.cliff_open: gap += int(world.cliff_bodies[key].collision_layer == 0)
 	check(gap == opened, "opened segments stop blocking")
+	# Only after the ladder exists can the player actually walk up, which clears the haze rule.
+	walker.global_position = Vector2(1108, 40)
+	await frames(2)
+	for i in range(200):
+		walker.velocity = Vector2(0, -56); walker.move_and_slide(); await physics_frame
+	check(layout.PLATEAU.has_point(walker.global_position), "walked up through a cloud ladder gap onto the plateau")
+	check(world.haze.visited and is_equal_approx(world.haze.range_scale(), 0.7), "highland haze shortens ranged reach once reached")
 	# The saved building record restores the same gap in a fresh scene.
 	s.production.close()
 	check(s.persistence.save_now(), "ladder is saved as a building record")
