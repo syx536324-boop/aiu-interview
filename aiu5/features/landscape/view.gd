@@ -33,12 +33,17 @@ func _draw() -> void:
 	_draw_rect(cliff, Color("8d867b"))
 	for x in range(int(cliff.position.x), int(cliff.end.x), 24):
 		_draw_line(Vector2(x, cliff.position.y + 4), Vector2(x + 12, cliff.end.y - 3), Color("5f5a52"), 2)
+	# Snow-capped rim: the highland edge reads brighter than the shaded cliff face below it.
+	_draw_rect(Rect2(cliff.position.x, cliff.position.y - 6, cliff.size.x, 6), Color("cfd8df"))
+	_draw_rect(Rect2(cliff.position.x, cliff.position.y - 6, cliff.size.x, 2), Color("eef3f7"))
 	# Western escarpment closing the plateau off from the northern forest.
 	var wall: Rect2 = preload("res://features/village/layout.gd").PLATEAU_WALL
 	_draw_rect(wall.grow(4), Color("6d675e"))
 	_draw_rect(wall, Color("8d867b"))
 	for y in range(int(wall.position.y), int(wall.end.y), 24):
 		_draw_line(Vector2(wall.position.x + 4, y), Vector2(wall.end.x - 3, y + 12), Color("5f5a52"), 2)
+	_draw_rect(Rect2(wall.position.x - 6, wall.position.y, 6, wall.size.y), Color("cfd8df"))
+	_draw_rect(Rect2(wall.position.x - 6, wall.position.y, 2, wall.size.y), Color("eef3f7"))
 	var plaza := Geography.PLAZA
 	_draw_rect(plaza.grow(3), Color("ae8a60"))
 	_draw_rect(plaza, Color("c7ad7a"))

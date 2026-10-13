@@ -9,6 +9,8 @@ var grains: Array[Vector2] = []
 var stones: Array[Vector2] = []
 var dunes: Array = []
 var plateau := false
+var patches: Array[Vector2] = []
+var scree: Array[Vector2] = []
 
 func configure(bounds: Rect2) -> void:
 	area = bounds
@@ -41,6 +43,12 @@ func configure(bounds: Rect2) -> void:
 		_add_dune(entry[0], entry[1], entry[2])
 	for y in range(650, 1580, 150):
 		for x in range(180 + y % 130, 2080, 290): _add_dune(Vector2(x, y), 120 + (x + y) % 80, 10 + y % 13)
+	if plateau:
+		# Tundra patches and scree keep their positions across unloading because the seed is positional.
+		for i in range(12):
+			patches.append(Vector2(rng.randi_range(int(area.position.x), int(area.end.x) - 1), rng.randi_range(int(area.position.y), int(area.end.y) - 1)))
+		for i in range(110):
+			scree.append(Vector2(rng.randi_range(int(area.position.x), int(area.end.x) - 1), rng.randi_range(int(area.position.y), int(area.end.y) - 1)))
 
 func _add_dune(origin: Vector2, width: int, depth: int) -> void:
 	if not area.intersects(Rect2(origin - Vector2(0, depth), Vector2(width, depth + 9))): return
@@ -78,16 +86,39 @@ func _draw() -> void:
 		draw_rect(Rect2(point, Vector2(3, 2)), Color("c39a64"))
 		draw_rect(Rect2(point, Vector2(2, 1)), Color("efd09a"))
 	if plateau:
-		# Cool grey highland rock instead of desert sand; the southern cliff is drawn by landscape/view.
-		for y in range(floori(area.position.y / 16) * 16, ceili(area.end.y), 16):
-			for x in range(floori(area.position.x / 16) * 16, ceili(area.end.x), 16):
-				var rock := Rect2(x, y, 16, 16)
-				var solid := rock.intersection(area)
-				draw_texture_rect_region(FLOOR, solid, Rect2(Vector2(16, 16) + solid.position - rock.position, solid.size), Color(0.70, 0.73, 0.78))
+		# Cold grey highland rock: plates with strata cracks, tundra patches, scree and a rim snow line.
+		draw_rect(area, Color("5c6167"))
+		for gy in range(floori(area.position.y / 24) * 24, ceili(area.end.y), 24):
+			for gx in range(floori(area.position.x / 32) * 32, ceili(area.end.x), 32):
+				var plate := Rect2(gx, gy, 32, 24).intersection(area)
+				if not plate.has_area(): continue
+				var tone := float(posmod(gx * 73856093 ^ gy * 19349663, 7)) / 7.0
+				draw_rect(plate, Color("696f75").lerp(Color("545a60"), tone))
+				draw_rect(Rect2(plate.position, Vector2(plate.size.x, 1)), Color("81878d"))
+				draw_rect(Rect2(plate.position + Vector2(0, plate.size.y - 1), Vector2(plate.size.x, 1)), Color("474c51"))
+		for cy in range(floori(area.position.y / 16) * 16, ceili(area.end.y), 16):
+			for cx in range(floori(area.position.x / 8) * 8, ceili(area.end.x), 8):
+				var grain := posmod(cx * 73856093 ^ cy * 19349663, 401)
+				if grain % 97 >= 22: continue
+				var at := Vector2(cx + float(grain % 5) * 2.0, cy + float(grain % 3) * 3.0)
+				if not area.has_point(at): continue
+				draw_rect(Rect2(at, Vector2(8, 1 + grain % 2)), Color("43484d"))
+		for point in patches:
+			draw_rect(Rect2(point, Vector2(18, 12)), Color("5d6a57"))
+			draw_rect(Rect2(point + Vector2(2, 2), Vector2(12, 8)), Color("68765f"))
+			draw_rect(Rect2(point + Vector2(5, 4), Vector2(5, 3)), Color("79866d"))
+		for point in scree:
+			draw_rect(Rect2(point, Vector2(3, 2)), Color("8d9399") if int(point.x) % 3 == 0 else Color("4b5055"))
 		for i in range(grains.size()): draw_rect(Rect2(grains[i], Vector2(2 if i % 4 == 0 else 1, 1)), Color("9aa0a6") if i % 3 == 0 else Color("6d6f72"))
 		for point in stones:
-			draw_rect(Rect2(point, Vector2(3, 2)), Color("8b8f93"))
+			draw_rect(Rect2(point, Vector2(3, 2)), Color("868c92"))
 			draw_rect(Rect2(point, Vector2(2, 1)), Color("c3c8cc"))
+		if area.end.y >= -40:
+			# Frost band and drifting flakes just north of the southern cliff.
+			draw_rect(Rect2(area.position.x, -46, area.size.x, 5), Color(0.88, 0.91, 0.95, 0.72))
+			for i in range(30):
+				var fx: float = area.position.x + float(posmod(i * 2654435761, int(area.size.x)))
+				draw_rect(Rect2(fx, -53.0 - float(i % 3) * 4.0, 3, 2), Color(0.93, 0.95, 0.98, 0.8))
 		return
 	var pen := Rect2(386, 211, 92, 60).intersection(area)
 	if pen.has_area():
