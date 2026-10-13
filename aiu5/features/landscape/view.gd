@@ -23,10 +23,10 @@ func _draw() -> void:
 		for x in range(10, 8 + width, 5): _draw_rect(Rect2(x, y - 10, 3, 20), Color("bc9460"))
 		for side in [-12, 11]: _draw_rect(Rect2(7, y + side, width + 2, 2), Color("e0ba7a"))
 	for y in range(-1600, 1600, 180):
-		_draw_colored_polygon(PackedVector2Array([Vector2(2080, y + 210), Vector2(2160, y + 35), Vector2(2250, y - 10), Vector2(2380, y + 100), Vector2(2400, y + 210)]), Color("8c806b"))
-		_draw_colored_polygon(PackedVector2Array([Vector2(2160, y + 35), Vector2(2250, y - 10), Vector2(2290, y + 160), Vector2(2200, y + 100)]), Color("b4a58a"))
-		_draw_colored_polygon(PackedVector2Array([Vector2(2250, y - 10), Vector2(2380, y + 100), Vector2(2400, y + 210), Vector2(2290, y + 160)]), Color("706c5e"))
-		for offset in [Vector2(20, 80), Vector2(65, 140)]: _draw_line(Vector2(2130, y) + offset, Vector2(2150, y - 12) + offset, Color("c0af8b"), 2)
+		_draw_colored_polygon(PackedVector2Array([Vector2(2080, y + 210), Vector2(2160, y + 35), Vector2(2250, y - 10), Vector2(2380, y + 100), Vector2(2400, y + 210)]), Color("6f767d"))
+		_draw_colored_polygon(PackedVector2Array([Vector2(2160, y + 35), Vector2(2250, y - 10), Vector2(2290, y + 160), Vector2(2200, y + 100)]), Color("8f979e"))
+		_draw_colored_polygon(PackedVector2Array([Vector2(2250, y - 10), Vector2(2380, y + 100), Vector2(2400, y + 210), Vector2(2290, y + 160)]), Color("596066"))
+		for offset in [Vector2(20, 80), Vector2(65, 140)]: _draw_line(Vector2(2130, y) + offset, Vector2(2150, y - 12) + offset, Color("c2cad1"), 2)
 	# Southern cliff of the mountain plateau; a deployed cloud ladder opens a gap through it.
 	var cliff: Rect2 = preload("res://features/village/layout.gd").CLIFF
 	_draw_rect(cliff.grow(6), Color("6d675e"))
@@ -56,9 +56,12 @@ func _draw() -> void:
 	for y in range(-1560, 1560, 260):
 		for x in range(2620, 4700, 420):
 			_draw_colored_polygon(PackedVector2Array([Vector2(x, y + 200), Vector2(x + 150, y + 20), Vector2(x + 320, y + 200)]), Color("6b737b"))
-			_draw_colored_polygon(PackedVector2Array([Vector2(x + 320, y + 200), Vector2(x + 250, y + 90), Vector2(x + 150, y + 200)]), Color("59616a"))
+			_draw_colored_polygon(PackedVector2Array([Vector2(x + 320, y + 200), Vector2(x + 250, y + 90), Vector2(x + 150, y + 200)]), Color("525a62"))
+			_draw_colored_polygon(PackedVector2Array([Vector2(x + 250, y + 90), Vector2(x + 320, y + 200), Vector2(x + 236, y + 200)]), Color("464d55"))
 			_draw_colored_polygon(PackedVector2Array([Vector2(x + 150, y + 20), Vector2(x + 210, y + 92), Vector2(x + 96, y + 92)]), Color("d6dee4"))
 			_draw_colored_polygon(PackedVector2Array([Vector2(x + 150, y + 20), Vector2(x + 174, y + 56), Vector2(x + 126, y + 56)]), Color("f2f7fa"))
+			_draw_line(Vector2(x, y + 200), Vector2(x + 150, y + 20), Color("454c53"), 2)
+			_draw_line(Vector2(x + 150, y + 20), Vector2(x + 96, y + 92), Color("454c53"), 2)
 	var plaza := Geography.PLAZA
 	_draw_rect(plaza.grow(3), Color("ae8a60"))
 	_draw_rect(plaza, Color("c7ad7a"))
