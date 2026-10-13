@@ -58,7 +58,7 @@ func focus(at: Vector2, indoors: bool) -> void:
 	for cell: Vector2i in descriptors.keys():
 		if session.world.terrain.distance(cell,center) > 2: descriptors.erase(cell)
 	if not inside:
-		for y in range(maxi(0,center.y-2),mini(8,center.y+3)):
+		for y in range(maxi(-8,center.y-2),mini(8,center.y+3)):
 			for x in range(maxi(-8,center.x-2),mini(0,center.x+3)):
 				var cell := Vector2i(x,y)
 				if not descriptors.has(cell): prepare_queue.append(cell)

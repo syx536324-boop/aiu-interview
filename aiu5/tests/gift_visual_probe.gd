@@ -4,7 +4,8 @@ var game: Node
 var s: Node
 var directory := ""
 func _initialize() -> void:
-	directory = ProjectSettings.globalize_path("res://.runtime/gift-visual-"+str(Time.get_ticks_usec()))
+	directory = OS.get_environment("AIU5_PROBE_DIRECTORY")
+	if directory=="": directory = ProjectSettings.globalize_path("res://.runtime/gift-visual-"+str(Time.get_ticks_usec()))
 	DirAccess.make_dir_recursive_absolute(directory)
 	OS.set_environment("AIU5_STATE_PATH",directory+"/state.json")
 	OS.set_environment("AIU5_PROFILE_PATH",directory+"/names.cfg")
@@ -34,7 +35,7 @@ func run() -> void:
 	s.gifts.feedback = "界面验证示例 · 选择物品后确认赐予1件。"
 	s.gifts.frozen = true
 	s.gifts.selected = "visual-example"
-	s.gifts.candidates = [{"id":"visual-example","name":"苹果","confidence":.88}]
+	s.gifts.candidates = [{"id":"visual-example","name":"苹果","item":"apple","class_id":8,"kind":"inventory","confidence":.88}]
 	s.gifts._emit()
 	await capture("camera-layout-example")
 	print("VISUAL_DIRECTORY=",directory)

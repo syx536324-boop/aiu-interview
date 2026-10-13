@@ -115,7 +115,7 @@ func show_gift_details(entries: Array[Dictionary]) -> void:
 	var details := GiftDetails.new()
 	column.add_child(details)
 	details.populate(entries)
-	_label(column, "符文代表魔法赐予来源；当前额外属性待定。", 10, Color("bfb0d0"))
+	_label(column, "符文代表赐予来源；魔法20级后可选木、水、火、土属性。", 10, Color("bfb0d0"))
 	_button(column, "返回开始界面  [Esc]", func() -> void: back_requested.emit()).grab_focus()
 
 func show_slots(slots: Array[Dictionary]) -> void:

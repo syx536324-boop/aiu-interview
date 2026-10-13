@@ -18,6 +18,7 @@ const CHIEF_ELEMENT := {"forest": "wood", "barbarian": "fire", "yunye": "earth"}
 const Layout := preload("res://features/village/layout.gd")
 var session: Node
 var enemies: Dictionary = {}
+var initial_states: Dictionary = {}
 var cooldown := 0.0
 var demolition_cooldown := 0.0
 func reach(weapon: String) -> float:
@@ -37,6 +38,9 @@ func start(controller: Node) -> void:
 	_spawn_chief("barbarian", Vector2(1200, -760))
 	_spawn_chief("yunye", Vector2(3300, -820))
 	_configure_chief("forest_chief", CHIEF_ELEMENT["forest"])
+	for id: String in enemies:
+		var enemy: CharacterBody2D = enemies[id]
+		initial_states[id] = {"hp":enemy.hp,"at":[enemy.position.x,enemy.position.y]}
 
 func _spawn_tribe(name: String, area: Rect2, hp_value: float) -> void:
 	# Twelve civilians, four archers and four chargers, spread deterministically over the territory.
@@ -231,11 +235,15 @@ func export_state() -> Dictionary:
 func restore(data: Dictionary) -> void:
 	for id: String in enemies:
 		var e: CharacterBody2D = enemies[id]
-		var saved: Dictionary = data.get(id,{})
-		e.hp = clampf(float(saved.get("hp",30)),0,30)
+		var record: Variant = data.get(id,{})
+		var saved: Dictionary = record if record is Dictionary else {}
+		var initial: Dictionary = initial_states[id]
+		e.hp = clampf(float(saved.get("hp",initial.hp)),0,float(initial.hp))
 		e.thirst = clampf(float(saved.get("thirst",10)),0,10)
-		var at: Array = saved.get("at",[SPAWNS[id].x,SPAWNS[id].y])
-		e.position = Vector2(at[0],at[1])
+		var at: Variant = saved.get("at",initial.at)
+		if not at is Array or at.size()!=2 or not (at[0] is int or at[0] is float) or not (at[1] is int or at[1] is float): at=initial.at
+		if not is_finite(float(at[0])) or not is_finite(float(at[1])): at=initial.at
+		e.position = Vector2(float(at[0]),float(at[1]))
 		e.cooldown = clampf(float(saved.get("cooldown",0)),0,2)
 		e.pursuit = clampf(float(saved.get("pursuit",0)),0,6)
 		e.refresh()

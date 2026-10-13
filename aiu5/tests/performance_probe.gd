@@ -15,7 +15,7 @@ func _initialize() -> void:
 	OS.set_environment("AIU5_STATE_PATH", directory + "gpu-save.json")
 	OS.set_environment("AIU5_PROFILE_PATH", directory + "gpu-names.cfg")
 	for suffix in ["", ".altar"]: DirAccess.remove_absolute(directory + "gpu-save.json" + suffix)
-	create_timer(60, true).timeout.connect(func() -> void: push_error("PERFORMANCE_PROBE_TIMEOUT"); quit(2))
+	create_timer(90, true).timeout.connect(func() -> void: push_error("PERFORMANCE_PROBE_TIMEOUT"); quit(2))
 	call_deferred("run")
 
 func percentile(values: Array, fraction: float) -> float:
@@ -44,6 +44,7 @@ func sample(label: String) -> void:
 	results.append(row)
 	row.resource_chunks = game.get_node("WorldResources").descriptors.size()
 	row.resource_nodes = game.get_node("WorldResources").loaded.size()
+	row.forest_nodes = game.get_node("Forest").loaded.size()
 	print(JSON.stringify(row))
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png(directory + "optimized-" + label + ".png")
@@ -73,6 +74,11 @@ func run() -> void:
 	world.active_resident.position = Vector2(-1000, 800)
 	game.get_node("Streaming").focus(true)
 	await sample("forest")
+	for place: Dictionary in [{"name":"north_forest","at":Vector2(-1000,-800)},{"name":"plateau","at":Vector2(1100,-850)},{"name":"mountains","at":Vector2(3300,-800)}]:
+		world.active_resident.position = place.at
+		session._sync_view()
+		game.get_node("Streaming").focus(true)
+		await sample(place.name)
 	var forest_crossing: Array = []
 	var forest_previous := Time.get_ticks_usec()
 	for i in range(180):

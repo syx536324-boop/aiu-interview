@@ -5,6 +5,8 @@ const Layout := preload("res://features/village/layout.gd")
 # The hazy outer band covers the last thirty percent of the view, which is why ranged reach shrinks.
 const BAND := 0.3
 const RANGE_SCALE := 0.7
+const PRE_VISIT_ALPHA := 0.9
+const RING_ALPHAS := [0.4, 0.7, 0.9]
 const HAZE_COLOUR := Color(0.66, 0.70, 0.74)
 var world: Node2D
 var visited := false
@@ -32,7 +34,7 @@ func _draw() -> void:
 func _draw_regions() -> void:
 	# Both highlands stay hidden behind drifting haze until the player actually gets up there.
 	for area: Rect2 in [Layout.PLATEAU, Layout.MOUNTAINS_EAST]:
-		draw_rect(area, Color(HAZE_COLOUR.r, HAZE_COLOUR.g, HAZE_COLOUR.b, 0.52))
+		draw_rect(area, Color(HAZE_COLOUR.r, HAZE_COLOUR.g, HAZE_COLOUR.b, PRE_VISIT_ALPHA))
 		for i in range(28):
 			var x: float = area.position.x + float(posmod(i * 868211, int(area.size.x)))
 			var y: float = area.position.y + float(posmod(i * 15485863, int(area.size.y)))
@@ -48,4 +50,4 @@ func _draw_ring() -> void:
 	for step in range(3):
 		var inset: Vector2 = band * (float(step) / 3.0)
 		var frame := Rect2(view.position + inset, view.size - inset * 2.0)
-		draw_rect(frame, Color(HAZE_COLOUR.r, HAZE_COLOUR.g, HAZE_COLOUR.b, 0.12 + 0.12 * float(step)), false, band.x / 3.0)
+		draw_rect(frame, Color(HAZE_COLOUR.r, HAZE_COLOUR.g, HAZE_COLOUR.b, float(RING_ALPHAS[step])), false, band.x / 3.0)
