@@ -20,7 +20,7 @@ func run() -> void:
 	s.simulation.set_process(false); s.simulation.reset(); s.persistence.set_process(false)
 	for actor in s.world.residents: actor.set_physics_process(false)
 	check(Haze.PRE_VISIT_ALPHA==0.9,"before climbing ninety percent opacity")
-	check(Haze.RING_ALPHAS==[0.4,0.7,0.9],"three confirmed outer-ring opacities")
+	check(Haze.RING_ALPHAS==[0.9,0.7,0.4],"outermost is densest and centerward bands get lighter")
 	check(Haze.BAND==0.3 and Haze.RANGE_SCALE==0.7,"band size and range penalty retained")
 	for point: Vector2 in [Vector2(1100,-800),Vector2(3300,-800)]:
 		s.world.active_resident.position=point

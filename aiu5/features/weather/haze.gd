@@ -6,7 +6,8 @@ const Layout := preload("res://features/village/layout.gd")
 const BAND := 0.3
 const RANGE_SCALE := 0.7
 const PRE_VISIT_ALPHA := 0.9
-const RING_ALPHAS := [0.4, 0.7, 0.9]
+# Opacities are ordered from the outermost band towards the clear center.
+const RING_ALPHAS := [0.9, 0.7, 0.4]
 const HAZE_COLOUR := Color(0.66, 0.70, 0.74)
 var world: Node2D
 var visited := false
@@ -47,7 +48,14 @@ func _draw_ring() -> void:
 	var half: Vector2 = get_viewport().get_visible_rect().size * 0.5 / maxf(0.01, camera.zoom.x)
 	var view := Rect2(camera.get_screen_center_position() - half, half * 2.0)
 	var band := half * BAND
-	for step in range(3):
+	# Four filled strips per band keep corner opacity exact and give equal relative x/y coverage.
+	for step in range(RING_ALPHAS.size()):
 		var inset: Vector2 = band * (float(step) / 3.0)
-		var frame := Rect2(view.position + inset, view.size - inset * 2.0)
-		draw_rect(frame, Color(HAZE_COLOUR.r, HAZE_COLOUR.g, HAZE_COLOUR.b, float(RING_ALPHAS[step])), false, band.x / 3.0)
+		var inner_inset: Vector2 = band * (float(step + 1) / 3.0)
+		var outer := Rect2(view.position + inset, view.size - inset * 2.0)
+		var inner := Rect2(view.position + inner_inset, view.size - inner_inset * 2.0)
+		var tint := Color(HAZE_COLOUR.r, HAZE_COLOUR.g, HAZE_COLOUR.b, float(RING_ALPHAS[step]))
+		draw_rect(Rect2(outer.position, Vector2(outer.size.x, inner.position.y - outer.position.y)), tint)
+		draw_rect(Rect2(Vector2(outer.position.x, inner.end.y), Vector2(outer.size.x, outer.end.y - inner.end.y)), tint)
+		draw_rect(Rect2(Vector2(outer.position.x, inner.position.y), Vector2(inner.position.x - outer.position.x, inner.size.y)), tint)
+		draw_rect(Rect2(Vector2(inner.end.x, inner.position.y), Vector2(outer.end.x - inner.end.x, inner.size.y)), tint)
