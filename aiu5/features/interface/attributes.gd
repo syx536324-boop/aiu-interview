@@ -20,6 +20,7 @@ var tree_root: Control
 var picker_root: ColorRect
 var title: Label
 var portrait: TextureRect
+var protection_label: Label
 var level_label: Label
 var element_label: Label
 var xp_label: Label
@@ -120,6 +121,9 @@ func _build_level() -> void:
 		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		gear_buttons[slot] = {"button": button, "icon": icon, "hint": hint}
 		button.pressed.connect(func() -> void: _open_picker(slot))
+	protection_label = _label(level_root,"",Vector2(0,80),11)
+	protection_label.size=Vector2(100,58)
+	protection_label.tooltip_text="每件皮装备1点防御，每点抵扣5%伤害；四件20%。水盾再按剩余伤害减30%，满套＋水盾合计44%。"
 	element_label = _label(level_root, "未觉醒", Vector2(172, 108), 12)
 	element_label.size.x = 160
 	element_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -255,6 +259,9 @@ func _present(state: Dictionary) -> void:
 		xp_bar.value = 1 if current.required == 0 else int(current.xp)
 		xp_bar.add_theme_stylebox_override("fill", _style(Color(str(current.color))))
 		xp_label.text = "未觉醒 · 已累计%d魔法点，觉醒后结算" % int(current.pending_points) if current.element=="" else ("lv.100 · 已达最高等级" if current.required==0 else "%d / %d 魔法点 · 升级获得5技能点" % [current.xp,current.required])
+		var protection: Dictionary=current.get("protection",{})
+		protection_label.text="防御 %d\n装备免伤 %d%%" % [int(protection.get("defense",0)),int(protection.get("armor_reduction_percent",0))]
+		if protection.get("shield_active",false): protection_label.text+="\n总免伤 %s%%" % str(protection.get("reduction_percent",0)).trim_suffix(".0")
 		_present_achievements(current.get("achievements",{}))
 		awaken_button.disabled = not current.awakening_available
 		awaken_button.text = "已觉醒" if current.element != "" else "在祭台觉醒 [R]"
@@ -262,9 +269,9 @@ func _present(state: Dictionary) -> void:
 		for gear: Dictionary in current.gear:
 			var widgets: Dictionary = gear_buttons[gear.slot]
 			widgets.icon.set_item(str(gear.item), bool(gear.get("magical", false)))
-			widgets.hint.text = "空" if gear.item == "" else "已穿戴"
+			widgets.hint.text = "空" if gear.item == "" else ("防御%d" % int(gear.defense) if int(gear.get("defense",0))>0 else "已穿戴")
 			widgets.button.disabled = not current.editable
-			widgets.button.tooltip_text = str(gear.equipped_name) + " · 点击选择材质 / 穿戴 / 卸下"
+			widgets.button.tooltip_text = str(gear.equipped_name)+(" · "+str(gear.get("protection_description","")) if gear.item!="" else "")+" · 点击选择材质 / 穿戴 / 卸下"
 		skill_points.text = "技能点：%d · 魔力：%d/%d" % [int(current.skill_points),int(current.mana),int(current.get("max_mana",10))]
 		for i in range(skill_buttons.size()):
 			var skill: Dictionary = current.skills[i]

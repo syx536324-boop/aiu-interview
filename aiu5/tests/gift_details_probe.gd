@@ -56,7 +56,7 @@ func freeze(s: Node) -> void:
 	for actor in s.world.residents: actor.set_physics_process(false)
 
 func run() -> void:
-	check(ProjectSettings.get_setting("application/config/version") == "0.7.7", "version")
+	check(ProjectSettings.get_setting("application/config/version") == "0.7.8", "version")
 	check(ProjectSettings.get_setting("application/config/name") == "沙盘上的生活", "application name")
 	menu = load("res://scenes/start.tscn").instantiate()
 	get_tree().root.add_child(menu)

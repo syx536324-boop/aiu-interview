@@ -191,7 +191,7 @@ func max_mana(id: String) -> int:
 func max_life(id: String) -> float:
 	return magic.skills.max_life(id) if is_instance_valid(magic) else 10.0
 func damage(id: String, raw: float) -> float:
-	return raw*(magic.skills.damage_rate(id) if is_instance_valid(magic) else 1.0)
+	return raw*(magic.damage_rate(id) if is_instance_valid(magic) else 1.0)
 func hurt(id: String, raw: float) -> void:
 	var s := ensure(id)
 	s.life=maxf(0,float(s.life)-damage(id,raw))

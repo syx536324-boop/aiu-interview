@@ -20,6 +20,16 @@ func ensure(id: String) -> Dictionary:
 	if not states.has(id): states[id] = Catalog.fresh()
 	return states[id]
 
+func defense(id: String) -> int:
+	return Catalog.Armor.total_defense(ensure(id).equipment)
+
+func damage_rate(id: String) -> float:
+	return Catalog.Armor.damage_rate(ensure(id).equipment)*skills.damage_rate(id)
+
+func protection_snapshot(id: String) -> Dictionary:
+	var points := defense(id)
+	return {"defense":points,"armor_reduction_percent":points*5,"reduction_percent":snappedf((1.0-damage_rate(id))*100.0,0.1),"shield_active":skills.damage_rate(id)<1.0}
+
 func max_mana(id: String) -> int:
 	return Catalog.mana_limit(int(ensure(id).level))
 
@@ -183,8 +193,9 @@ func snapshot(id: String) -> Dictionary:
 			"magical":Catalog.Wear.Origin.magical(state.equipment_records.get(slot,{})),
 			"available_item": item, "available": session.inventory.has_item(id, item),
 			"equipped_name":(session.inventory.Catalog.ITEMS[state.equipment[slot]].name+Catalog.Wear.Origin.describe(state.equipment_records.get(slot,{}))) if state.equipment[slot]!="" else "空",
-			"choices":_gear_choices(id,slot)})
+			"choices":_gear_choices(id,slot),"defense":Catalog.Armor.defense(str(state.equipment[slot])),"protection_description":Catalog.Armor.describe(str(state.equipment[slot]))})
 	result["gear"] = gear
+	result["protection"] = protection_snapshot(id)
 	result["achievements"] = session.achievements.snapshot(id) if is_instance_valid(session.achievements) else {"entries":[],"completed":0,"total":0,"reward":25}
 	var skills: Array[Dictionary] = []
 	for i in range(Catalog.TRUNK.size()):
