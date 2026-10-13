@@ -32,6 +32,10 @@ func run() -> void:
 	var forest: Array = combat.tribe_members("forest")
 	var barbarian: Array = combat.tribe_members("barbarian")
 	check(forest.size() == 20, "forest tribe starts with twenty members")
+	var yunye: Array = combat.tribe_members("yunye")
+	check(yunye.size() == 20, "yunye tribe starts with twenty members on the mountainside")
+	check(combat.TRIBES["yunye"].area == Rect2(2850, -1050, 900, 700), "yunye tribe lives on the mid-slope territory")
+	check(s.magic.ensure("yunye_chief").element == "earth" and s.magic.ensure("yunye_chief").level == 9, "yunye chief has level nine earth magic")
 	check(barbarian.size() == 20, "barbarian tribe starts with twenty members")
 	var roles := {"civilian": 0, "archer": 0, "charger": 0}
 	for member: CharacterBody2D in barbarian: roles[member.role] = int(roles[member.role]) + 1

@@ -14,7 +14,8 @@ var captions: Control
 var signature := ""
 var build_count := 0
 const MAP_RECT := Rect2(104, 90, 432, 288)
-const SCALE := 0.09
+const SCALE := 0.06
+const MAP_OFFSET_Y := 48.0
 # Exploration fog: a chunk stays lit for thirty seconds after it was loaded; the home village is always lit.
 const FOG_SECONDS := 30
 const FOG_CELL := Vector2(320, 200)
@@ -23,7 +24,8 @@ var fog
 
 class Fog extends Control:
 	const CELL := Vector2(320, 200)
-	const SCALE := 0.09
+	const SCALE := 0.06
+	const OFFSET_Y := 48.0
 	const SECONDS := 30.0
 	var lit: Dictionary = {}
 	var origin := Vector2.ZERO
@@ -36,17 +38,17 @@ class Fog extends Control:
 	func _draw() -> void:
 		var now := Time.get_ticks_msec()
 		for cy in range(-8, 8):
-			for cx in range(-8, 8):
+			for cx in range(-8, 15):
 				var id := Vector2i(cx, cy)
 				var area := Rect2(Vector2(id) * CELL, CELL)
 				if home.intersects(area): continue
 				if lit.has(id) and now - int(lit[id]) <= int(SECONDS * 1000.0): continue
-				draw_rect(Rect2((area.position - origin) * SCALE, area.size * SCALE), Color(0.02, 0.02, 0.03, 0.92))
+				draw_rect(Rect2((area.position - origin) * SCALE + Vector2(0, OFFSET_Y), area.size * SCALE), Color(0.02, 0.02, 0.03, 0.92))
 
 
 static func project(at: Vector2) -> Vector2:
-	# The doubled map (4800x3200) fits the 432x288 panel exactly at this scale.
-	return (at - Layout.MIN) * SCALE
+	# The widened map (7200x3200) fits the 432x288 panel at this scale, centred vertically.
+	return (at - Layout.MIN) * SCALE + Vector2(0, MAP_OFFSET_Y)
 
 class Captions extends Control:
 	var entries: Array[Dictionary] = []

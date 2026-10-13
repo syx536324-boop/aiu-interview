@@ -9,6 +9,7 @@ var grains: Array[Vector2] = []
 var stones: Array[Vector2] = []
 var dunes: Array = []
 var plateau := false
+var mountain := false
 var patches: Array[Vector2] = []
 var scree: Array[Vector2] = []
 
@@ -16,6 +17,7 @@ func configure(bounds: Rect2) -> void:
 	area = bounds
 	position = area.position
 	plateau = Layout.PLATEAU.intersects(area)
+	mountain = Layout.MOUNTAINS_EAST.intersects(area)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 5109 + int(area.position.x) * 7919 + int(area.position.y) * 104729
 	var seen: Dictionary = {}
@@ -43,7 +45,7 @@ func configure(bounds: Rect2) -> void:
 		_add_dune(entry[0], entry[1], entry[2])
 	for y in range(650, 1580, 150):
 		for x in range(180 + y % 130, 2080, 290): _add_dune(Vector2(x, y), 120 + (x + y) % 80, 10 + y % 13)
-	if plateau:
+	if plateau or mountain:
 		# Tundra patches and scree keep their positions across unloading because the seed is positional.
 		for i in range(12):
 			patches.append(Vector2(rng.randi_range(int(area.position.x), int(area.end.x) - 1), rng.randi_range(int(area.position.y), int(area.end.y) - 1)))
@@ -85,6 +87,38 @@ func _draw() -> void:
 		if Rect2(212, 224, 92, 60).has_point(point): continue
 		draw_rect(Rect2(point, Vector2(3, 2)), Color("c39a64"))
 		draw_rect(Rect2(point, Vector2(2, 1)), Color("efd09a"))
+	if mountain:
+		# Dark slate mountain rock: layered strata, snow fields and heavy scree, colder than the plateau.
+		draw_rect(area, Color("474e55"))
+		for gy in range(floori(area.position.y / 32) * 32, ceili(area.end.y), 32):
+			var band := Rect2(area.position.x, gy, area.size.x, 32).intersection(area)
+			if not band.has_area(): continue
+			var shade := float(posmod(gy * 19349663, 9)) / 9.0
+			draw_rect(band, Color("525a61").lerp(Color("3f464c"), shade))
+			draw_rect(Rect2(band.position, Vector2(band.size.x, 2)), Color("69717a"))
+			for x in range(int(area.position.x) - 64, int(area.end.x) + 32, 26):
+				var lean := float(posmod(x * 73856093 ^ gy * 19349663, 13))
+				draw_line(Vector2(x + lean, gy + 4), Vector2(x + lean + 20, gy + 30), Color("5d656d"), 1)
+		for point in scree:
+			draw_rect(Rect2(point, Vector2(3, 2)), Color("7d858d") if int(point.x) % 3 == 0 else Color("343a40"))
+		for point in patches:
+			var snow: bool = area.position.y < -400.0 or int(point.y) % 3 == 0
+			var base := Color("c3cfd8") if snow else Color("57616a")
+			var top := Color("e9f1f6") if snow else Color("66707a")
+			# Stepped, dithered fields read as snow or moss instead of solid white blocks.
+			for row in range(3):
+				var wide: float = float(20 - row * 5)
+				var ox := float(posmod(int(point.x) + row * 7919, 5))
+				draw_rect(Rect2(point + Vector2(ox + float(row) * 2.0, float(row) * 4.0), Vector2(wide, 4.0)), base)
+			draw_rect(Rect2(point + Vector2(4, 1), Vector2(9, 2)), top)
+			for i in range(6):
+				var fx: float = point.x + float(posmod(int(point.y) + i * 2654435761, 24))
+				draw_rect(Rect2(fx, point.y + float(i % 3) * 5.0, 2, 2), top)
+		for i in range(grains.size()): draw_rect(Rect2(grains[i], Vector2(2 if i % 4 == 0 else 1, 1)), Color("9fb0bb") if i % 3 == 0 else Color("3c4249"))
+		for point in stones:
+			draw_rect(Rect2(point, Vector2(3, 2)), Color("6f7780"))
+			draw_rect(Rect2(point, Vector2(2, 1)), Color("c8d3da"))
+		return
 	if plateau:
 		# Cold grey highland rock: plates with strata cracks, tundra patches, scree and a rim snow line.
 		draw_rect(area, Color("5c6167"))

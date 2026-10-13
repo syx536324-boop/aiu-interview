@@ -88,7 +88,7 @@ func craft_recipe(id: String) -> void:
 	check(false,"workshop recipe missing "+id)
 func run() -> void:
 	await load_game()
-	check(s.combat.enemies.has("tribe:1") and s.combat.enemies.has("tribe:2") and s.combat.enemies.has("tribe:3") and s.combat.tribe_members("forest").size()==20 and s.combat.tribe_members("barbarian").size()==20,"three outlanders plus two twenty-member tribes exist without adding playable villagers")
+	check(s.combat.enemies.has("tribe:1") and s.combat.enemies.has("tribe:2") and s.combat.enemies.has("tribe:3") and s.combat.tribe_members("forest").size()==20 and s.combat.tribe_members("barbarian").size()==20 and s.combat.tribe_members("yunye").size()==20,"three outlanders plus three twenty-member tribes exist without adding playable villagers")
 	check(s.mining.UNDERGROUND.filter(func(r: Dictionary) -> bool: return r.kind=="iron_ore").size()*2 >=67,"finite iron supply supports iron house plus five buckets and bow")
 	s.inventory.bags.ali=[]
 	for i in range(21): s.inventory.bags.ali.append({})

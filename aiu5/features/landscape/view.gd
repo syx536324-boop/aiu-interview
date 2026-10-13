@@ -3,7 +3,7 @@ extends Node2D
 
 const Geography := preload("res://features/landscape/layout.gd")
 
-var render_region := Rect2(-2400, -1600, 4800, 3200)
+var render_region := Rect2(-2400, -1600, 7200, 3200)
 
 func _draw() -> void:
 	var forest_plaza: Rect2 = preload("res://features/village/layout.gd").FOREST_PLAZA
@@ -44,6 +44,21 @@ func _draw() -> void:
 		_draw_line(Vector2(wall.position.x + 4, y), Vector2(wall.end.x - 3, y + 12), Color("5f5a52"), 2)
 	_draw_rect(Rect2(wall.position.x - 6, wall.position.y, 6, wall.size.y), Color("cfd8df"))
 	_draw_rect(Rect2(wall.position.x - 6, wall.position.y, 2, wall.size.y), Color("eef3f7"))
+	# Eastern ridge wall sealing the mountain zone off from the plateau and the desert.
+	var ridge: Rect2 = preload("res://features/village/layout.gd").RIDGE
+	_draw_rect(ridge.grow(4), Color("5f666d"))
+	_draw_rect(ridge, Color("7e858c"))
+	for y in range(int(ridge.position.y), int(ridge.end.y), 24):
+		_draw_line(Vector2(ridge.position.x + 4, y), Vector2(ridge.end.x - 3, y + 12), Color("525960"), 2)
+	_draw_rect(Rect2(ridge.end.x, ridge.position.y, 6, ridge.size.y), Color("cfd8df"))
+	_draw_rect(Rect2(ridge.end.x, ridge.position.y, 2, ridge.size.y), Color("eef3f7"))
+	# Snow-capped peaks across the eastern mountain zone.
+	for y in range(-1560, 1560, 260):
+		for x in range(2620, 4700, 420):
+			_draw_colored_polygon(PackedVector2Array([Vector2(x, y + 200), Vector2(x + 150, y + 20), Vector2(x + 320, y + 200)]), Color("6b737b"))
+			_draw_colored_polygon(PackedVector2Array([Vector2(x + 320, y + 200), Vector2(x + 250, y + 90), Vector2(x + 150, y + 200)]), Color("59616a"))
+			_draw_colored_polygon(PackedVector2Array([Vector2(x + 150, y + 20), Vector2(x + 210, y + 92), Vector2(x + 96, y + 92)]), Color("d6dee4"))
+			_draw_colored_polygon(PackedVector2Array([Vector2(x + 150, y + 20), Vector2(x + 174, y + 56), Vector2(x + 126, y + 56)]), Color("f2f7fa"))
 	var plaza := Geography.PLAZA
 	_draw_rect(plaza.grow(3), Color("ae8a60"))
 	_draw_rect(plaza, Color("c7ad7a"))

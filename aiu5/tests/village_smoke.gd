@@ -58,7 +58,7 @@ func run_checks() -> void:
 	check(world.controllable.size() == 3, "three residents can be controlled")
 	check(world.residents.filter(func(actor: CharacterBody2D) -> bool: return not actor.can_control).size() == 13, "ten new villagers remain NPCs")
 	check(world.houses.size() == 14, "eight original village houses plus herbal house are present")
-	check(world.SIZE == Vector2(2400, 1600), "the map is expanded to 2400 by 1600")
+	check(world.SIZE == Vector2(4800, 1600) and world.BOUNDS.size == Vector2(7200, 3200), "the map is widened east to 4800 by 1600 with the mountain zone")
 	check(world.pigs.size() == 3, "three pigs are present")
 	check(world.get_node("VillageObjects/PrimitiveHouse") != null, "house is present")
 	check(world.get_node("VillageObjects/Well") != null, "well is present")

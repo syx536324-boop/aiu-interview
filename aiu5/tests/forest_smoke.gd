@@ -47,7 +47,7 @@ func sample(kind: String) -> String:
 func run() -> void:
 	await load_game()
 	var actor: CharacterBody2D = world.active_resident
-	check(world.BOUNDS.size == Vector2(4800,3200) and world.Layout.FOREST.size == Vector2(2400,1600),"doubled map keeps the forest at the original desert area")
+	check(world.BOUNDS.size == Vector2(7200,3200) and world.Layout.FOREST.size == Vector2(2400,1600),"widened map keeps the forest at the original desert area")
 	check(world.houses.size()==9 and world.home_data("herb_house").at.x < 0,"starter village gains western herbal house")
 	actor.position = Vector2(60,310)
 	await frames()

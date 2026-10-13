@@ -28,10 +28,15 @@ func build(actor: CharacterBody2D, bench: Node2D, kind: String) -> bool:
 	next_id += 1
 	var ladder: bool = bool(definition.get("ladder", false))
 	var spot := at
+	var wall := "cliff"
 	if ladder:
-		# Cloud ladders sit on the plateau cliff at the builder's position; the bench is kept.
-		spot = Vector2(clampf(actor.position.x, Layout.CLIFF.position.x + 24, Layout.CLIFF.end.x - 24), Layout.CLIFF.end.y)
-	records[id] = {"id": id, "kind": kind, "at": [spot.x, spot.y], "hp": definition.hp, "max_hp": definition.hp, "defense": definition.defense}
+		# Ladders lean on whichever wall the builder stands beside: the southern cliff or the eastern ridge.
+		if actor.position.x > Layout.RIDGE.position.x - 170.0 and actor.position.y < 0.0:
+			wall = "ridge"
+			spot = Vector2(Layout.RIDGE.get_center().x, clampf(actor.position.y, Layout.RIDGE.position.y + 24, Layout.RIDGE.end.y - 24))
+		else:
+			spot = Vector2(clampf(actor.position.x, Layout.CLIFF.position.x + 24, Layout.CLIFF.end.x - 24), Layout.CLIFF.end.y)
+	records[id] = {"id": id, "kind": kind, "at": [spot.x, spot.y], "hp": definition.hp, "max_hp": definition.hp, "defense": definition.defense, "wall": wall}
 	if not ladder: session.grounds.remove_fixture(bench)
 	_attach(id)
 	session.world.refresh_obstacles()
@@ -44,9 +49,13 @@ func _attach(id: String) -> void:
 		var ladder := Ladder.new()
 		ladder.name = id.replace(":", "_")
 		ladder.position = at
+		if str(record.get("wall", "cliff")) == "ridge":
+			ladder.rotation = PI / 2.0
+			session.world.open_ridge(at.y)
+		else:
+			session.world.open_cliff(at.x)
 		session.world.objects.add_child(ladder)
 		nodes[id] = ladder
-		session.world.open_cliff(at.x)
 		return
 	var ruined := float(record.hp) <= 0
 	var name := str(definition.name) + ("废墟" if ruined else "")
@@ -123,7 +132,10 @@ func restore(data: Dictionary) -> void:
 		var source: Dictionary = data.records[id]
 		if not id.begins_with("built:") or not Catalog.BUILDINGS.has(source.get("kind","")): continue
 		var definition: Dictionary = Catalog.BUILDINGS[source.kind]
-		records[id] = {"id":id,"kind":source.kind,"at":source.at,"hp":clampf(float(source.hp),0,definition.hp),"max_hp":definition.hp,"defense":definition.defense}
+		var record := {"id":id,"kind":source.kind,"at":source.at,"hp":clampf(float(source.hp),0,definition.hp),"max_hp":definition.hp,"defense":definition.defense}
+		# Extra per-record fields (a ladder remembers which wall it leans on) survive a reload.
+		if source.has("wall"): record["wall"] = str(source.wall)
+		records[id] = record
 		next_id = maxi(next_id,int(id.trim_prefix("built:"))+1)
 		_attach(id)
 	session.world.refresh_obstacles()

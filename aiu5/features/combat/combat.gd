@@ -10,10 +10,11 @@ const SPAWNS := {"tribe:1":Vector2(1200,950),"tribe:2":Vector2(1550,1100),"tribe
 # keep them from raiding the player's village on their own.
 const TRIBES := {
 	"forest": {"area": Rect2(-1400, 640, 400, 340), "hp": 20.0},
-	"barbarian": {"area": Rect2(200, -1500, 2000, 1300), "hp": 20.0}
+	"barbarian": {"area": Rect2(200, -1500, 2000, 1300), "hp": 20.0},
+	"yunye": {"area": Rect2(2850, -1050, 900, 700), "hp": 20.0}
 }
 const TRIBE_ROLES := {"civilian": 12, "archer": 4, "charger": 4}
-const CHIEF_ELEMENT := {"forest": "wood", "barbarian": "fire"}
+const CHIEF_ELEMENT := {"forest": "wood", "barbarian": "fire", "yunye": "earth"}
 const Layout := preload("res://features/village/layout.gd")
 var session: Node
 var enemies: Dictionary = {}
@@ -31,6 +32,7 @@ func start(controller: Node) -> void:
 	for name: String in TRIBES: _spawn_tribe(name, TRIBES[name].area, TRIBES[name].hp)
 	_spawn_chief("forest", Layout.FOREST_ALTAR + Vector2(36, -24))
 	_spawn_chief("barbarian", Vector2(1200, -760))
+	_spawn_chief("yunye", Vector2(3300, -820))
 	_configure_chief("forest_chief", CHIEF_ELEMENT["forest"])
 
 func _spawn_tribe(name: String, area: Rect2, hp_value: float) -> void:

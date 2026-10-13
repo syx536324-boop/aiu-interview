@@ -259,6 +259,8 @@ func _build_boundaries() -> void:
 const CLIFF_SEGMENT := 40.0
 var cliff_bodies: Dictionary = {}
 var cliff_open: Dictionary = {}
+var ridge_bodies: Dictionary = {}
+var ridge_open: Dictionary = {}
 
 func _build_cliff() -> void:
 	var cliff: Rect2 = Layout.CLIFF
@@ -268,14 +270,30 @@ func _build_cliff() -> void:
 	# The plateau's western edge is solid rock, so ladders are the only way onto the highland.
 	var wall: Rect2 = Layout.PLATEAU_WALL
 	_body(self, wall.get_center(), wall.size)
+	# The eastern ridge seals the mountain zone; a second cloud ladder opens a pass through it.
+	var ridge: Rect2 = Layout.RIDGE
+	for i in range(int(ceil(ridge.size.y / CLIFF_SEGMENT))):
+		var y: float = ridge.position.y + float(i) * CLIFF_SEGMENT
+		ridge_bodies[i] = _body(self, Vector2(ridge.get_center().x, y + CLIFF_SEGMENT / 2.0), Vector2(ridge.size.x, CLIFF_SEGMENT))
 
 func open_cliff(x: float) -> void:
-	var index := int((x - Layout.CLIFF.position.x) / CLIFF_SEGMENT)
+	_open_line("cliff", x)
+
+func open_ridge(y: float) -> void:
+	_open_line("ridge", y)
+
+func _open_line(kind: String, coord: float) -> void:
+	# A ladder clears three segments (120 world pixels) of the chosen wall line.
+	var line: Rect2 = Layout.RIDGE if kind == "ridge" else Layout.CLIFF
+	var bodies: Dictionary = ridge_bodies if kind == "ridge" else cliff_bodies
+	var opened: Dictionary = ridge_open if kind == "ridge" else cliff_open
+	var along: float = (coord - line.position.y) if kind == "ridge" else (coord - line.position.x)
+	var index := int(along / CLIFF_SEGMENT)
 	for offset in [-1, 0, 1]:
 		var i: int = index + offset
-		if not cliff_bodies.has(i) or cliff_open.has(i): continue
-		cliff_open[i] = true
-		cliff_bodies[i].collision_layer = 0
+		if not bodies.has(i) or opened.has(i): continue
+		opened[i] = true
+		bodies[i].collision_layer = 0
 	_rebuild_navigation(gate_visual.open)
 
 func _prop(texture: Texture2D, region: Rect2, top_left: Vector2, collision_size := Vector2.ZERO) -> Node2D:

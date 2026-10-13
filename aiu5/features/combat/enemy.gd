@@ -15,7 +15,7 @@ var chief_id := ""
 var shot_cooldown := 0.0
 var mana := 0
 const ROLE_NAMES := {"civilian": "平民", "archer": "弓箭手", "charger": "冲锋手", "chief": "村长"}
-const TRIBE_NAMES := {"raider": "外部落", "forest": "森林部落", "barbarian": "野蛮部落"}
+const TRIBE_NAMES := {"raider": "外部落", "forest": "森林部落", "barbarian": "野蛮部落", "yunye": "云野部落"}
 
 func configure_tribe(tribe_name: String, npc_role: String, area: Rect2, max_hp := 20.0) -> void:
 	tribe = tribe_name
@@ -26,7 +26,7 @@ func label() -> String:
 	return str(TRIBE_NAMES.get(tribe, tribe)) + " · " + str(ROLE_NAMES.get(role, role))
 func aggro_range() -> float:
 	if role == "civilian": return 60.0
-	if tribe == "barbarian": return 210.0   # hostile: attacks whatever enters its sight
+	if tribe == "barbarian" or tribe == "yunye": return 210.0   # hostile: attacks whatever enters its sight
 	if tribe == "forest": return 80.0       # unknown: only reacts at close range
 	return 110.0
 func attack_reach() -> float:

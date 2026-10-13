@@ -68,7 +68,7 @@ func blocked(at: Vector2) -> bool:
 func run_checks() -> void:
 	await load_game()
 	mining.restore({"cave_version":2,"cave_seed":42},42)
-	check(world.SIZE == Vector2(2400, 1600), "expanded map has ample space for future tribes")
+	check(world.SIZE == Vector2(4800, 1600) and world.BOUNDS.size == Vector2(7200, 3200), "expanded map has ample space for future tribes")
 	check(blocked(Vector2(45, 840)) and not blocked(Vector2(45, 900)), "river has physical water barrier with a passable bridge gap")
 	check(blocked(Vector2(2200, 500)) and not blocked(mining.DOOR), "high mountains block movement while cave approach stays open")
 	check(not world.navigation.find_path(Vector2(322, 224), mining.DOOR).is_empty(), "long eastern route reaches mine")
