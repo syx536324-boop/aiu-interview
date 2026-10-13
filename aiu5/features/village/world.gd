@@ -71,15 +71,16 @@ func _ready() -> void:
 	_spawn_pigs()
 	camera = Camera2D.new()
 	camera.name = "FollowingCamera"
-	camera.zoom = Vector2(0.9, 0.9)
+	# Closer following view: the 640x400 viewport shows 533x333 world pixels at 1.2x zoom.
+	camera.zoom = Vector2(1.2, 1.2)
 	camera.limit_left = int(MIN.x)
 	camera.limit_top = int(MIN.y)
 	camera.limit_right = int(SIZE.x)
 	camera.limit_bottom = int(SIZE.y)
 	add_child(camera)
 	set_active(0)
-	# Centred on the character: the 640x400 viewport then shows 711x444 world pixels, so the
-	# bow's 200-pixel range is reachable in every direction instead of being cut by the screen.
+	# Centred on the character: the viewport then shows 533x333 world pixels, and the shortened
+	# 160-pixel bow range still fits in every direction instead of being cut by the screen.
 	camera.position = active_resident.position
 
 func _process(_delta: float) -> void:
