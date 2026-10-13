@@ -200,11 +200,14 @@ func _build() -> void:
 	image.fill(Color("393e30"))
 	_fill(image, Layout.BOUNDS,Color("caaa76"))
 	_fill(image, Layout.FOREST,Color("54774d"))
+	# The forest continues north of the original map; the schematic map must show woodland there too.
+	_fill(image, Layout.FOREST_NORTH,Color("54774d"))
 	# Schematic woodland uses seed-stable marks, without loading any distant trees.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = world.resource_seed
-	for i in range(140):
-		_fill(image,Rect2(Vector2(rng.randf_range(-2350,-50),rng.randf_range(40,1560)),Vector2(20,26)),Color("3b6345"))
+	for i in range(210):
+		_fill(image,Rect2(Vector2(rng.randf_range(-2350,-50),rng.randf_range(-1560,1560)),Vector2(20,26)),Color("3b6345"))
+	_fill(image, Layout.MOUNTAINS_EAST, Color("4b5259"))
 	_fill(image, Rect2(12, 0, 24, 600), Color("518d96"))
 	_fill(image, Rect2(12, 600, 88, 1000), Color("518d96"))
 	_fill(image, Geography.MOUNTAINS.grow(60), Color("837b67"))

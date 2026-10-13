@@ -25,7 +25,7 @@ func start(controller: Node) -> void:
 	session = controller
 func generate(cell: Vector2i) -> Array[Dictionary]:
 	var records: Array[Dictionary] = []
-	if cell.x < -8 or cell.x >= 0 or cell.y < 0 or cell.y >= 8: return records
+	if cell.x < -8 or cell.x >= 0 or cell.y < -8 or cell.y >= 8: return records
 	var rng := RandomNumberGenerator.new()
 	rng.seed = session.world.resource_seed ^ ((cell.x + 17) * 73856093) ^ ((cell.y + 1) * 19349663)
 	for i in range(19):
@@ -33,7 +33,7 @@ func generate(cell: Vector2i) -> Array[Dictionary]:
 		if i>=15: at=Vector2(cell)*CHUNK+Vector2(40+(i-15)*70,184)
 		var kind: String = "grass" if i>=15 else (["ginseng", "reishi", "goji", "mulberry"][i] if i < 4 else "tree")
 		var bounds := Rect2(at - Vector2(26,54),Vector2(52,60))
-		if not Layout.FOREST.grow(-18).encloses(bounds): continue
+		if not (Layout.FOREST.grow(-18).encloses(bounds) or Layout.FOREST_NORTH.grow(-18).encloses(bounds)): continue
 		if bounds.intersects(Rect2(-280,220,104,112)) or bounds.intersects(Layout.FOREST_VILLAGE): continue
 		var on_path := false
 		for route: Array in Layout.ROADS:

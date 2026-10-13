@@ -6,6 +6,8 @@ const SIZE := Vector2(4800, 1600)
 const MIN := Vector2(-2400, -1600)
 const BOUNDS := Rect2(MIN, SIZE - MIN)
 const FOREST := Rect2(-2400, 0, 2400, 1600)
+# The woodland continues north of the original map, with the same gatherable mix.
+const FOREST_NORTH := Rect2(-2400, -1600, 2400, 1600)
 # Mountain plateau: the north-east quadrant above the desert, reached from the desert floor.
 const PLATEAU := Rect2(0, -1600, 2400, 1600)
 # The starting village is always visible on the overview map, even before it is re-explored.
