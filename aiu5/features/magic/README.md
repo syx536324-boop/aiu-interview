@@ -1,43 +1,21 @@
-# 魔法属性、升级、装备与技能
+# 魔法、装备与技能
 
-`catalog.gd` 定义木/水/火/土、1–100级费用、四个装备部位与五个主干节点。`progression.gd` 以稳定角色ID持有状态，没有逐帧或离线模拟；魔法等级/经验/技能点与survival的当前魔力与恢复计时是独立数据。
+catalog管理四系独占觉醒、1–100级经验、主干／分支点数预算与晶石里程碑。progression以角色ID持有状态；UI通过快照展示，发出请求，由session转交本模块，main只装配。
 
-祭台正面R打开四系选择，确认后永久觉醒其中之一；起始lv.1、0技能点；此前累计的击杀/成就魔法点在觉醒时一次结算。只有当前存活角色在祭台前可觉醒，E继续负责祭台存档/祭礼。C→对应角色“属性”可以查看其他角色而不切换操控，阵亡角色只读。
+角色只有一个觉醒属性；魔力上限10＋（等级－1）×5，每级＋5技能点，主干5项各10点。击杀／首次物品成就各25魔法点，未觉醒先累计。每到5的倍数等级保留一颗对应晶石奖励，支持跨多级；旧档补发，以crystal_milestone避免重复，crystal_pending保存满包奖励。achievements.save_to在同次保存事务中投递可容纳奖励，失败恢复背包／经验／里程碑；claim_crystals可手动领取。
 
-当前等级1–9升一级需100魔法点，10–19需200，20–29需300，以此类推，90–99需1000；lv.100封顶。经验可跨级结算，每升一级+5技能点，满级进度条显示已满。初始一级不赠点，1→100共54,900魔法点、495技能点。每个主干消耗10点且必须依次点亮，不可重复消费；主干完成后显示三条分支入口，数量与效果待补充，不开放未定义技能。
+skill_catalog／skills执行五个主干，被动与Z／H／K／L保留。branch_catalog定义36项，branches负责分支施放、目标／代价／冷却、范围设施、草丛、控制／护盾／减伤／反伤／余烬及在线时钟；branch_visual使用原生像素绘制。房屋操作调用construction契约，不能免除材料。真实规则见../../docs/ELEMENTAL_BRANCHES.md。
 
-头部/盔甲/护腿/靴子槽分别接受对应的皮制或铁制装备，材料数量见inventory/catalog.gd与production/smith_catalog.gd；不提供免费领取。穿戴从该角色自己的背包移出，卸下返还同一背包；容量不足保留原装备。装备暂不提供数值加成，不修改角色行走图像。
+公共接口：start(session)、awaken(id,element)、credit_points／award_points、unlock(id,skill)、select_branch(id,skill)、claim_crystals(id)、equip／equip_weapon；snapshot／branch_hud为显示契约。skills.cast(rank,at)与branches.cast(skill_id,at)分别执行主干和分支。失败提交回退完整快照，不扣材料、魔力和点数。
 
-公共接口：`start(session)`连接会话；`awaken(id, element)`、`award_points(id, amount)`、`unlock(id, skill)`、`claim_gear(id)`、`equip(id, slot, item)`返回bool；`snapshot(id)`提供显示数据；`export_state()`/`restore(data)`处理持久化。`message`发出操作结果。击杀获得25魔法点，已定义成就每项100点；未觉醒先累计，事件通过credit_points与实际动作同次提交。五级技能名称、费用和效果由skill_catalog定义；skills执行动作、效果计时与存档，skill_visual显示效果。详细规则见../../docs/ELEMENTAL_SKILLS.md。
+damage_rate(id,context)由穿戴装备、主干水盾、不同技能来源防护相乘，普通封顶50%；石阵再乘0.9。branches.speed_rate同来源取最强、不同来源相乘，最低保留40%速度。护盾只取最强，absorb在减伤之后执行；reflect不会递归，prevent_death执行一次余烬保护。control_locks让主干与分支共享同目标10秒禁锢间隔。
 
-所有修改在规则/容量校验后立即自动保存，失败撤销魔法数据与背包；暂停、阵亡、读档过程中禁止修改。单人献祭复活保留属性/经验/装备；全员阵亡或主动祭台回退恢复完整快照。旧档无magic字段时默认未觉醒、lv.1、空装备，不改变已有物品。
+皮装备每件1防御／5%免伤，四件20%，普通和赐予一致；水盾组合44%。铁装备防御3／2／2／1，满套40%。背包装备交换保持原实例来源与武器耐久，火把独立槽保留旧规则。
 
-入口由`scenes/main.gd`组合；interface/attributes仅展示session快照并发出动作信号，session转交本模块。验证见`tests/magic_smoke.gd`及slot_quit_save双进程，覆盖升级边界、真实UI、互斥选择、满包保护、保存失败、复活、续玩和旧档。
+export_state／restore包含角色、主干effects和分支branches。恢复仅接受等级／前置／总技能点预算内的学习记录；旧六节点只保留前五并一次退款。分支设施、草丛、技能冷却和效果不离线推进。
 
-awakening_error 同时验证赤沙祭台和青木祭台的距离，仍只允许当前存活可操控角色觉醒。
+验证：tests/branches_smoke.tscn（36项效果、叠加、施工、晶石、失败保存、真实重启）；armor_probe.tscn、elemental_smoke.gd、item_update_probe.tscn回归原有规则。
 
+## 0.8.1接口与规则
 
-武器框：画面下方偏右单格武器位，每个角色独立保存。点击空框打开背包，选镐子、斧、剑或弓后点“装备武器”；点击已装备框卸回背包（背包满则保留）。J使用已装备武器进行攻击。magic.equip_weapon负责原子物品交换及保存失败回滚，weapon_snapshot向HUD提供显示数据，session协调操作，main只连接信号。旧存档缺weapon时为空，背包内弓箭仍保留。
-
-
-武器与工具更新：weapon_catalog定义镐子1、木剑1、石剑3、铁剑5、石斧2、铁斧4、弓1的基础攻击及分类。单格装备支持这些武器，equip_weapon仍原子交换并持久化。木斧从物品表移除，inventory._sanitize_slots和magic.restore_state将旧木斧转换为石斧。必须装备镐子采矿、装备斧砍树；桑树空手E采叶，持斧E砍树，其他武器不能采叶。森林树木沿用每2次1木头、4次砍完，resource_hits保持稳定ID，重载不复原。J近战29单位、0.6秒间隔、视线和朝向检查；弓每次成功发射扣背包1箭，失败不扣；X拆自建房按当前斧攻击和房屋防御计算。
-
-## 单件武器耐久
-
-每位角色的equipment.weapon配套weapon_wear={durability:40,uses:0}；旧存档缺失时补满。equip_weapon(id,item,bag_index=-1)通过inventory.swap_weapon交换实际单件记录，可指定同款中的某一格。weapon_usable检查损坏；consume_weapon只改内存，调用方须与实际动作一起提交或回滚。weapon_snapshot提供wear和durability_text，不在UI中计算扣除。祭台和退出快照均包含此状态。
-
-## 装备材质
-
-equipment_catalog.SLOTS定义皮制、铁制装备与四个部位的兼容表；equip仍验证部位并原子交换当前角色背包，restore_state保留具体材质ID，旧基础装备兼容。snapshot每格提供choices与equipped_name，UI选择具体ID后请求穿戴，数值效果仍未设置。武器耐久独立于防具材质。
-
-## 经验来源
-
-击杀每只生物25魔法点；成就每项每角色一次100点，具体成就待定。未觉醒时pending_points持久累计，觉醒时一次结算；credit_points只改变状态，调用者与事件一起原子保存。取消免费基础装备领取，只提供皮制与铁制。魔力生命值与魔法经验保持独立。
-
-## 元素技能执行
-
-skills.cast(rank, target)验证当前角色、目标和魔力，成功后与实际动作共同保存；失败回滚。一级被动由survival应用，二级赋能独立于武器魔法属性，三至五级使用H/K/L。simulation以在线时间推进，暂停和离线不消耗效果；export_state/restore保留buff、火球、敌人状态和临时土屋。旧六节点保留前五级并仅一次退还第六级10技能点。魔力初始10点，上限为10＋（魔法等级－1）×5；每升一级上限增加5点，升级不直接补充当前魔力。当前操控的存活角色每60在线秒恢复1点，满值停止累计；暂停、离线、阵亡和未操控角色不推进恢复，切换与保存保留未满一分钟的进度。旧存档保留当前魔力，缺少恢复计时默认为0。。elemental_smoke覆盖实际效果、计时边界、存档及失败回滚。
-
-## 皮装备防御
-
-皮盔甲、皮护腿、皮头盔、皮靴每件防御1、免伤5%；只计算已穿戴到正确部位的物品，四件防御4、免伤20%。普通与赐予实例效果相同，背包和柜箱内物品不提供防御。皮装备之间相加，水系四级水盾按剩余伤害再减30%，满套＋水盾总免伤44%，原伤害10实际扣5.6生命。换装立即更新，存档重载按装备推导，不新增可累加的存档字段。铁装备保护数值仍待定义。
+铁装备防御3／2／2／1、满套40%。progression.attack_damage(id)组合基础攻击、固定赐予等级加成和主干赋能；weapon_enchants拥有四系命中、角色共享冷却及持久化。rune_art统一四属性颜色和符号；branches管理施法、持续与被动视觉并随室内外场景挂接。export_state／restore新增enchants；减速由branches.speed_rate合并附魔与技能来源。

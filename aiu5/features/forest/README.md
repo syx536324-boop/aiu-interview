@@ -28,3 +28,7 @@ generate(cell) 排除 Layout.FOREST_VILLAGE 整块青木村空地及新增连接
 ## 0.7.6 维护
 
 北侧森林的描述生成和加载窗口均覆盖y=-8..7区块；北侧仍沿用原森林资源种类、稳定ID和在线采集规则。tests/north_forest_probe.gd验证真实加载、六种资源及采集后重载。
+
+## 0.8.1接口与规则
+
+silk_catalog.extra(resource_seed,id,harvest)对空手桑叶采集独立30%判定，新增mulberry_harvests持久化计数。采集事务中桑叶和额外蚕丝一起提交，满包不推进；草丛普通剪刀冷却归production.scissors_tools，与种子判定独立。

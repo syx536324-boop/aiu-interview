@@ -4,7 +4,7 @@
 
 `production.gd`负责距离、配方和材料事务，`craft_queue.gd`只管理按稳定家具ID保存的任务，UI只读取快照/发perform请求。每张台同时一件，确认扣料并保存；60秒在线时间后自动送入原制作角色背包，切人不改归属。满包保留成品，回台选“领取”确认；不重复扣料。正在制作或有待领成品的台不能回收，移动保留ID与进度。任务随自动/祭台存档保存，远区/离开房间继续，M/暂停菜单/离线冻结；旧档缺craft_jobs默认为空。写入失败回滚材料和任务。
 
-石头刀木头1＋石头1，铁刀木头1＋粗铁1，木碗木头2，剪刀木头1＋粗铁2。制作产物为普通物品，刀攻击1、40格耐久、15次扣1格；未指定刀修复配方。物品分类统一读取inventory/categories.gd。
+石头刀木头1＋石头1，铁刀木头1＋粗铁1，木碗木头2，剪刀木头1＋粗铁2。制作产物为普通物品，石刀攻击2／铁刀4、40格耐久、15次扣1格；未指定刀修复配方。物品分类统一读取inventory/categories.gd。
 
 `start(session) / open_near / perform / close / elapse / snapshot / export_state / restore`为公共入口；`can_remove_fixture`供家具编辑的回收守卫。`tests/crafting_smoke.gd`覆盖真实E和鼠标、选择/确认、满包、60秒、切人、重启、全图暂停与失败回滚；smith/forest/arms/mining/construction保留材料和玩法回归。
 
@@ -40,3 +40,11 @@ start(session)、open_near、perform、gather_sand、elapse、snapshot、export_
 ## 0.6规则
 
 工作台新增锄头、浇水壶、水桶、木杯、工作台、围栏、面包、床、柜、桌、椅、箱；成品均需60在线秒。石头刀=木1石1，铁刀=木1粗铁1；碗=木2，剪刀=木1粗铁2。皮/铁装备分别用皮革/粗铁，盔甲8、护腿5、头盔4、靴4。斧剑沿用现有材料。书本没有配方，只能摄像头赐予。
+
+## 魔法分支接入（0.8.0）
+
+open_upgrade由U打开自建房升级，所有配方与进度取construction.upgrade_snapshot；perform转交upgrade_near。旺炉作用范围内、非战斗时实际冶炼速度乘1.4；材料和成品仍走原保存事务。
+
+## 0.8.1接口与规则
+
+scissors_tools通过available／options／perform／advance提供普通剪刀采集与裁剪。production.open_scissors仅打开采集页，UI使用snapshot与perform请求；牛皮1→皮革2，羊毛2每成年羊300在线秒，藤条1每森林草丛120在线秒；export_state／restore保存冷却。cloth配方silk5→cloth1、60在线秒；床追加cloth5。

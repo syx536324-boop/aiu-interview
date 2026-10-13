@@ -98,6 +98,8 @@ func _ready() -> void:
 	$Attributes.awaken_requested.connect($Session.awaken_selected)
 	$Attributes.equip_requested.connect($Session.equip_attribute)
 	$Attributes.unlock_requested.connect($Session.unlock_attribute)
+	$Attributes.branch_selected.connect($Session.select_branch)
+	$Attributes.crystals_requested.connect($Session.claim_crystals)
 	$Attributes.claim_gear_requested.connect($Session.claim_attribute_gear)
 	$Workshop.bind_session($Session)
 	$Workshop.close_requested.connect($Production.close)

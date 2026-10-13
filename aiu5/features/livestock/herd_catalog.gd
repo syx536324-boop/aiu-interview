@@ -6,7 +6,7 @@ const SHEEP_FEEDING := Vector2(370,444)
 static func drops(kind: String, adult: bool) -> Dictionary:
 	match kind:
 		"pig": return {"pork":1}
-		"cow": return {"leather":1,"beef":1}
+		"cow": return {"cowhide":1,"beef":1}
 		"sheep": return {"mutton":1,"wool":2} if adult else {}
 	return {}
 static func initial_sheep() -> Array:

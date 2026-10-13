@@ -7,6 +7,10 @@ var session: Node
 var states: Dictionary = {}
 const SkillRuntime := preload("res://features/magic/skills.gd")
 const SkillCatalog := preload("res://features/magic/skill_catalog.gd")
+const BranchRuntime := preload("res://features/magic/branches.gd")
+const Enchants := preload("res://features/magic/weapon_enchants.gd")
+var enchants: Node
+var branches: Node
 var skills: Node
 
 func start(controller: Node) -> void:
@@ -15,6 +19,10 @@ func start(controller: Node) -> void:
 	skills=SkillRuntime.new()
 	add_child(skills)
 	skills.start(self)
+	enchants=Enchants.new(); add_child(enchants); enchants.start(self)
+	branches=BranchRuntime.new(); add_child(branches); branches.start(self)
+	session.homestead.branch_runtime=branches
+	for actor in session.world.controllable: actor.magic_branches=branches
 
 func ensure(id: String) -> Dictionary:
 	if not states.has(id): states[id] = Catalog.fresh()
@@ -23,12 +31,13 @@ func ensure(id: String) -> Dictionary:
 func defense(id: String) -> int:
 	return Catalog.Armor.total_defense(ensure(id).equipment)
 
-func damage_rate(id: String) -> float:
-	return Catalog.Armor.damage_rate(ensure(id).equipment)*skills.damage_rate(id)
+func damage_rate(id: String, context: Dictionary={}) -> float:
+	var ordinary: float= Catalog.Armor.damage_rate(ensure(id).equipment)*skills.damage_rate(id)*branches.ordinary_rate(id,context)
+	return maxf(0.5,ordinary)*branches.array_rate(id)
 
 func protection_snapshot(id: String) -> Dictionary:
 	var points := defense(id)
-	return {"defense":points,"armor_reduction_percent":points*5,"reduction_percent":snappedf((1.0-damage_rate(id))*100.0,0.1),"shield_active":skills.damage_rate(id)<1.0}
+	return {"defense":points,"armor_reduction_percent":points*5,"reduction_percent":snappedf((1.0-damage_rate(id))*100.0,0.1),"shield_active":damage_rate(id)<Catalog.Armor.damage_rate(ensure(id).equipment)}
 
 func max_mana(id: String) -> int:
 	return Catalog.mana_limit(int(ensure(id).level))
@@ -110,6 +119,7 @@ func award_points(id: String, amount: int) -> bool:
 func unlock(id: String, skill: String) -> bool:
 	if not _begin(id): return false
 	var state := ensure(id)
+	if not Catalog.Branches.entry(skill).is_empty(): return unlock_branch(id,skill)
 	var index := Catalog.TRUNK.find(skill)
 	if state.element == "" or index < 0: return _reject("请先觉醒，并选择有效的主干技能。")
 	if state.unlocked.has(skill): return _reject("该技能已经点亮，不会重复消耗。")
@@ -174,7 +184,7 @@ func consume_weapon(id: String) -> bool:
 
 func weapon_snapshot(id: String) -> Dictionary:
 	var item := str(ensure(id).equipment.weapon)
-	return {"item":item, "magical":Catalog.Wear.Origin.magical(ensure(id).weapon_wear), "name":session.inventory.Catalog.ITEMS[item].name if item != "" else "空", "attack":Catalog.Gear.damage(item)+(skills.attack_bonus(id) if item!="" else 0), "editable":_error(id)=="", "wear":ensure(id).weapon_wear.duplicate(), "durability_text":Catalog.Wear.describe(ensure(id).weapon_wear)+Catalog.Wear.Origin.describe(ensure(id).weapon_wear)}
+	return {"item":item, "magical":Catalog.Wear.Origin.magical(ensure(id).weapon_wear), "name":session.inventory.Catalog.ITEMS[item].name if item != "" else "空", "attack":attack_damage(id),"attack_text":str(snappedf(attack_damage(id),0.01)).trim_suffix(".0"),"magic_attribute":str(ensure(id).weapon_wear.get("magic_attribute","")),"gift_level":int(ensure(id).weapon_wear.get("gift_level",1)), "editable":_error(id)=="", "wear":ensure(id).weapon_wear.duplicate(), "durability_text":Catalog.Wear.describe(ensure(id).weapon_wear)+Catalog.Wear.Origin.describe(ensure(id).weapon_wear)}
 
 func snapshot(id: String) -> Dictionary:
 	var actor := _actor(id)
@@ -191,6 +201,7 @@ func snapshot(id: String) -> Dictionary:
 		var item := str(Catalog.EQUIPMENT[slot].item)
 		gear.append({"slot": slot, "name": Catalog.EQUIPMENT[slot].name, "item": state.equipment[slot],
 			"magical":Catalog.Wear.Origin.magical(state.equipment_records.get(slot,{})),
+			"magic_attribute":str(state.equipment_records.get(slot,{}).get("magic_attribute","")),
 			"available_item": item, "available": session.inventory.has_item(id, item),
 			"equipped_name":(session.inventory.Catalog.ITEMS[state.equipment[slot]].name+Catalog.Wear.Origin.describe(state.equipment_records.get(slot,{}))) if state.equipment[slot]!="" else "空",
 			"choices":_gear_choices(id,slot),"defense":Catalog.Armor.defense(str(state.equipment[slot])),"protection_description":Catalog.Armor.describe(str(state.equipment[slot]))})
@@ -208,6 +219,13 @@ func snapshot(id: String) -> Dictionary:
 	result["mana"]=session.vitals.ensure(id).mana
 	result["max_mana"]=max_mana(id)
 	result["branches_ready"] = state.unlocked.size() == Catalog.TRUNK.size()
+	result["branches"] = []
+	for rule: Dictionary in Catalog.Branches.entries(str(state.element)):
+		var error := Catalog.Branches.unlock_error(state,rule.id)
+		rule.merge({"learned":state.branch_unlocked.has(rule.id),"can_unlock":result.editable and error=="","unlock_hint":error,"selected":state.branch_selected==rule.id,"can_select":result.editable and state.branch_unlocked.has(rule.id),"cooldown_left":float(branches.cooldowns.get(id+":"+str(rule.id),0))})
+		result.branches.append(rule)
+	result["branch_effects"]=branches.snapshot(id)
+	result["crystal_pending"]=int(state.crystal_pending)
 	return result
 
 func _gear_choices(id: String, slot: String) -> Array:
@@ -223,7 +241,7 @@ func _gear_choices(id: String, slot: String) -> Array:
 	return result
 
 func export_state() -> Dictionary:
-	return {"version": 2, "residents": states.duplicate(true), "effects":skills.export_state()}
+	return {"version": 3, "residents": states.duplicate(true), "effects":skills.export_state(), "branches":branches.export_state(),"enchants":enchants.export_state()}
 
 func restore(data: Dictionary) -> void:
 	states.clear()
@@ -233,3 +251,43 @@ func restore(data: Dictionary) -> void:
 		states[actor.resident_id] = Catalog.restore_state(source if source is Dictionary else {})
 
 	skills.restore(data.get("effects",{}))
+	branches.restore(data.get("branches",{}))
+	enchants.restore(data.get("enchants",{}))
+
+func unlock_branch(id: String, skill: String) -> bool:
+	if not _begin(id): return false
+	var state := ensure(id)
+	var error := Catalog.Branches.unlock_error(state,skill)
+	if error!="": return _reject(error)
+	var before := state.duplicate(true)
+	var bag: Array=session.inventory.ensure_bag(id).duplicate(true)
+	var rule: Dictionary=Catalog.Branches.entry(skill)
+	state.skill_points-=int(rule.points); state.branch_unlocked.append(skill)
+	return _commit(id,before,bag,"已点亮%s，消耗%d技能点。" % [rule.name,rule.points])
+func select_branch(id: String, skill: String) -> bool:
+	if not _begin(id): return false
+	var state := ensure(id)
+	if not state.branch_unlocked.has(skill): return _reject("请先点亮该技能。")
+	var before := state.duplicate(true)
+	var bag: Array=session.inventory.ensure_bag(id).duplicate(true)
+	state.branch_selected=skill
+	return _commit(id,before,bag,"已选择%s；关闭属性页后按P，朝鼠标位置施放。" % Catalog.Branches.entry(skill).name)
+func claim_crystals(id: String) -> bool:
+	if not _begin(id): return false
+	var state := ensure(id)
+	if state.element=="" or int(state.crystal_pending)<=0: return _reject("每到5的倍数魔法等级获得一颗晶石，暂无待领。")
+	var before: Dictionary=session.inventory.export_data()
+	var count := int(state.crystal_pending)
+	var item: String=str(state.element)+"_crystal"
+	if not session.inventory.exchange(id,{}, {item:count}): return _reject("背包空间不足，晶石奖励保留待领。")
+	state.crystal_pending=0
+	return session.production.commit(before,"领取%s×%d。" % [session.inventory.Catalog.ITEMS[item].name,count])
+func branch_hud(id: String) -> Dictionary:
+	var selected := str(ensure(id).branch_selected)
+	var rule := Catalog.Branches.entry(selected)
+	return {"name":str(rule.get("name","未选择")),"mana_cost":int(rule.get("mana_cost",0)),"cooldown":float(branches.cooldowns.get(id+":"+selected,0)),"combat":branches.fighting(id)}
+
+func attack_damage(id: String) -> float:
+	var state := ensure(id)
+	var item := str(state.equipment.weapon)
+	return Catalog.Gear.damage(item)+Enchants.bonus(state.weapon_wear)+skills.attack_bonus(id) if item!="" else 0.0

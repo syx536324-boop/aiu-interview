@@ -6,7 +6,10 @@ const CraftQueue := preload("res://features/production/craft_queue.gd")
 const Herbs := preload("res://features/forest/catalog.gd")
 const Smith := preload("res://features/production/smith_catalog.gd")
 const Repairs := preload("res://features/production/repairs.gd")
+const ScissorsTools := preload("res://features/production/scissors_tools.gd")
+var scissors := ScissorsTools.new()
 const RECIPES := {
+	"cloth":{"name":"布","cost":{"silk":5},"gain":{"cloth":1}},
 	"torch":{"name":"火把","cost":{"coal":1,"wood":1},"gain":{"torch":1}},
 	"campfire":{"name":"篝火","cost":{"stone":2,"wood":1,"coal":1},"gain":{"campfire":1}},
 	"iron_knife":{"name":"铁刀","cost":{"wood":1,"crude_iron":1},"gain":{"iron_knife":1}},
@@ -17,7 +20,7 @@ const RECIPES := {
 	"wooden_cup":{"name":"木质水杯","cost":{"wood":1},"gain":{"wooden_cup":1}},
 	"workbench":{"name":"工作台","cost":{"wood":3,"stone":1},"gain":{"workbench":1}},
 	"fence":{"name":"围栏","cost":{"wood":4},"gain":{"fence":1}},
-	"bed":{"name":"床","cost":{"wool":4,"wood":4},"gain":{"bed":1}},
+	"bed":{"name":"床","cost":{"wool":4,"wood":4,"cloth":5},"gain":{"bed":1}},
 	"cabinet":{"name":"柜子","cost":{"wood":5},"gain":{"cabinet":1}},
 	"table":{"name":"桌子","cost":{"wood":4},"gain":{"table":1}},
 	"chair":{"name":"椅子","cost":{"wood":4},"gain":{"chair":1}},
@@ -44,6 +47,7 @@ var mode := ""
 var fixture: Node2D
 func start(controller: Node) -> void:
 	session = controller
+	scissors.production=self
 func allowed(actor: CharacterBody2D) -> bool:
 	return not actor.dead and not session.overview and not session.menu_paused and session.persistence.ready_to_save and not session.persistence.restoring and not session.persistence.restore_queued
 func commit(before: Dictionary, text: String) -> bool:
@@ -79,6 +83,11 @@ func _valid(expected: String) -> bool:
 	var near := context()
 	return near.get("fixture") == fixture
 func perform(id: String) -> bool:
+	if mode=="scissors" and opened: return scissors.perform(id)
+	if mode=="upgrade" and opened:
+		var ok: bool=session.construction.upgrade_near(id.trim_prefix("upgrade:"))
+		if ok: close()
+		return ok
 	if is_instance_valid(session.simulation): session.simulation.flush()
 	if id == "craft:collect":
 		if not _valid(mode): return false
@@ -125,10 +134,11 @@ func _smelt(id: String) -> bool:
 	else: return false
 	return commit(before,"开始冶炼铁矿，需30在线秒。" if id == "smelt" else "领取粗铁×1。")
 func elapse(delta: float) -> void:
+	scissors.advance(delta)
 	crafts.elapse(self,maxf(0,delta))
 	for furnace: Dictionary in [smelting, smith_smelting]:
 		if furnace.remaining <= 0: continue
-		furnace.remaining = maxf(0,float(furnace.remaining)-maxf(0,delta))
+		furnace.remaining = maxf(0,float(furnace.remaining)-maxf(0,delta)*session.magic.branches.furnace_rate(str(session.world.active_resident.resident_id)))
 		if furnace.remaining <= 0:
 			furnace.ready += 1
 			message.emit("粗铁已炼好，请到投入铁矿的炉旁领取。")
@@ -155,6 +165,8 @@ func snapshot() -> Dictionary:
 	var recipes: Array = []
 	var furnace := furnace_state()
 	if not opened: return {"open":false}
+	if mode=="scissors": return {"open":true,"mode":mode,"station":"scissors","title":"剪刀 · 采集与裁剪","recipes":scissors.options(),"job":{}}
+	if mode=="upgrade": return session.construction.upgrade_snapshot()
 	var source: Dictionary = session.construction.Catalog.BUILDINGS if mode == "build" else (Herbs.RECIPES if mode=="herbs" else RECIPES)
 	if mode == "smelt":
 		recipes = [{"id":"smelt","name":"开始冶炼","detail":"铁矿×1 → 粗铁×1 · 30在线秒","enabled":furnace.remaining<=0 and furnace.ready==0},
@@ -193,12 +205,25 @@ func export_state() -> Dictionary:
 	var data := smelting.duplicate(true)
 	data["blacksmith"] = smith_smelting.duplicate(true)
 	data["craft_jobs"] = crafts.jobs.duplicate(true)
+	data["scissors_tools"]=scissors.export_state()
 	return data
 func restore(data: Dictionary) -> void:
 	opened = false
 	fixture = null
 	crafts.restore(data.get("craft_jobs",{}),all_recipes())
+	scissors.restore(data.get("scissors_tools",{}))
 	smelting = {"remaining":clampf(float(data.get("remaining",0)),0,30),"ready":clampi(int(data.get("ready",0)),0,1)}
 
 	var smith: Dictionary = data.get("blacksmith", {})
 	smith_smelting = {"remaining":clampf(float(smith.get("remaining",0)),0,30),"ready":clampi(int(smith.get("ready",0)),0,1)}
+
+func open_upgrade() -> void:
+	if not allowed(session.world.active_resident): return
+	if session.construction.near_house()=="": message.emit("靠近自建房门口或在屋内按U升级。"); return
+	opened=true; mode="upgrade"; fixture=null
+	session.refresh_interface()
+
+func open_scissors() -> void:
+	if not allowed(session.world.active_resident) or not scissors.available(): return
+	opened=true; mode="scissors"; fixture=null
+	session.refresh_interface()

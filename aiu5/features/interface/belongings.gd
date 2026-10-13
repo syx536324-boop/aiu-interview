@@ -223,7 +223,7 @@ func _present(state: Dictionary) -> void:
 				attribute_button.visible = true
 				attribute_choice.disabled = not state.get("gift_attributes_available",false)
 				attribute_button.disabled = attribute_choice.disabled
-				attribute_button.tooltip_text = "20级后可选择木、水、火、土属性；与武器赋能技能独立。" if attribute_button.disabled else "给选中的赐予物品设置魔法属性。"
+				attribute_button.tooltip_text = "12级后可选择木、水、火、土属性；与武器赋能技能独立。" if attribute_button.disabled else "给选中的赐予物品设置魔法属性。"
 	if items["status"] != "":
 		selected_info.text = items["status"]
 

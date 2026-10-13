@@ -35,3 +35,11 @@
 ## 新角色与兼容
 
 新角色初始只补给小麦种子3、水稻种子3，不再赠送工具、食物、书本或家具；其他物品制作、采集或赐予。旧档已有物品和数量保留，不追扣。旧四件基础装备在背包、容器和穿戴时迁移为皮制对应件，魔法来源保留。旧刀ID knife作为石头刀，保留耐久。
+
+## 魔法分支接入（0.8.0）
+
+新增wood／water／fire／earth_crystal四种物品，材料分类、对应属性符文图标和明确获取来源；升级奖励由magic和achievement同次保存投递，满包奖励保留待领取。
+
+## 0.8.1接口与规则
+
+新增cowhide、silk、cloth、vine、magic_scissors，总77种。普通scissors非武器；读取旧origin=player_gift的scissors迁移magic_scissors。来源字段gift_level通过Origin.fields保留，普通与赐予不混堆，赋属性门槛12。来源说明与docs/ITEM_SOURCES.md对应。

@@ -31,6 +31,9 @@ func flush() -> void:
 			left-=step
 			session.vitals.advance(step)
 			session.magic.skills.advance(step)
+			session.magic.branches.advance(step)
+			session.magic.enchants.advance(step)
+			session.construction.advance(step)
 			if is_instance_valid(session.torches): session.torches.advance(step)
 	if is_instance_valid(session.day_night): session.day_night.advance(delta)
 	flushing = false

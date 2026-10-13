@@ -139,17 +139,17 @@ func run() -> void:
 	check(s.vitals.ensure("ali").mana==5 and s.torches.equipped("ali").lit,"torch ignition costs five mana")
 	s.torches.advance(287.5)
 	check(s.torches.equipped("ali").is_empty() and not s.torches.lamp.enabled,"ten-minute cumulative lifetime scraps torch")
-	# Actual altar granting and its twenty-level attribute gate.
-	s.magic.ensure("ali").level=19
-	check(gift("bowl",2,"water"),"below-twenty camera grant still works")
+	# Actual altar granting and its twelve-level attribute gate.
+	s.magic.ensure("ali").level=11
+	check(gift("bowl",2,"water"),"below-twelve camera grant still works")
 	var found := -1
 	bag=s.inventory.ensure_bag("ali")
 	for i in range(21):
 		if Origin.magical(bag[i]) and bag[i].get("item","")=="bowl": found=i; break
-	check(found>=0 and bag[found].magic_attribute==null,"below twenty cannot force gift attribute")
+	check(found>=0 and bag[found].magic_attribute==null,"below twelve cannot force gift attribute")
 	s.inventory.open_bag("ali","阿力"); s.inventory.selection={"side":"bag","index":found}
-	check(not s.gifts.assign_selected_attribute("water"),"existing gift attribute also gated below twenty")
-	s.magic.ensure("ali").level=20
+	check(not s.gifts.assign_selected_attribute("water"),"existing gift attribute also gated below twelve")
+	s.magic.ensure("ali").level=12
 	for element: String in Origin.ELEMENTS:
 		check(s.gifts.assign_selected_attribute(element),"choose existing gift "+element)
 		check(Origin.fields(s.inventory.ensure_bag("ali")[found]).magic_attribute==element,"provenance preserves "+element)
@@ -158,7 +158,7 @@ func run() -> void:
 	s.inventory.path=original
 	check(s.inventory.ensure_bag("ali")[found].magic_attribute=="earth","failed attribute save keeps old choice")
 	s.close_inventory()
-	check(gift("knife",1,"water"),"twenty-level camera gift with choice")
+	check(gift("knife",1,"water"),"twelve-level camera gift with choice")
 	bag=s.inventory.ensure_bag("ali")
 	for i in range(21):
 		if Origin.magical(bag[i]) and bag[i].get("item","")=="knife": found=i; break
@@ -201,6 +201,8 @@ func run() -> void:
 	# Keep the second enemy clear of the line so it can never be picked instead of the clicked one.
 	other.position=s.world.active_resident.position+Vector2(-aim.y,aim.x)*30.0
 	for weapon: String in Gear.WEAPONS:
+		# Gift-only flying scissors is exercised by weapons_plan_probe with real provenance.
+		if weapon=="magic_scissors": continue
 		s.magic.ensure("ali").equipment.weapon=weapon
 		s.magic.ensure("ali").weapon_wear=s.magic.Catalog.Wear.normalize()
 		s.inventory.exchange("ali",{}, {"arrow":1})

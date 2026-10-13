@@ -3,6 +3,7 @@ extends CharacterBody2D
 var combat: Node
 var enemy_id := ""
 var hp := 30.0
+var max_hp := 30.0
 var thirst := 10.0
 var cooldown := 0.0
 var pursuit := 0.0
@@ -21,6 +22,7 @@ func configure_tribe(tribe_name: String, npc_role: String, area: Rect2, max_hp :
 	tribe = tribe_name
 	role = npc_role
 	territory = area
+	self.max_hp=max_hp
 	hp = max_hp
 func label() -> String:
 	return str(TRIBE_NAMES.get(tribe, tribe)) + " · " + str(ROLE_NAMES.get(role, role))
@@ -76,7 +78,7 @@ func _physics_process(delta: float) -> void:
 		return
 	var reach := attack_reach()
 	if gap > reach:
-		var step := global_position.direction_to(target) * 32
+		var step: Vector2= global_position.direction_to(target) * 32 * session.magic.branches.speed_rate(enemy_id)
 		if territory.has_area():
 			var next := global_position + step * delta
 			if not territory.grow(-4).has_point(next): velocity = Vector2.ZERO; return
@@ -84,7 +86,10 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 	elif cooldown <= 0:
 		cooldown = 2.0
-		if occupied_building: session.construction.hit(actor.room_id,10)
+		if occupied_building:
+			var element: String=str(combat.CHIEF_ELEMENT.get(tribe,"")) if role=="chief" else ""
+			session.magic.branches.note_combat(actor.resident_id)
+			session.construction.hit(actor.room_id,10,false,element)
 		else:
 			if role == "archer" or role == "chief":
 				# Ranged tribe members shoot from cover; the chief spends mana like a player would.
@@ -94,10 +99,12 @@ func _physics_process(delta: float) -> void:
 						return
 					mana -= 5
 				shot_cooldown = 2.0
-			session.vitals.hurt(actor.resident_id,1)
+			var ranged := role in ["archer","chief"]
+			if ranged and session.magic.branches.barrier_blocks(global_position,actor.global_position): return
+			session.vitals.hurt(actor.resident_id,1,{"kind":"ranged" if ranged else "melee","enemy":enemy_id,"element":str(combat.CHIEF_ELEMENT.get(tribe,"")) if role=="chief" else ""})
 func _draw() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-3,-28),Vector2(3,-28),Vector2(0,-25)]),Color("e37657"))
 	draw_rect(Rect2(-10,-22,20,3),Color("392d27"))
-	draw_rect(Rect2(-10,-22,20*hp/30.0,3),Color("bf7060"))
+	draw_rect(Rect2(-10,-22,20*hp/max_hp,3),Color("bf7060"))
 
 	if thirst<10: draw_rect(Rect2(-10,-18,20*thirst/10.0,2),Color("72b8ce"))

@@ -104,6 +104,7 @@ func _sanitize_slots(data: Variant) -> Array:
 			slot.item = "stone_axe"
 		if slot is Dictionary:
 			slot = slot.duplicate(true)
+			if slot.get("item","")=="scissors" and Origin.magical(slot): slot.item="magic_scissors"
 			slot.item = Catalog.canonical(str(slot.get("item","")))
 		if slot is Dictionary and Catalog.ITEMS.has(str(slot.get("item", ""))) and int(slot.get("count", 0)) > 0:
 			var id := str(slot["item"])
@@ -331,6 +332,7 @@ func swap_weapon(id: String, incoming: String, outgoing: String, wear: Dictionar
 			for i in range(bag.size()):
 				if bag[i].get("item","")==incoming: index=i; break
 		if index < 0 or index >= bag.size() or bag[index].get("item","") != incoming: return result
+		if incoming=="magic_scissors" and not Origin.magical(bag[index]): return result
 		next_wear = Wear.normalize(bag[index])
 		bag[index] = {}
 	if outgoing != "":

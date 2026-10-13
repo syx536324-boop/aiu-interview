@@ -65,7 +65,7 @@ func _ready() -> void:
 	choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	choices.add_theme_constant_override("separation",5)
 	scroll.add_child(choices)
-	attribute_hint = _label(camera_panel,"20级后可选择魔法属性",Rect2(376,248,220,18),10)
+	attribute_hint = _label(camera_panel,"12级后可选择魔法属性",Rect2(376,248,220,18),10)
 	attribute_choice = OptionButton.new()
 	attribute_choice.position = Vector2(376,267)
 	attribute_choice.size = Vector2(220,25)
@@ -109,7 +109,7 @@ func _present(state: Dictionary) -> void:
 	confirm_button.disabled = not state.frozen or str(state.selected) == ""
 	attribute_choice.disabled = not state.get("attributes_available",false)
 	attribute_choice.select(maxi(0,ELEMENT_IDS.find(str(state.get("selected_element","")))))
-	attribute_hint.text = "选择赐予物品魔法属性" if state.get("attributes_available",false) else "魔法20级解锁属性选择"
+	attribute_hint.text = "选择赐予物品魔法属性" if state.get("attributes_available",false) else "魔法12级解锁属性选择"
 	var jpeg := str(state.frame_jpeg)
 	if jpeg != cached_jpeg:
 		cached_jpeg = jpeg

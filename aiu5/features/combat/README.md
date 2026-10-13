@@ -37,3 +37,11 @@ J近战在相同武器距离、朝向和遮挡规则下可选中牛，箭扫掠�
 ## 0.7.6 维护
 
 新增成员读档使用start阶段记录的各自初始位置及生命上限，不再查询仅含三名旧来袭者的SPAWNS表。旧档缺少成员数据时采用该成员的生成状态；已有坐标、受伤、阵亡和冷却记录继续保存。tests/tribal_restore_probe.gd验证空档、旧档、异常坐标与完整重载。
+
+## 魔法分支接入（0.8.0）
+
+敌人移速使用branches.speed_rate，主干与分支禁锢共享限制。伤害observe_hit支持石化累计20伤害提前解除。敌人近战／远程携带伤害上下文，村长携带觉醒元素；壁垒拦截射线和玩家箭的扫掠线段。防御、反伤与余烬属于magic／survival，不在UI计算。
+
+## 0.8.1接口与规则
+
+weapon_catalog定义石刀2、铁刀4；magic_scissors攻击3、范围80、interval(item,distance)在40像素分界取0.5／1秒。combat只接受实际敌人且无遮挡；scissors_flight负责扫掠命中、自动回收及飞行持久化，scissor_visual显示轨迹与回收。attack_damage和weapon_enchants接口来自magic，保存失败回滚耐久、护盾、冷却与飞行。

@@ -35,7 +35,7 @@ func screenshot(name: String) -> void:
 	check(get_viewport().get_texture().get_image().save_png(directory+"/"+name+".png")==OK,"screenshot "+name)
 func run() -> void:
 	await load_game()
-	check(ProjectSettings.get_setting("application/config/version")=="0.7.8","maintenance version")
+	check(ProjectSettings.get_setting("application/config/version")=="0.8.1","maintenance version")
 	var items := {"armor":"leather_armor","legs":"leather_leggings","head":"leather_helmet","feet":"leather_boots"}
 	check(s.magic.defense("ali")==0 and is_equal_approx(s.vitals.damage("ali",10),10),"no equipment no reduction")
 	var count := 0
@@ -80,7 +80,7 @@ func run() -> void:
 	check(s.magic.defense("ali")==3 and s.magic.ensure("ali").equipment.feet=="leather_boots","failed save preserves gear-derived defense")
 	check(s.inventory.exchange("ali",{}, {"iron_helmet":1}),"iron gear available")
 	check(s.magic.equip("ali","head","iron_helmet"),"iron can still equip")
-	check(s.magic.defense("ali")==3 and Armor.defense("iron_helmet")==0,"undefined iron defense not invented")
+	check(s.magic.defense("ali")==5 and Armor.defense("iron_helmet")==2,"iron helmet supplies defined two points")
 	check(s.magic.equip("ali","head",""),"remove iron before gift")
 	var record := {"item":"leather_helmet","count":1}
 	record.merge(Origin.gifted("armor-probe","earth"))

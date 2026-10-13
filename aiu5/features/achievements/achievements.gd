@@ -46,11 +46,19 @@ func save_to(path: String) -> Error:
 	if is_instance_valid(session.simulation): session.simulation.flush()
 	var previous := completed.duplicate(true)
 	var magic_before: Dictionary = session.magic.states.duplicate(true)
+	var bags_before: Dictionary=session.inventory.bags.duplicate(true)
 	var earned := collect_discoveries()
+	for actor in session.world.controllable:
+		var state: Dictionary=session.magic.ensure(actor.resident_id)
+		if state.element!="" and int(state.crystal_pending)>0:
+			var reward := {str(state.element)+"_crystal":int(state.crystal_pending)}
+			if session.inventory.exchange(actor.resident_id,{},reward): state.crystal_pending=0
+	earned+=collect_discoveries()
 	var error: Error = session.inventory.write_file(path,session.inventory.export_data())
 	if error!=OK:
 		completed = previous
 		session.magic.states = magic_before
+		session.inventory.bags = bags_before
 	elif earned>0:
 		session._set_notice("完成%d项首次物品成就，共获得%d魔法点。" % [earned,earned*Catalog.REWARD])
 	return error

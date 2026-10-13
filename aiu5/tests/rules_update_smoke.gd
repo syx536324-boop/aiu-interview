@@ -81,7 +81,7 @@ func run() -> void:
 	s.foraging.elapse(1); check(pickup.available,"loose material restores on deadline")
 	var recipes := {"knife":{"wood":1,"stone":1},"iron_knife":{"wood":1,"crude_iron":1},"bowl":{"wood":2},"scissors":{"wood":1,"crude_iron":2},
 		"hoe":{"wood":2,"stone":1},"watering_can":{"wood":2},"bread":{"wheat":3},"bucket":{"wood":3},"wooden_cup":{"wood":1},"workbench":{"wood":3,"stone":1},
-		"fence":{"wood":4},"bed":{"wool":4,"wood":4},"cabinet":{"wood":5},"table":{"wood":4},"chair":{"wood":4},"chest":{"wood":5},
+		"fence":{"wood":4},"bed":{"wool":4,"wood":4,"cloth":5},"cabinet":{"wood":5},"table":{"wood":4},"chair":{"wood":4},"chest":{"wood":5},
 		"stone_axe":{"wood":1,"stone":2},"iron_axe":{"wood":1,"crude_iron":2},"wood_sword":{"wood":3},"stone_sword":{"wood":1,"stone":2},"iron_sword":{"wood":1,"crude_iron":2}}
 	for id: String in recipes:
 		check(s.production.RECIPES[id].cost==recipes[id],"recipe materials match requested rule "+id)
@@ -154,7 +154,7 @@ func run() -> void:
 	s.livestock.advance(1); check(child.adult(),"juvenile feed subtracts one minute")
 	# Killing different creatures awards exactly once and drop quantities are atomic.
 	give({})
-	for entry in [{"id":"pig:1","drops":{"pork":1}},{"id":"cow:1","drops":{"leather":1,"beef":1}},{"id":"sheep:1","drops":{"mutton":1,"wool":2}},{"id":"bird:1","drops":{}},{"id":"dog:1","drops":{}}]:
+	for entry in [{"id":"pig:1","drops":{"pork":1}},{"id":"cow:1","drops":{"cowhide":1,"beef":1}},{"id":"sheep:1","drops":{"mutton":1,"wool":2}},{"id":"bird:1","drops":{}},{"id":"dog:1","drops":{}}]:
 		var target: CharacterBody2D=s.livestock.find_animal(entry.id)
 		var previous: int=s.magic.ensure("ali").pending_points
 		var amounts: Dictionary={}
@@ -185,6 +185,8 @@ func run() -> void:
 	outdoor(); give({"bow":1,"arrow":1})
 	check(s.magic.equip_weapon("ali","bow",0),"equip bow")
 	var cow: CharacterBody2D=s.livestock.find_animal("cow:2")
+	# Bow base damage is one; this is the final blow of a previously injured cow.
+	cow.hp=1
 	s.world.active_resident.position=cow.position+Vector2(0,20)
 	s.world.streamer.focus(true)
 	await frames(4); await physics_frame
@@ -196,7 +198,7 @@ func run() -> void:
 	for i in range(12): await physics_frame
 	check(s.livestock.find_animal("cow:2")==null,"real arrow kills cow")
 	check(s.magic.ensure("ali").pending_points==ali_before+25 and s.magic.ensure("heya").pending_points==heya_before,"arrow magic belongs to shooter after role switch")
-	check(count("leather","ali")==1 and count("beef","ali")==1,"arrow drops belong to shooter")
+	check(count("cowhide","ali")==1 and count("beef","ali")==1,"arrow drops belong to shooter")
 	s.select_resident(0)
 	# Every meat kind uses the same 60-second stove queue, preserved across reload.
 	for raw in ["pork","beef","mutton"]:

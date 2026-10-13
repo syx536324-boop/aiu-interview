@@ -8,6 +8,8 @@ signal awaken_requested(element: String)
 signal equip_requested(slot: String, item: String, bag_index: int)
 signal unlock_requested(skill: String)
 signal claim_gear_requested
+signal branch_selected(skill: String)
+signal crystals_requested
 const ItemIcon := preload("res://features/interface/item_icon.gd")
 var font := SystemFont.new()
 var attributes_root: ColorRect
@@ -50,6 +52,11 @@ var selected_slot := ""
 var selected_element := ""
 var page := "level"
 var styles: Dictionary = {}
+var branch_panel: Control
+var branch_title: Label
+var branch_cards: Array=[]
+var branch_page := ""
+var crystal_button: Button
 
 class Wires extends Control:
 	var learned := -1
@@ -123,7 +130,7 @@ func _build_level() -> void:
 		button.pressed.connect(func() -> void: _open_picker(slot))
 	protection_label = _label(level_root,"",Vector2(0,80),11)
 	protection_label.size=Vector2(100,58)
-	protection_label.tooltip_text="每件皮装备1点防御，每点抵扣5%伤害；四件20%。水盾再按剩余伤害减30%，满套＋水盾合计44%。"
+	protection_label.tooltip_text="每件皮装备减伤5%，四件20%；水盾按剩余伤害减30%，合计44%。普通减伤相乘封顶50%；石阵另减剩余伤害10%，最高55%。"
 	element_label = _label(level_root, "未觉醒", Vector2(172, 108), 12)
 	element_label.size.x = 160
 	element_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -143,7 +150,9 @@ func _build_level() -> void:
 	_label(level_root,"皮制 / 铁制装备在铁匠铺合成",Vector2(0,207),10)
 	awaken_button = _button(level_root,"在祭台觉醒 [R]",Rect2(220,200,136,26))
 	awaken_button.pressed.connect(func() -> void: awaken_open_requested.emit())
-	_label(level_root,"击杀 +25魔法点",Vector2(370,207),10)
+	crystal_button=_button(level_root,"暂无待领晶石",Rect2(368,200,136,26))
+	crystal_button.add_theme_font_size_override("font_size",10)
+	crystal_button.pressed.connect(func() -> void: crystals_requested.emit())
 
 func _build_tree() -> void:
 	wires = Wires.new()
@@ -162,10 +171,12 @@ func _build_tree() -> void:
 		detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		skill_descriptions.append(detail)
 	for i in range(3):
-		var button := _button(tree_root, "分支%s · 待补充" % ["一", "二", "三"][i], Rect2(0 + i * 170, 206, 158, 22))
+		var button := _button(tree_root, ["建设分支", "战斗分支", "防御分支"][i], Rect2(0 + i * 170, 206, 158, 22))
 		button.add_theme_font_size_override("font_size", 10)
 		button.disabled = true
 		branches.append(button)
+		button.pressed.connect(func() -> void: _open_branch(["build","battle","guard"][i]))
+	_build_branch_panel()
 
 func _build_picker() -> void:
 	picker_root = ColorRect.new()
@@ -243,7 +254,10 @@ func _present(state: Dictionary) -> void:
 	var opening: bool = next.get("open", false) and (not attributes_root.visible or current.get("id", "") != next.get("id", ""))
 	attributes_root.visible = next.get("open", false)
 	current = next
-	if opening: _show_page("level")
+	if opening:
+		_show_page("level")
+		branch_page=""
+		branch_panel.visible=false
 	if not attributes_root.visible: picker_root.visible = false
 	if attributes_root.visible:
 		title.text = str(current.name) + " · 属性" + ("（已阵亡）" if current.dead else "")
@@ -262,13 +276,16 @@ func _present(state: Dictionary) -> void:
 		var protection: Dictionary=current.get("protection",{})
 		protection_label.text="防御 %d\n装备免伤 %d%%" % [int(protection.get("defense",0)),int(protection.get("armor_reduction_percent",0))]
 		if protection.get("shield_active",false): protection_label.text+="\n总免伤 %s%%" % str(protection.get("reduction_percent",0)).trim_suffix(".0")
+		crystal_button.text="领取晶石×%d" % int(current.get("crystal_pending",0)) if int(current.get("crystal_pending",0))>0 else "晶石：每5级获得"
+		crystal_button.disabled=not current.editable or int(current.get("crystal_pending",0))<=0
+		crystal_button.tooltip_text="魔法等级5／10／15…奖励已觉醒属性晶石；满包时保留待领。"
 		_present_achievements(current.get("achievements",{}))
 		awaken_button.disabled = not current.awakening_available
 		awaken_button.text = "已觉醒" if current.element != "" else "在祭台觉醒 [R]"
 		awaken_button.tooltip_text = str(current.awakening_hint)
 		for gear: Dictionary in current.gear:
 			var widgets: Dictionary = gear_buttons[gear.slot]
-			widgets.icon.set_item(str(gear.item), bool(gear.get("magical", false)))
+			widgets.icon.set_item(str(gear.item), bool(gear.get("magical", false)),str(gear.get("magic_attribute","")))
 			widgets.hint.text = "空" if gear.item == "" else ("防御%d" % int(gear.defense) if int(gear.get("defense",0))>0 else "已穿戴")
 			widgets.button.disabled = not current.editable
 			widgets.button.tooltip_text = str(gear.equipped_name)+(" · "+str(gear.get("protection_description","")) if gear.item!="" else "")+" · 点击选择材质 / 穿戴 / 卸下"
@@ -281,12 +298,14 @@ func _present(state: Dictionary) -> void:
 			skill_buttons[i].tooltip_text=skill_descriptions[i].text
 			skill_buttons[i].disabled = not skill.can_unlock
 			skill_buttons[i].add_theme_stylebox_override("disabled", _style(Color("526449") if skill.learned else Color("41392d")))
-			branches[mini(i, 2)].tooltip_text = "主干已完成，分支技能以后补充。" if current.branches_ready else "依次点亮五个主干技能后开放；分支内容待定。"
+			branches[mini(i, 2)].tooltip_text = "每分支三阶，等级12／20／30；选中已学习技能后按P施放。" if current.branches_ready else "依次点亮五个主干技能后开放。"
 		if wires.learned != current.unlocked.size():
 			wires.learned = current.unlocked.size()
 			wires.queue_redraw()
 		for branch: Button in branches:
+			branch.disabled=not current.branches_ready
 			branch.add_theme_stylebox_override("disabled", _style(Color("526449") if current.branches_ready else Color("41392d")))
+		_present_branch()
 		feedback.text = str(state.get("notice", ""))
 		if picker_root.visible: _update_picker()
 	var awakening: Dictionary = state.get("awakening", {})
@@ -407,3 +426,52 @@ func _present_achievements(data: Dictionary) -> void:
 		rows.append(("已完成 · " if entry.completed else "未完成 · ")+str(entry.name)+" · 25魔法点\n"+str(entry.description))
 	var text := "首次获得每种物品即完成成就，奖励25魔法点，每名角色每项只奖励一次。\n击杀生物每只获得25魔法点，未觉醒时先累计。" if rows.is_empty() else "\n\n".join(rows)
 	if achievement_text.text!=text: achievement_text.text=text
+
+func _build_branch_panel() -> void:
+	branch_panel=Control.new()
+	branch_panel.position=Vector2.ZERO
+	tree_root.add_child(branch_panel)
+	var background := ColorRect.new()
+	background.color=Color("3e3529"); background.size=Vector2(504,240)
+	branch_panel.add_child(background)
+	branch_title=_label(branch_panel,"",Vector2(0,3),12)
+	var back := _button(branch_panel,"返回主干",Rect2(416,0,88,24))
+	back.pressed.connect(func() -> void: branch_panel.visible=false; branch_page="")
+	_label(branch_panel,"先学习，再选择；关闭属性页按P朝鼠标施放。",Vector2(0,24),10)
+	for i in range(3):
+		var y := 46+i*61
+		var title_label := _label(branch_panel,"",Vector2(0,y),11)
+		title_label.size=Vector2(360,17)
+		var detail := _label(branch_panel,"",Vector2(0,y+18),10)
+		detail.size=Vector2(363,42); detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		var learn := _button(branch_panel,"学习",Rect2(378,y,60,24))
+		var select := _button(branch_panel,"选择",Rect2(444,y,60,24))
+		learn.pressed.connect(func() -> void:
+			var id: String=str(learn.get_meta("skill",""))
+			if id!="": unlock_requested.emit(id))
+		select.pressed.connect(func() -> void:
+			var id: String=str(select.get_meta("skill",""))
+			if id!="": branch_selected.emit(id))
+		branch_cards.append({"title":title_label,"detail":detail,"learn":learn,"select":select})
+	branch_panel.visible=false
+func _open_branch(branch: String) -> void:
+	branch_page=branch; branch_panel.visible=true; _present_branch()
+func _present_branch() -> void:
+	if branch_page=="": return
+	var entries: Array=[]
+	for entry: Dictionary in current.get("branches",[]):
+		if str(entry.branch)==branch_page: entries.append(entry)
+	if entries.size()!=3: branch_panel.visible=false; return
+	branch_title.text="%s系 · %s分支 · 技能点%d" % [current.element_name,entries[0].branch_name,current.skill_points]
+	for i in range(3):
+		var skill: Dictionary=entries[i]
+		var widgets: Dictionary=branch_cards[i]
+		widgets.title.text="%d阶 %s · Lv.%d · %d技能点 · %d魔力" % [skill.rank,skill.name,skill.level,skill.points,skill.mana_cost]
+		widgets.detail.text=str(skill.description)
+		widgets.learn.set_meta("skill",skill.id); widgets.select.set_meta("skill",skill.id)
+		widgets.learn.disabled=not skill.can_unlock
+		widgets.learn.text="已学" if skill.learned else "学习"
+		widgets.learn.tooltip_text=str(skill.unlock_hint)
+		widgets.select.disabled=not skill.can_select
+		widgets.select.text="已选" if skill.selected else "选择"
+		widgets.select.tooltip_text="冷却 %.1f秒 · [P]施放" % float(skill.cooldown_left)

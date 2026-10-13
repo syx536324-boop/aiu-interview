@@ -52,7 +52,7 @@ func advance(delta: float) -> void:
 			if was_low:
 				s.damage_time += step
 				if s.damage_time >= DAMAGE_INTERVAL:
-					s.life = maxf(0, float(s.life) - damage( id,1))
+					hurt(id,1,{"kind":"survival"})
 					s.damage_time -= DAMAGE_INTERVAL
 			else:
 				s.damage_time = 0.0
@@ -94,7 +94,7 @@ func _health_band(s: Dictionary, id: String = "") -> void:
 		if not s.low_health:
 			s.low_health = true
 			s.low_time = 0.0
-			s.life = maxf(0,float(s.life)-damage(id,5))
+			hurt(id,5,{"kind":"survival"})
 	else:
 		s.low_health = false
 		s.low_time = 0.0
@@ -190,11 +190,18 @@ func max_mana(id: String) -> int:
 
 func max_life(id: String) -> float:
 	return magic.skills.max_life(id) if is_instance_valid(magic) else 10.0
-func damage(id: String, raw: float) -> float:
-	return raw*(magic.damage_rate(id) if is_instance_valid(magic) else 1.0)
-func hurt(id: String, raw: float) -> void:
+func damage(id: String, raw: float, context: Dictionary={}) -> float:
+	return maxf(0,raw)*(magic.damage_rate(id,context) if is_instance_valid(magic) else 1.0)
+func hurt(id: String, raw: float, context: Dictionary={}) -> void:
 	var s := ensure(id)
-	s.life=maxf(0,float(s.life)-damage(id,raw))
+	if float(s.life)<=0 or raw<=0: return
+	var received := damage(id,raw,context)
+	if is_instance_valid(magic):
+		if context.get("enemy","")!="": magic.branches.note_combat(id)
+		received=magic.branches.absorb(id,received)
+		magic.branches.reflect(id,minf(received,float(s.life)),context)
+		if magic.branches.prevent_death(id,float(s.life),received): received=0.0
+	s.life=maxf(0,float(s.life)-received)
 	_sync_actors()
 	deaths_changed.emit()
 func heal(id: String, amount: float) -> void:

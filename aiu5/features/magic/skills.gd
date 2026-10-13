@@ -153,6 +153,7 @@ func cast(rank: int, at: Vector2) -> bool:
 			if not session.inventory.transform_record(id,index,session.homestead.Water.filled(item)):
 				session.inventory.apply_data(before)
 				return _reject("背包空间不足，容器和魔力保持原样。")
+	if (rank==4 and element=="fire") or (rank==5 and element in ["wood","water","fire"]): magic.branches.note_combat(id)
 	stats.mana-=cost
 	if not buffs.has(id): buffs[id]={"empower":0.0,"shield":0.0,"regen":0.0,"regen_tick":0.0}
 	if rank==2: buffs[id].empower=120.0
@@ -188,16 +189,21 @@ func cast(rank: int, at: Vector2) -> bool:
 				projectiles.append({"actor":id,"at":[origin.x,origin.y],"direction":[dir.x,dir.y],"remaining":200.0})
 				_refresh_projectiles()
 			"earth": actor.global_position=destination; actor.velocity=Vector2.ZERO; session._sync_view()
+	magic.branches._area(id,"cast",actor.global_position,0.8,Vector2(24,24),Vector2.RIGHT)
+	magic.branches._rebuild_visuals()
 	session.vitals._sync_actors()
 	var info := Rules.entry(element,rank)
 	var text := "施放%s，消耗%d魔力。" % [info.name,cost]
 	if rank==3 and element=="earth": text+=" 已开垦%d格。" % cells.size()
 	return session.production.commit(before,text)
 func _mark(enemy: CharacterBody2D, actor: String, kind: String, duration: float) -> void:
+	var root_allowed := kind in ["wood","water"] and float(magic.branches.control_locks.get(enemy.enemy_id,0))<=0
+	if root_allowed: magic.branches.control_locks[enemy.enemy_id]=10.0
 	# Each caster/effect pair refreshes rather than stacking free repeated damage.
-	marks[enemy.enemy_id+":"+actor+":"+kind]={"enemy":enemy.enemy_id,"actor":actor,"kind":kind,"remaining":duration,"tick":0.0,"root":1.0 if kind in ["wood","water"] else 0.0,"drain":kind=="wood"}
+	marks[enemy.enemy_id+":"+actor+":"+kind]={"enemy":enemy.enemy_id,"actor":actor,"kind":kind,"remaining":duration,"tick":0.0,"root":1.0 if root_allowed else 0.0,"drain":kind=="wood"}
 	_refresh_targets()
 func rooted(enemy_id: String) -> bool:
+	if is_instance_valid(magic.branches) and magic.branches.rooted(enemy_id): return true
 	for mark: Dictionary in marks.values():
 		if mark.enemy==enemy_id and float(mark.root)>0: return true
 	return false

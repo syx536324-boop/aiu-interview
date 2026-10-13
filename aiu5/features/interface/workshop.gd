@@ -149,20 +149,22 @@ func _render() -> void:
 		_skin(b,str(r.id)==selected_id)
 	var selected := selected_recipe()
 	confirm_button.disabled = selected.is_empty() or not bool(selected.get("enabled",false))
-	confirm_button.text = "确认合成" if selected.has("duration") else ("领取成品" if selected_id=="craft:collect" else "确认操作")
+	confirm_button.text = ("确认升级" if current.get("mode","")=="upgrade" else "确认合成") if selected.has("duration") else ("领取成品" if selected_id=="craft:collect" else "确认操作")
 	details.text = "选择左侧物品查看材料。"
 	if not selected.is_empty():
 		details.text = "【%s】%s\n\n" % [Categories.LABELS.get(selected.get("category","all"),"全部"),selected.name]
 		if selected.has("ingredients"):
-			details.text += "合成材料（需要 / 拥有）：\n"
+			details.text += ("升级材料（需要 / 拥有）：\n" if current.get("mode","")=="upgrade" else "合成材料（需要 / 拥有）：\n")
 			for item: Dictionary in selected.ingredients:
 				details.text += "%s ×%d / %d%s\n" % [item.name,item.need,item.have,"  缺少" if int(item.have)<int(item.need) else ""]
-			details.text += "\n制作时间：60秒在线时间"
+			details.text += "\n%s时间：%.1f秒在线时间" % ["升级" if current.get("mode","")=="upgrade" else "制作",float(selected.get("duration",60))]
+			if current.get("mode","")=="upgrade": details.text+="\n材料逐级＋15% · 升级耗时逐级＋30%"
 		else: details.text += str(selected.detail)
 	var job: Dictionary = current.get("job",{})
 	progress.visible = not job.is_empty()
-	if job.is_empty(): job_label.text = "确认后扣除材料；完成后放入制作角色背包。"
+	if job.is_empty(): job_label.text = "材料已支付的施工可用木系三阶完成。" if current.get("mode","")=="upgrade" else "确认后扣除材料；完成后放入制作角色背包。"
 	else:
 		var remaining := float(job.remaining)
-		progress.value = 60.0-remaining
+		progress.max_value=float(job.get("duration",60))
+		progress.value = progress.max_value-remaining
 		job_label.text = "%s · 剩余%.1f秒" % [job.name,remaining] if remaining>0 else "%s · 成品待领（不再扣材料）" % job.name

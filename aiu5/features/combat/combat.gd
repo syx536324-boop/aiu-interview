@@ -19,6 +19,8 @@ const Layout := preload("res://features/village/layout.gd")
 var session: Node
 var enemies: Dictionary = {}
 var initial_states: Dictionary = {}
+const Flight := preload("res://features/combat/scissors_flight.gd")
+var scissors := Flight.new()
 var cooldown := 0.0
 var demolition_cooldown := 0.0
 func reach(weapon: String) -> float:
@@ -26,6 +28,7 @@ func reach(weapon: String) -> float:
 	return Gear.attack_range(weapon) * session.world.haze.range_scale()
 func start(controller: Node) -> void:
 	session = controller
+	scissors.combat=self
 	for id: String in SPAWNS:
 		var enemy := Enemy.new()
 		enemy.combat = self
@@ -85,6 +88,7 @@ func tribe_members(name: String) -> Array:
 		if member.tribe == name and member.role != "chief": result.append(member)
 	return result
 func _process(delta: float) -> void:
+	scissors.advance(delta)
 	cooldown = maxf(0,cooldown-delta)
 	demolition_cooldown = maxf(0,demolition_cooldown-delta)
 func ready_for_action() -> bool:
@@ -104,16 +108,20 @@ func fire(target: Vector2) -> bool:
 	if not Rect2(Vector2.ZERO,Vector2(640,400)).has_point(screen): return false
 	var origin := actor.global_position+Vector2(0,-10)
 	if origin.distance_to(target)<2: return false
+	if weapon=="magic_scissors" and actor.global_position.distance_to(target)>=40: return scissors.launch(actor,target)
 	if weapon != "bow": return _melee(target,weapon)
 	var before: Dictionary = session.inventory.export_data()
 	if not session.inventory.exchange(actor.resident_id,{"arrow":1},{}):
 		message.emit("背包中没有箭。工作台：木头2＋粗铁1制作10支。")
 		return false
 	session.magic.consume_weapon(actor.resident_id)
+	session.magic.branches.note_combat(actor.resident_id)
+	session.magic.enchants.on_attack(actor.resident_id,session.magic.ensure(actor.resident_id).weapon_wear)
 	if not session.production.commit(before,"发射箭×1。"):
 		return false
 	var arrow := Arrow.new()
-	arrow.damage = Gear.damage(weapon)+session.magic.skills.attack_bonus(actor.resident_id)
+	arrow.damage = session.magic.attack_damage(actor.resident_id)
+	arrow.record=session.magic.ensure(actor.resident_id).weapon_wear.duplicate(true)
 	arrow.combat = self
 	arrow.actor_id = actor.resident_id
 	arrow.direction = origin.direction_to(target)
@@ -144,15 +152,17 @@ func attack_clicked(at: Vector2) -> bool:
 	if not Rect2(Vector2.ZERO,Vector2(640,400)).has_point(actor.get_canvas_transform()*clicked.global_position): return false
 	var query := PhysicsRayQueryParameters2D.create(actor.global_position,clicked.global_position,1|8|4,[actor.get_rid()])
 	if actor.get_world_2d().direct_space_state.intersect_ray(query).get("collider")!=clicked: return false
-	if weapon=="bow": return fire(clicked.global_position)
+	if weapon=="bow" or (weapon=="magic_scissors" and actor.global_position.distance_to(clicked.global_position)>=40): return fire(clicked.global_position)
 	return _melee(clicked.global_position,weapon,clicked)
 
 func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) -> bool:
 	var actor: CharacterBody2D = session.world.active_resident
 	var before: Dictionary = session.inventory.export_data()
+	session.magic.branches.note_combat(actor.resident_id)
+	session.magic.enchants.on_attack(actor.resident_id,session.magic.ensure(actor.resident_id).weapon_wear)
 	var direction := actor.global_position.direction_to(target)
 	var candidate: CharacterBody2D
-	var nearest := reach(weapon)+0.0001
+	var nearest := (minf(reach(weapon),39.9999) if weapon=="magic_scissors" else reach(weapon))+0.0001
 	for enemy: CharacterBody2D in enemies.values()+session.livestock.animals:
 		if enemy.hp <= 0 or enemy.get_parent() == null: continue
 		var gap := actor.global_position.distance_to(enemy.global_position)
@@ -164,7 +174,9 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 		var hit: Dictionary = actor.get_world_2d().direct_space_state.intersect_ray(query)
 		if hit.get("collider") == candidate:
 			if candidate.is_in_group("creature_targets"):
-				var outcome: Dictionary = session.livestock.damage_animal(candidate,Gear.damage(weapon)+session.magic.skills.attack_bonus(actor.resident_id),actor.resident_id)
+				var hp_before: float=candidate.hp
+				var outcome: Dictionary = session.livestock.damage_animal(candidate,session.magic.attack_damage(actor.resident_id),actor.resident_id)
+				if outcome.ok: session.magic.enchants.on_hit(actor.resident_id,candidate,session.magic.ensure(actor.resident_id).weapon_wear,hp_before-float(candidate.hp))
 				if not outcome.ok: return false
 				if outcome.killed:
 					session.magic.credit_points(actor.resident_id,25)
@@ -173,7 +185,11 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 				if not session.production.commit(before,outcome.text): return false
 				_spawn_swing(actor,direction,weapon)
 				return true
-			candidate.hp = maxf(0,float(candidate.hp)-Gear.damage(weapon)-session.magic.skills.attack_bonus(actor.resident_id)-session.magic.skills.drain_on_hit(candidate,actor.resident_id))
+			var dealt: float= session.magic.attack_damage(actor.resident_id)+session.magic.skills.drain_on_hit(candidate,actor.resident_id)
+			session.magic.branches.observe_hit(candidate.enemy_id,dealt)
+			var hp_before: float=candidate.hp
+			candidate.hp=maxf(0,float(candidate.hp)-dealt)
+			session.magic.enchants.on_hit(actor.resident_id,candidate,session.magic.ensure(actor.resident_id).weapon_wear,hp_before-float(candidate.hp))
 			if candidate.hp<=0: session.magic.credit_points(actor.resident_id,25)
 			candidate.pursuit = 6.0
 			candidate.refresh()
@@ -184,14 +200,18 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 func _spawn_swing(actor: CharacterBody2D, direction: Vector2, weapon: String) -> void:
 	var swing := Swing.new()
 	swing.direction = direction
+	swing.weapon=weapon
+	swing.record=session.magic.ensure(actor.resident_id).weapon_wear.duplicate(true)
 	session.world.objects.add_child(swing)
 	swing.global_position = actor.global_position+Vector2(0,-8)
 	cooldown = Gear.interval(weapon)
-func hit_animal(animal: CharacterBody2D, raw: float, actor_id := "") -> bool:
+func hit_animal(animal: CharacterBody2D, raw: float, actor_id := "", record: Dictionary={}) -> bool:
 	var attacker: String = session.world.active_resident.resident_id if actor_id=="" else actor_id
 	if not is_instance_valid(session.magic._actor(attacker)): return false
 	var before: Dictionary = session.inventory.export_data()
+	var hp_before: float=animal.hp
 	var result: Dictionary = session.livestock.damage_animal(animal,raw,attacker)
+	if result.ok: session.magic.enchants.on_hit(attacker,animal,record,hp_before-float(animal.hp))
 	if not result.ok: return false
 	if result.killed:
 		session.magic.credit_points(attacker,25)
@@ -199,12 +219,17 @@ func hit_animal(animal: CharacterBody2D, raw: float, actor_id := "") -> bool:
 	return session.production.commit(before,result.text)
 func hit_cow(animal: CharacterBody2D, raw: float, actor_id := "") -> bool:
 	return hit_animal(animal,raw,actor_id)
-func hit_enemy(enemy: CharacterBody2D, raw: float, actor_id := "") -> bool:
+func hit_enemy(enemy: CharacterBody2D, raw: float, actor_id := "", record: Dictionary={}) -> bool:
 	if not is_instance_valid(enemy) or enemy.hp<=0 or raw<=0: return false
 	var attacker: String = session.world.active_resident.resident_id if actor_id=="" else actor_id
 	if not is_instance_valid(session.magic._actor(attacker)): return false
 	var before: Dictionary = session.inventory.export_data()
-	enemy.hp = maxf(0,float(enemy.hp)-raw-session.magic.skills.drain_on_hit(enemy,attacker))
+	var dealt: float= raw+session.magic.skills.drain_on_hit(enemy,attacker)
+	session.magic.branches.note_combat(attacker)
+	session.magic.branches.observe_hit(enemy.enemy_id,dealt)
+	var hp_before: float=enemy.hp
+	enemy.hp=maxf(0,float(enemy.hp)-dealt)
+	session.magic.enchants.on_hit(attacker,enemy,record,hp_before-float(enemy.hp))
 	enemy.pursuit = 6.0
 	enemy.refresh()
 	if enemy.hp<=0: session.magic.credit_points(attacker,25)
@@ -218,6 +243,7 @@ func apply_skill_damage(target: CharacterBody2D, raw: float, actor_id: String) -
 		if not result.ok: return false
 		if result.killed: session.magic.credit_points(actor_id,25)
 	else:
+		session.magic.branches.observe_hit(target.enemy_id,raw)
 		target.hp=maxf(0,target.hp-raw)
 		target.pursuit=6.0
 		target.refresh()
@@ -231,8 +257,11 @@ func export_state() -> Dictionary:
 	for id: String in enemies:
 		var e: CharacterBody2D = enemies[id]
 		data[id] = {"hp":e.hp,"thirst":e.thirst,"at":[e.position.x,e.position.y],"cooldown":e.cooldown,"pursuit":e.pursuit}
+	data["scissors_flights"]=scissors.flights.duplicate(true)
+	data["weapon_cooldown"]=cooldown
 	return data
 func restore(data: Dictionary) -> void:
+	scissors.restore(data.get("scissors_flights",[]) if data.get("scissors_flights",[]) is Array else [])
 	for id: String in enemies:
 		var e: CharacterBody2D = enemies[id]
 		var record: Variant = data.get(id,{})
@@ -248,5 +277,13 @@ func restore(data: Dictionary) -> void:
 		e.pursuit = clampf(float(saved.get("pursuit",0)),0,6)
 		e.refresh()
 	for arrow in get_tree().get_nodes_in_group("arrows"): arrow.queue_free()
-	cooldown=0
+	cooldown=clampf(float(data.get("weapon_cooldown",0)),0,1)
 	demolition_cooldown=0
+
+func apply_weapon_hit(target: Node, raw: float, actor: String, record: Dictionary) -> bool:
+	if not is_instance_valid(target) or target.hp<=0 or raw<=0: return false
+	var before: float=target.hp
+	if not apply_skill_damage(target,raw,actor): return false
+	session.magic.branches.note_combat(actor)
+	session.magic.enchants.on_hit(actor,target,record,before-float(target.hp))
+	return true

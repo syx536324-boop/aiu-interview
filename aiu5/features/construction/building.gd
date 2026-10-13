@@ -29,3 +29,9 @@ func _draw() -> void:
 				for y in [-43, -22, -5]: draw_rect(Rect2(x,y,3,3),Color("d8dfd7"))
 	draw_rect(Rect2(-36, -90, 72, 4), Color("392a23"))
 	draw_rect(Rect2(-36, -90, 72 * hp / float(record.max_hp), 4), Color("a0bc76"))
+	var job: Dictionary=record.get("job",{})
+	if not job.is_empty():
+		for x in [-40,40]: draw_line(Vector2(x,-75),Vector2(x,1),Color("d6ba88"),2)
+		for y in [-60,-35,-10]: draw_line(Vector2(-44,y),Vector2(44,y),Color("d6ba88"),2)
+		draw_rect(Rect2(-36,-84,72*(1.0-float(job.remaining)/float(job.duration)),3),Color("83cbd1"))
+	draw_string(ThemeDB.fallback_font,Vector2(-14,-96),"Lv.%d" % int(record.get("level",1)),HORIZONTAL_ALIGNMENT_LEFT,-1,10,Color("ead9af"))

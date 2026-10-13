@@ -2,6 +2,7 @@
 extends RefCounted
 
 const Torch := preload("res://features/lighting/torch_record.gd")
+const Branches := preload("res://features/magic/branch_catalog.gd")
 const MAX_LEVEL := 100
 const POINTS_PER_LEVEL := 5
 const BASE_MANA := 10
@@ -27,7 +28,7 @@ static func required(level: int) -> int:
 	return 0 if level >= MAX_LEVEL else 100 * (floori(float(maxi(1, level)) / 10.0) + 1)
 
 static func fresh() -> Dictionary:
-	return {"element": "", "level": 1, "xp": 0,"pending_points":0, "skill_points": 0, "unlocked": [],
+	return {"element": "", "level": 1, "xp": 0,"pending_points":0, "skill_points": 0, "unlocked": [], "branch_unlocked":[], "branch_selected":"", "crystal_milestone":0, "crystal_pending":0,
 		"torch":{}, "equipment_records":{"armor":{},"legs":{},"head":{},"feet":{}}, "equipment": {"armor": "", "legs": "", "head": "", "feet": "", "weapon": ""}, "gear_claimed": false, "weapon_wear": Wear.normalize()}
 
 static func add_points(state: Dictionary, amount: int) -> void:
@@ -37,6 +38,7 @@ static func add_points(state: Dictionary, amount: int) -> void:
 		state.level += 1
 		state.skill_points += POINTS_PER_LEVEL
 	if state.level >= MAX_LEVEL: state.xp = 0
+	reserve_crystals(state)
 
 static func restore_state(source: Dictionary) -> Dictionary:
 	var state := fresh()
@@ -54,6 +56,22 @@ static func restore_state(source: Dictionary) -> Dictionary:
 		# Version-1 six-node saves refund the removed sixth node exactly once.
 		var refund := SKILL_COST if saved is Array and saved.has("trunk_6") and state.unlocked.size()==5 and earned>=60 else 0
 		state.skill_points = clampi(int(source.get("skill_points", 0))+refund, 0, earned - state.unlocked.size() * SKILL_COST)
+
+	if state.element!="":
+		var spent: int= state.unlocked.size()*SKILL_COST
+		var saved_branches: Variant=source.get("branch_unlocked",[])
+		if saved_branches is Array and state.unlocked.size()==5:
+			for rule: Dictionary in Branches.entries(state.element):
+				if not saved_branches.has(rule.id) or int(state.level)<int(rule.level): continue
+				if rule.rank>1 and not state.branch_unlocked.has(Branches.skill_id(rule.element,rule.branch,rule.rank-1)): continue
+				if spent+int(rule.points)>(int(state.level)-1)*POINTS_PER_LEVEL: continue
+				state.branch_unlocked.append(rule.id); spent+=int(rule.points)
+		state.skill_points=clampi(int(state.skill_points),0,(int(state.level)-1)*POINTS_PER_LEVEL-spent)
+		if state.branch_unlocked.has(str(source.get("branch_selected",""))): state.branch_selected=str(source.branch_selected)
+		var milestones := floori(float(state.level)/5)
+		state.crystal_milestone=clampi(int(source.get("crystal_milestone",0)),0,milestones)
+		state.crystal_pending=clampi(int(source.get("crystal_pending",0)),0,state.crystal_milestone)
+		reserve_crystals(state)
 	var gear: Variant = source.get("equipment", {})
 	if gear is Dictionary:
 		for slot: String in EQUIPMENT:
@@ -75,3 +93,10 @@ static func restore_state(source: Dictionary) -> Dictionary:
 		state.torch.merge(Torch.normalize(torch))
 	state.gear_claimed = bool(source.get("gear_claimed", false))
 	return state
+
+static func reserve_crystals(state: Dictionary) -> void:
+	if state.element=="": return
+	var earned := floori(float(state.level)/5)
+	var previous := int(state.get("crystal_milestone",0))
+	state.crystal_pending=int(state.get("crystal_pending",0))+maxi(0,earned-previous)
+	state.crystal_milestone=maxi(previous,earned)

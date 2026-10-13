@@ -7,3 +7,7 @@
 `snapshot(actor_id)` 返回只读的成就栏数据；`complete(actor_id, achievement_id)` 保留给显式成就，同样每角色只奖励一次 25 魔法点。
 
 入口：C→角色属性→成就。UI只展示后端快照并显示实际 25 魔法点。验证：`tests/item_update_probe.gd`（开局不计入、真实获得计入、重复物品、失败回滚、重载不重复）与 `tests/rules_update_smoke.gd`。
+
+## 魔法分支接入（0.8.0）
+
+save_to先结算首次物品成就，再在背包容量许可时投递magic保留的晶石奖励，并结算晶石首次获得。写入失败同时恢复成就、魔法状态与背包，晶石不能因失败丢失或重复。

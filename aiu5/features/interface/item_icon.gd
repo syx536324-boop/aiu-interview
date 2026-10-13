@@ -1,6 +1,17 @@
 # Draws readable pixel icons for tools, food and gathered materials without modifying source assets.
 extends Control
 
+const Rune := preload("res://features/magic/rune_art.gd")
+var magic_attribute := ""
+const RuneTint := preload("res://features/interface/gift_rune_tint.gdshader")
+static var rune_materials: Dictionary={}
+func _tint(element: String, enabled: bool) -> void:
+	if not enabled or not Rune.COLORS.has(element): material=null; return
+	if not rune_materials.has(element):
+		var value := ShaderMaterial.new(); value.shader=RuneTint
+		value.set_shader_parameter("rune_color",Rune.color(element))
+		rune_materials[element]=value
+	material=rune_materials[element]
 const Water := preload("res://features/inventory/water_catalog.gd")
 
 const GiftIcons := preload("res://features/interface/gift_icon_atlas.gd")
@@ -13,28 +24,33 @@ var gift_texture: Texture2D
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-func set_item(id: String, is_magical := false) -> void:
-	if item == id and magical == is_magical: return
+func set_item(id: String, is_magical := false, element := "") -> void:
+	if item == id and magical == is_magical and magic_attribute==element: return
+	magic_attribute=element
 	item = id
 	magical = is_magical
+	_tint(element,magical)
 	gift_texture = GiftIcons.texture(item) if magical else null
 	queue_redraw()
 
 func set_record(record: Dictionary) -> void:
 	var next_lit := bool(record.get("lit",false))
 	if torch_lit!=next_lit: torch_lit=next_lit; queue_redraw()
-	set_item(str(record.get("item", "")), Origin.magical(record))
+	set_item(str(record.get("item", "")), Origin.magical(record),str(record.get("magic_attribute","")))
 
 func _draw() -> void:
 	if gift_texture != null:
 		draw_texture_rect(gift_texture, Rect2(Vector2.ZERO, size), false)
 		if item == "water_cup":
 			draw_line(Vector2(size.x * 0.24, size.y * 0.35), Vector2(size.x * 0.58, size.y * 0.35), Color("70d9ed"), 2)
+		if Rune.COLORS.has(magic_attribute):
+			draw_circle(Vector2(size.x-6,size.y-6),6,Color("302c29"))
+			Rune.draw(self,magic_attribute,Vector2(size.x-6,size.y-6),0.85)
 		return
 	var wood := Color("bb8953")
 	var edge := Color("49372b")
 	var steel := Color("adc1bd")
-	var art_item := item
+	var art_item := "scissors" if item=="magic_scissors" else item
 	var armor_color := Color("a48c65")
 	var armor_light := Color("d9bc80")
 	var armor_dark := Color("70543c")
@@ -49,7 +65,27 @@ func _draw() -> void:
 	if item=="iron_knife": art_item="knife"
 	if item in ["beef","mutton"]: art_item="pork"
 	if item in ["cooked_beef","cooked_mutton"]: art_item="cooked_pork"
+	if item.ends_with("_crystal"):
+		var color := Color(str({"wood":"91c475","water":"7ec8dd","fire":"ee9c61","earth":"ccb980"}.get(item.get_slice("_",0),"ccb980")))
+		draw_colored_polygon(PackedVector2Array([Vector2(12,1),Vector2(21,9),Vector2(18,20),Vector2(12,24),Vector2(5,18),Vector2(3,8)]),color.darkened(0.2))
+		draw_colored_polygon(PackedVector2Array([Vector2(12,2),Vector2(17,9),Vector2(12,21),Vector2(7,9)]),color.lightened(0.2))
+		draw_line(Vector2(9,11),Vector2(15,11),Color("f4e7b8"),2)
+		draw_line(Vector2(12,8),Vector2(12,16),Color("f4e7b8"),1)
+		return
 	match art_item:
+		"cowhide":
+			draw_colored_polygon(PackedVector2Array([Vector2(3,3),Vector2(10,6),Vector2(21,3),Vector2(17,13),Vector2(22,22),Vector2(12,19),Vector2(2,22),Vector2(6,13)]),Color("b3865b"))
+			draw_rect(Rect2(10,9,5,8),Color("72533a"))
+		"silk":
+			for y in [5,10,15,20]: draw_arc(Vector2(12,y),8,0,PI,12,Color("ece5c9"),2)
+			draw_line(Vector2(4,10),Vector2(4,22),Color("f9f4dd"),2)
+		"cloth":
+			draw_rect(Rect2(3,4,18,17),Color("dad6b9"))
+			for x in [5,10,15,20]: draw_line(Vector2(x,4),Vector2(x,20),Color("b6b297"),1)
+			for y in [8,13,18]: draw_line(Vector2(3,y),Vector2(21,y),Color("f0e9c9"),1)
+		"vine":
+			draw_arc(Vector2(12,12),8,PI/2,TAU+PI/2,16,Color("6f9d58"),3)
+			for at in [Vector2(5,7),Vector2(18,8),Vector2(14,20)]: draw_rect(Rect2(at,Vector2(4,3)),Color("a1be70"))
 		"torch":
 			draw_line(Vector2(7,22),Vector2(15,8),edge,5)
 			draw_line(Vector2(7,22),Vector2(15,8),wood,3)
@@ -267,3 +303,10 @@ func _draw() -> void:
 			draw_rect(Rect2(8, 7, 8, 4), Color("df9d89"))
 			draw_rect(Rect2(12, 11, 5, 5), Color("edd8b1"))
 			draw_rect(Rect2(13, 12, 3, 3), Color("b87965"))
+
+	_draw_rune_badge()
+
+func _draw_rune_badge() -> void:
+	if magical and Rune.COLORS.has(magic_attribute):
+		draw_circle(Vector2(size.x-6,size.y-6),6,Color("302c29"))
+		Rune.draw(self,magic_attribute,Vector2(size.x-6,size.y-6),0.85)

@@ -160,8 +160,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else: close_attributes()
 		get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.pressed and event.keycode in [KEY_T,KEY_V,KEY_J,KEY_X,KEY_Z,KEY_H,KEY_K,KEY_L] and not roster_open and not inventory.opened and not editor.opened:
+	if event is InputEventKey and event.pressed and event.keycode in [KEY_T,KEY_V,KEY_J,KEY_X,KEY_Z,KEY_H,KEY_K,KEY_L,KEY_P,KEY_U] and not roster_open and not inventory.opened and not editor.opened:
 		match event.keycode:
+			KEY_P: magic.branches.cast(str(magic.ensure(world.active_resident.resident_id).branch_selected),world.active_resident.get_global_mouse_position())
+			KEY_U: production.open_upgrade()
 			KEY_T: production.open_near()
 			KEY_V: production.gather_sand()
 			KEY_J: combat.fire(world.active_resident.get_global_mouse_position())
@@ -335,6 +337,9 @@ func _interact_impl() -> void:
 			_set_notice(str(context.get("description", "走到家具、草席或门口，按 E 互动。")))
 		return
 	_refresh_nearest()
+	if nearest.begins_with("branch:"):
+		magic.branches.interact(nearest.trim_prefix("branch:"))
+		return
 	if nearest.begins_with("forage:"):
 		foraging.gather(nearest.trim_prefix("forage:"))
 		return
@@ -359,6 +364,7 @@ func _interact_impl() -> void:
 		return
 	var home: Dictionary = world.home_data(nearest)
 	if not home.is_empty():
+		if home.get("building",false): _set_notice("房屋正在施工，完成后才能进入。"); return
 		if home.get("skill_hut",false) and home.get("owner","")!=world.active_resident.resident_id:
 			_set_notice("这间土屋只允许施法者进入。")
 			return
@@ -470,6 +476,7 @@ func snapshot() -> Dictionary:
 		"max_life":vitals.max_life(world.active_resident.resident_id),
 		"max_mana":vitals.max_mana(world.active_resident.resident_id),
 		"skill_status":magic.skills.snapshot(world.active_resident.resident_id),
+		"branch_status":magic.branch_hud(world.active_resident.resident_id),
 		"inventory": inventory.snapshot(), "furnishing": editor.snapshot(),
 		"resident": world.active_resident.resident_name, "selected": selected,
 		"inside": inside, "room_name": str(world.home_data(world.active_resident.room_id).get("name", "")), "founder_names": world.founder_names(),
@@ -499,7 +506,9 @@ func use_selected() -> void:
 	var slot: Dictionary = inventory.ensure_bag(world.active_resident.resident_id)[selection.index]
 	if slot.is_empty(): return
 	var item: String = slot.item
-	if item=="torch":
+	if item=="scissors":
+		close_inventory(); production.open_scissors()
+	elif item=="torch":
 		if torches.equip(world.active_resident.resident_id,int(selection.index)): close_inventory()
 	elif item in magic.Catalog.WEAPONS:
 		if magic.equip_weapon(world.active_resident.resident_id,item,int(selection.index)): close_inventory()
@@ -608,3 +617,10 @@ func claim_attribute_gear() -> void:
 	if attributes_id != "" and not awakening_open:
 		magic.claim_gear(attributes_id)
 		refresh_interface()
+
+func select_branch(skill: String) -> void:
+	if attributes_id!="": magic.select_branch(attributes_id,skill)
+	refresh_interface()
+func claim_crystals() -> void:
+	if attributes_id!="": magic.claim_crystals(attributes_id)
+	refresh_interface()

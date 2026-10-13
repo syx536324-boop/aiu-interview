@@ -72,6 +72,7 @@ func construct(at: Vector2, button: int) -> String:
 	check(s.production.opened and s.production.mode=="build","E at construction bench opens four building choices")
 	await click(game.get_node("Workshop").buttons[button])
 	await click(game.get_node("Workshop").confirm_button)
+	s.construction.advance(30)
 	return "built:"+str(s.construction.next_id-1)
 func craft_recipe(id: String) -> void:
 	var ui: Node=game.get_node("Workshop")

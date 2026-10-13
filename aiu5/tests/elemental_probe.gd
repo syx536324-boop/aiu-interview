@@ -122,7 +122,7 @@ func run() -> void:
 	give({"arrow":1}); s.combat.cooldown=0
 	check(s.combat.fire(enemy.global_position),"empowered bow fires actual arrow")
 	var arrows := get_tree().get_nodes_in_group("arrows")
-	check(not arrows.is_empty() and arrows[-1].damage==3,"empowered projectile records launch damage")
+	check(not arrows.is_empty() and is_equal_approx(arrows[-1].damage,3.2),"empowered legacy gift projectile includes level one bonus")
 	for arrow in arrows: arrow.queue_free()
 	reset("wood"); weapon(); area=open_area(); position(area); enemy=enemy_at(area+Vector2(20,0)); await frames()
 	check(skill.cast(2,Vector2.ZERO),"empower actual melee")

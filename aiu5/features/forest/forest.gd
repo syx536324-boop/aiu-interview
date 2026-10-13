@@ -1,6 +1,8 @@
 # Streams seeded western woodland and persists herb depletion plus online mulberry regrowth.
 extends Node
 signal message(text: String)
+const Silk := preload("res://features/forest/silk_catalog.gd")
+var mulberry_harvests: Dictionary={}
 const Seeds := preload("res://features/forest/seed_patches.gd")
 const Catalog := preload("res://features/forest/catalog.gd")
 const Plant := preload("res://features/forest/plant.gd")
@@ -163,14 +165,18 @@ func gather(id: String) -> bool:
 		return false
 	var before: Dictionary = session.inventory.export_data()
 	var item := str(seed_state(id).item) if record.kind=="grass" else ("mulberry_leaf" if record.kind=="mulberry" else str(record.kind))
-	if not session.inventory.exchange(actor.resident_id,{}, {item:1}):
+	var gains := {item:1}
+	var harvest := int(mulberry_harvests.get(id,0))+1
+	if record.kind=="mulberry" and Silk.extra(session.world.resource_seed,id,harvest): gains["silk"]=1
+	if not session.inventory.exchange(actor.resident_id,{}, gains):
 		message.emit("背包已满，草药留在原地。")
 		return false
+	if record.kind=="mulberry": mulberry_harvests[id]=harvest
 	if record.kind=="grass": seed_patches[id]=Seeds.schedule(session.world.resource_seed,id,online)
 	else: collected[id] = online+Catalog.REGROW if record.kind=="mulberry" else (_rare_deadline(id,online) if record.kind in ["ginseng","reishi"] else -1.0)
 	node.available = false
 	node.queue_redraw()
-	return session.production.commit(before,"获得%s×1%s" % [session.inventory.Catalog.ITEMS[item].name,"；桑树保留，2分钟在线时间后恢复。" if record.kind=="mulberry" else "。"])
+	return session.production.commit(before,"获得%s×1%s" % [session.inventory.Catalog.ITEMS[item].name,("；额外获得蚕丝×1" if gains.has("silk") else "")+"；桑树保留，2分钟在线时间后恢复。" if record.kind=="mulberry" else "。"])
 func chop(id: String) -> bool:
 	var actor: CharacterBody2D = session.world.active_resident
 	if not session.production.allowed(actor) or actor.room_id != "" or chop_cooldown > 0 or not loaded.has(id): return false
@@ -202,7 +208,7 @@ func drink_soup(item: String) -> bool:
 	if not session.vitals.use_food(session.world.active_resident.resident_id,item): return false
 	return session.production.commit(before,"大补汤：生命与健康已回满。" if item=="restorative_soup" else "补气汤：健康+5，生命+3（不超过生命上限）。")
 func export_state() -> Dictionary:
-	return {"seed_patches":seed_patches.duplicate(true),"online":online,"collected":collected.duplicate(true),"excluded":excluded.keys()}
+	return {"mulberry_harvests":mulberry_harvests.duplicate(),"seed_patches":seed_patches.duplicate(true),"online":online,"collected":collected.duplicate(true),"excluded":excluded.keys()}
 func _release(id: String) -> void:
 	var node: Node2D = loaded[id]
 	if is_instance_valid(node.body): session.world.obstacle_bodies.erase(node.body.get_instance_id())
@@ -218,6 +224,7 @@ func restore(data: Dictionary) -> void:
 	center = Vector2i(-100,-100)
 	online = maxf(0,float(data.get("online",0)))
 	collected = data.get("collected",{}).duplicate(true)
+	mulberry_harvests=data.get("mulberry_harvests",{}).duplicate(true)
 	seed_patches.clear()
 	for id: String in data.get("seed_patches",{}):
 		var patch: Dictionary=data.seed_patches[id]

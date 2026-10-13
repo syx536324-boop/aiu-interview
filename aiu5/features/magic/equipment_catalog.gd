@@ -9,7 +9,7 @@ static func contains(item: String) -> bool:
 		if item in items: return true
 	return false
 
-const DEFENSE := {"leather_armor":1,"leather_leggings":1,"leather_helmet":1,"leather_boots":1}
+const DEFENSE := {"leather_armor":1,"leather_leggings":1,"leather_helmet":1,"leather_boots":1,"iron_armor":3,"iron_leggings":2,"iron_helmet":2,"iron_boots":1}
 const REDUCTION_PER_POINT := 0.05
 static func defense(item: String) -> int:
 	return int(DEFENSE.get(item,0))
@@ -22,5 +22,5 @@ static func total_defense(equipment: Dictionary) -> int:
 static func damage_rate(equipment: Dictionary) -> float:
 	return 1.0-total_defense(equipment)*REDUCTION_PER_POINT
 static func describe(item: String) -> String:
-	if DEFENSE.has(item): return "防御1 · 免伤5%"
+	if DEFENSE.has(item): return "防御%d · 免伤%d%%" % [defense(item),defense(item)*5]
 	return "防御数值待设置" if contains(item) else ""

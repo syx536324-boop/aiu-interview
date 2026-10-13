@@ -136,7 +136,7 @@ func select_candidate(id: String) -> void:
 			return
 
 func attributes_available(id: String) -> bool:
-	return session.magic.ensure(id).element!="" and int(session.magic.ensure(id).level)>=20
+	return session.magic.ensure(id).element!="" and int(session.magic.ensure(id).level)>=12
 
 func select_element(element: String) -> void:
 	if not opened or mode!="camera" or not attributes_available(actor_id): return
@@ -147,7 +147,7 @@ func select_element(element: String) -> void:
 func assign_selected_attribute(element: String) -> bool:
 	var id: String = session.world.active_resident.resident_id
 	if not session.magic._begin(id): return false
-	if not attributes_available(id): return session.magic._reject("魔法等级达到20级后才能选择赐予物品的魔法属性。")
+	if not attributes_available(id): return session.magic._reject("魔法等级达到12级后才能选择赐予物品的魔法属性。")
 	if not Origin.ELEMENTS.has(element): return false
 	var chosen: Dictionary = session.inventory.selection
 	if chosen.get("side","")!="bag": return false
@@ -169,12 +169,13 @@ func confirm() -> bool:
 	var event_id := session_id + ":" + selected
 	if session.inventory.gift_events.has(event_id): return _reject("这次赐予已经完成。")
 	var before: Dictionary = session.inventory.export_data()
-	var record := {"item":str(chosen.item), "count":1}
-	record.merge(Origin.gifted(event_id,selected_element if attributes_available(actor_id) else ""))
+	var item := "magic_scissors" if str(chosen.item)=="scissors" else str(chosen.item)
+	var record := {"item":item, "count":1}
+	record.merge(Origin.gifted(event_id,selected_element if attributes_available(actor_id) else "",int(session.magic.ensure(actor_id).level)))
 	if chosen.kind == "animal":
 		if not session.livestock.gift_animal(str(chosen.item), record): return _reject("村庄动物数量已达上限，请稍后再试。")
 	elif not session.inventory.insert_record(actor_id, record): return _reject("背包已满，请腾出1格后重试；尚未赐予。")
-	session.inventory.gift_events[event_id] = {"class_id":int(chosen.class_id), "actor":actor_id, "item":str(chosen.item)}
+	session.inventory.gift_events[event_id] = {"class_id":int(chosen.class_id), "actor":actor_id, "item":item,"gift_level":int(record.gift_level)}
 	if not session.persistence.save_now():
 		session.inventory.apply_data(before)
 		session.persistence.restore_session(before.session)

@@ -3,6 +3,7 @@ extends CharacterBody2D
 
 var animal_id := ""
 var hp := 10.0
+var max_hp := 10.0
 var species := "pig"
 var sex := "female"
 var growth := 300.0
@@ -65,7 +66,7 @@ func _physics_process(delta: float) -> void:
 	velocity = Vector2.ZERO
 	if pause_time <= 0:
 		if position.distance_to(target) > 3.0:
-			velocity = position.direction_to(target) * (11.0 if adult() else 8.0)
+			velocity = position.direction_to(target) * (11.0 if adult() else 8.0)*float(get_meta("magic_slow_rate",1.0))
 		elif feeding_time <= 0:
 			_choose_target()
 	move_and_slide()
@@ -94,7 +95,7 @@ func _draw_sheep() -> void:
 	var left: bool=velocity.x<0 if absf(velocity.x)>0.1 else sprite.flip_h
 	var step := int(animation_time*5)%2 if velocity.length_squared()>1 else 0
 	for x in [-5,3]: draw_rect(Rect2(x,-2+step,3,5-step),Color("63584b"))
-	for at in [Vector2(-5,-7),Vector2(0,-10),Vector2(5,-7),Vector2(0,-5)]: draw_circle(at,5,Color("e9e7d6"))
+	for at in [Vector2(-5,-7),Vector2(0,-10),Vector2(5,-7),Vector2(0,-5)]: draw_circle(at,3 if get_meta("sheared",false) else 5,Color("c9bfa4") if get_meta("sheared",false) else Color("e9e7d6"))
 	draw_rect(Rect2(-11 if left else 5,-11,6,8),Color("796e5c"))
 	draw_rect(Rect2(-10 if left else 8,-9,2,2),Color("292923"))
 	draw_set_transform(Vector2.ZERO)

@@ -5,6 +5,7 @@ const SPEED := 56.0
 const RUN_SPEED := 88.0
 var dead := false
 var run_multiplier := 1.0
+var magic_branches: Node
 var resident_name := ""
 var resident_id := ""
 var room_id := ""
@@ -48,7 +49,7 @@ func _ready() -> void:
 	add_child(sprite)
 
 func _physics_process(delta: float) -> void:
-	if dead:
+	if dead or (is_instance_valid(magic_branches) and magic_branches.immobile(resident_id)):
 		velocity = Vector2.ZERO
 		return
 	elapsed += delta

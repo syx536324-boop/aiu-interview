@@ -19,6 +19,7 @@ var plot_stamps: Array[float] = []
 var next_event := INF
 var settling := false
 var clock_driven := false
+var branch_runtime: Node
 var cooking := {"remaining":0.0,"ready":0,"item":"cooked_pork"}
 
 func start(village: Node2D, rooms: Node2D, belongings: Node) -> void:
@@ -45,7 +46,9 @@ func _process(delta: float) -> void:
 func elapse(delta: float) -> void:
 	timeline += maxf(0, delta)
 	if cooking.remaining > 0:
-		cooking.remaining = maxf(0, float(cooking.remaining) - maxf(0, delta))
+		var rate := 1.0
+		if is_instance_valid(branch_runtime): rate=branch_runtime.furnace_rate(str(world.active_resident.resident_id))
+		cooking.remaining = maxf(0, float(cooking.remaining) - maxf(0, delta)*rate)
 		if cooking.remaining <= 0:
 			cooking.ready += 1
 			message.emit("灶台的肉煎熟了，回灶房按 E 领取。")

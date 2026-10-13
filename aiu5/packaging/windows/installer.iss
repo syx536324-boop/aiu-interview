@@ -8,9 +8,9 @@
 [Setup]
 AppId={{80E89CB8-8E6B-46E1-8FD0-47690E0930C5}
 AppName=沙盘上的生活
-AppVersion=0.7.8
+AppVersion=0.8.1
 AppPublisher=AIU5
-AppPublisherURL=https://github.com/syx536324-boop/aiu5
+AppPublisherURL=https://github.com/syx536324-boop/aiu-interview
 DefaultDirName={localappdata}\Programs\AIU5
 DefaultGroupName=沙盘上的生活
 UsePreviousGroup=no
@@ -18,7 +18,7 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir={#OutputDir}
-OutputBaseFilename=AIU5-Setup-0.7.8-win64
+OutputBaseFilename=AIU5-Setup-0.8.1-win64
 Compression=lzma2/normal
 SolidCompression=yes
 WizardStyle=modern
