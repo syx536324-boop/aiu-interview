@@ -35,6 +35,15 @@ func run() -> void:
 	check(layout.PLATEAU.get_area() == 2400.0 * 1600.0 and world.cliff_bodies.size() > 0, "plateau and segmented cliff exist")
 	var mid := int(world.cliff_bodies.size() / 2)
 	check(world.cliff_bodies[mid].collision_layer != 0, "cliff blocks the plateau before any ladder")
+	# The western roundabout must not reach the highland either.
+	var walker: CharacterBody2D = world.active_resident
+	walker.global_position = Vector2(-100, 60)
+	await frames(2)
+	for i in range(260):
+		walker.velocity = Vector2(0, -56); walker.move_and_slide(); await physics_frame
+	for i in range(400):
+		walker.velocity = Vector2(56, 0); walker.move_and_slide(); await physics_frame
+	check(not layout.PLATEAU.has_point(walker.global_position), "the plateau is sealed against the western roundabout")
 	# A bench plus 100 wood builds the cloud ladder at the character's x.
 	var bench: Node2D = s.grounds.add_fixture({"id":"outdoors:ladder-bench","kind":"building_bench","at":[1060,760],"size":[96,80],"variant":0,"orientation":0})
 	s.world.active_resident.position = bench.visual_bounds().position + Vector2(48, 60)

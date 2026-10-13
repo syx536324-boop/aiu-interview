@@ -12,6 +12,8 @@ const PLATEAU := Rect2(0, -1600, 2400, 1600)
 const HOME_LIT := Rect2(40, 0, 940, 660)
 # Southern cliff of the plateau; only a deployed cloud ladder opens a way through it.
 const CLIFF := Rect2(-40, -30, 2480, 30)
+# Western escarpment of the plateau: the highland is otherwise unreachable on foot.
+const PLATEAU_WALL := Rect2(-8, -1600, 16, 1570)
 const FOREST_VILLAGE := Rect2(-1400,640,400,340)
 const FOREST_PLAZA := Rect2(-1250,756,100,80)
 const FOREST_ALTAR := Vector2(-1200,790)

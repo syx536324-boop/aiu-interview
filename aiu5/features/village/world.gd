@@ -265,6 +265,9 @@ func _build_cliff() -> void:
 	for i in range(int(ceil(cliff.size.x / CLIFF_SEGMENT))):
 		var x: float = cliff.position.x + float(i) * CLIFF_SEGMENT
 		cliff_bodies[i] = _body(self, Vector2(x + CLIFF_SEGMENT / 2.0, cliff.get_center().y), Vector2(CLIFF_SEGMENT, cliff.size.y))
+	# The plateau's western edge is solid rock, so ladders are the only way onto the highland.
+	var wall: Rect2 = Layout.PLATEAU_WALL
+	_body(self, wall.get_center(), wall.size)
 
 func open_cliff(x: float) -> void:
 	var index := int((x - Layout.CLIFF.position.x) / CLIFF_SEGMENT)

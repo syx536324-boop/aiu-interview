@@ -34,4 +34,4 @@ world.settlement决定建筑和居民集合，world.homes是当前村落实际�
 
 ## 地图翻倍与山地高原
 
-`Layout.MIN.y` 由 0 改为 -1600、BOUNDS 变为 4800×3200：地图向北翻倍。北半部东侧是山地高原（`Layout.PLATEAU`，2400×1600，与沙漠同面积），由南缘断崖（`Layout.CLIFF`）隔开，只能靠云梯通行；高原区块由 terrain_chunk 以冷灰岩地绘制，landscape/view 画断崖与向北延伸的东部山体。相机 limit_top、顶部边界墙、terrain 分块钳制（y -8..7）、land/landscape 的 render_region 与全图投影都随之更新。
+`Layout.MIN.y` 由 0 改为 -1600、BOUNDS 变为 4800×3200：地图向北翻倍。北半部东侧是山地高原（`Layout.PLATEAU`，2400×1600，与沙漠同面积），由南缘断崖（`Layout.CLIFF`）与西侧山壁（`Layout.PLATEAU_WALL`）围合，只能靠云梯从南侧通行；高原区块由 terrain_chunk 以冷灰岩地绘制，landscape/view 画断崖与向北延伸的东部山体。相机 limit_top、顶部边界墙、terrain 分块钳制（y -8..7）、land/landscape 的 render_region 与全图投影都随之更新。
