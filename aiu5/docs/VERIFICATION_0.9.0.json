@@ -184,8 +184,16 @@
   ],
   "installer": {
     "filename": "AIU5-Setup-0.9.0-win64.exe",
-    "bytes": 330657512,
-    "sha256": "dd9b45ed7ef97c495bcec9de267ca929bdee67baf08be143ba8503a4bdc7d3c4"
+    "bytes": 330652315,
+    "sha256": "df81ee4efb2e64962d2713f93434c520e01460d8e158ef0057d5b9a1aa675da7"
   },
-  "player_saves": "All probes use isolated paths; installation and publication not covered by this source/build record."
+  "player_saves": "All probes use isolated paths; installation and publication not covered by this source/build record.",
+  "installation": {
+    "version": "0.9.0",
+    "player_files_checked": 12,
+    "player_sha256_unchanged": true,
+    "npc_wedding_and_restart_verified": true,
+    "installed_payload_matches_export": true,
+    "temporary_override_removed": true
+  }
 }

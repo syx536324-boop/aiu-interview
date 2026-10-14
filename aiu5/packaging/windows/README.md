@@ -1,6 +1,6 @@
 # Windows 安装与打包
 
-Windows 10/11 x64，安装包 `AIU5-Setup-0.9.0-win64.exe`。双击安装，默认安装到当前用户 `%LOCALAPPDATA%\Programs\AIU5`，从开始菜单“沙盘上的生活”运行。首版模型、Python 3.12、CPU Torch、OpenCV、Ultralytics和运行所需VC DLL均随包附带；不需要Godot编辑器、D盘训练环境、网络或另装Python。源码同步到 https://github.com/syx536324-boop/aiu-interview 。0.9.0安装包仅在本地生成，尚未创建GitHub Release。
+Windows 10/11 x64，安装包 `AIU5-Setup-0.9.0-win64.exe`。双击安装，默认安装到当前用户 `%LOCALAPPDATA%\Programs\AIU5`，从开始菜单“沙盘上的生活”运行。首版模型、Python 3.12、CPU Torch、OpenCV、Ultralytics和运行所需VC DLL均随包附带；不需要Godot编辑器、D盘训练环境、网络或另装Python。源码同步到 https://github.com/syx536324-boop/aiu-interview 。0.9.0安装包下载页：https://github.com/syx536324-boop/aiu-interview/releases/tag/v0.9.0 。
 
 祭台正面E → 赐予 → 定格 → 选择 → 确认。首次加载模型需数秒；稳定目标阈值0.45、3帧/0.6秒。摄像头仅在该面板开启，不录制或上传图像。Windows需允许桌面应用访问摄像头；设备被占用时先关闭相关应用。该安装包使用CPU推理，源码可通过AIU5_CAMERA_PYTHON使用GPU环境。18类首版模型仍须按实物、背景和光照逐类验收。
 
