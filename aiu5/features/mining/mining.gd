@@ -71,6 +71,7 @@ var inventory: Node
 var surface: Dictionary = {}
 var procedural: Dictionary = {}
 var progress: Dictionary = {}
+var extracted: Dictionary = {}
 var cooldown := 0.0
 var cave_seed := 1
 var legacy_cave := false
@@ -151,7 +152,7 @@ func strike(actor: CharacterBody2D, ore: Node2D) -> bool:
 	if not equipment.weapon_usable(actor.resident_id): return false
 	var before: Dictionary = inventory.export_data()
 	var next_hit: int = ore.hits + 1
-	var reward := 2 if ore.kind == "iron_ore" else 3
+	var reward := maxi(0,(2 if ore.kind=="iron_ore" else 3)-int(extracted.get(ore.resource_id,0)))
 	if next_hit == ore.strikes and not inventory.exchange(actor.resident_id, {}, {ore.kind: reward}):
 		message.emit("背包已满，矿脉保留，腾出空间再采最后一下。")
 		return false
@@ -170,7 +171,7 @@ func strike(actor: CharacterBody2D, ore: Node2D) -> bool:
 	return true
 
 func export_state() -> Dictionary:
-	return {"cave_version":2,"cave_seed":cave_seed,"legacy_cave":legacy_cave,"progress": progress.duplicate()}
+	return {"worker_extracted":extracted.duplicate(),"cave_version":2,"cave_seed":cave_seed,"legacy_cave":legacy_cave,"progress": progress.duplicate()}
 
 func restore(data: Dictionary, seed_hint := 1) -> void:
 	cave_seed=maxi(1,int(data.get("cave_seed",seed_hint)))
@@ -179,6 +180,7 @@ func restore(data: Dictionary, seed_hint := 1) -> void:
 		for key: String in data.get("progress",{}):
 			if key.begins_with("mine:"): legacy_cave=true; break
 	underground_records=Cave.generate(cave_seed,UNDERGROUND if legacy_cave else [])
+	extracted=data.get("worker_extracted",{}).duplicate()
 	progress.clear()
 	# Keep generated IDs even when their chunks are not loaded.
 	for id: String in data.get("progress", {}):
@@ -192,3 +194,18 @@ func restore(data: Dictionary, seed_hint := 1) -> void:
 		ore.refresh()
 		_update_point(ore)
 	world.refresh_obstacles()
+
+func worker_take(record: Dictionary, bag_id: String) -> bool:
+	var id: String=record.id
+	var strikes := 4 if record.kind=="iron_ore" else 3
+	var quantity := 2 if record.kind=="iron_ore" else 3
+	if int(progress.get(id,0))>=strikes or int(extracted.get(id,0))>=quantity: return false
+	if not inventory.exchange(bag_id,{}, {str(record.kind):1}): return false
+	extracted[id]=int(extracted.get(id,0))+1
+	if int(extracted[id])>=quantity:
+		progress[id]=strikes
+		if interiors.rooms.has("mine"):
+			for node: Node in interiors.rooms.mine.find_children("*","Node2D",true,false):
+				if "resource_id" in node and node.resource_id==id: node.hits=strikes; node.refresh()
+			interiors.rooms.mine.rebuild_navigation()
+	return true

@@ -54,7 +54,7 @@ func rebuild(obstacles: Array[Rect2], map_size: Vector2, origin := Vector2.ZERO)
 
 func _free_cell(at: Vector2) -> Vector2i:
 	var center := Vector2i(floori(at.x / 8), floori(at.y / 8))
-	var best := Vector2i(-1, -1)
+	var best := Vector2i(-1000000,-1000000)
 	var distance := INF
 	for y in range(center.y - 3, center.y + 4):
 		for x in range(center.x - 3, center.x + 4):
@@ -69,6 +69,6 @@ func _free_cell(at: Vector2) -> Vector2i:
 func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:
 	var start := _free_cell(from)
 	var end := _free_cell(to)
-	if start.y < 0 or end.y < 0:
+	if not grid.is_in_boundsv(start) or not grid.is_in_boundsv(end):
 		return PackedVector2Array()
 	return grid.get_point_path(start, end)

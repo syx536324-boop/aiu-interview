@@ -8,6 +8,7 @@ const Gear := preload("res://features/combat/weapon_catalog.gd")
 const Wear := preload("res://features/combat/durability.gd")
 const Origin := preload("res://features/gifts/provenance.gd")
 const Torch := preload("res://features/lighting/torch_record.gd")
+var defeated := false
 var save_hook: Callable
 const CAPACITY := 21
 var gift_events: Dictionary = {}
@@ -44,7 +45,7 @@ func start() -> void:
 		var source: Variant = data.get(key, {})
 		if source is Dictionary:
 			for id: String in source:
-				var slots: Array = _sanitize_slots(source[id])
+				var slots: Array = _sanitize_slots(source[id],9 if id.begins_with("npc:") else CAPACITY)
 				if key == "bags":
 					bags[id] = slots
 				else:
@@ -95,9 +96,9 @@ func commit_resource_reward(actor: String, resource: String, progress: int, item
 	changed.emit()
 	return {"ok": true}
 
-func _sanitize_slots(data: Variant) -> Array:
+func _sanitize_slots(data: Variant, capacity := CAPACITY) -> Array:
 	var result: Array = []
-	for i in range(CAPACITY):
+	for i in range(capacity):
 		var slot: Variant = data[i] if data is Array and i < data.size() else {}
 		if slot is Dictionary and slot.get("item", "") == "wood_axe":
 			slot = slot.duplicate()
@@ -120,10 +121,11 @@ func _sanitize_slots(data: Variant) -> Array:
 
 func ensure_bag(id: String) -> Array:
 	if not bags.has(id):
-		bags[id] = _sanitize_slots(Catalog.starter_slots())
+		bags[id] = _sanitize_slots([] if id.begins_with("npc:") else Catalog.starter_slots(),9 if id.begins_with("npc:") else CAPACITY)
 	return bags[id]
 
 func ensure_container(id: String) -> Array:
+	if id.begins_with("npc:"): return ensure_bag(id)
 	if not containers.has(id):
 		containers[id] = _sanitize_slots([])
 	return containers[id]
@@ -163,7 +165,7 @@ func slot_clicked(side: String, index: int, quick := false) -> void:
 		return
 	status = ""
 	var slots := slots_for(side)
-	if slots.is_empty():
+	if slots.is_empty() or index>=slots.size():
 		return
 	if quick and container_id != "":
 		quick_transfer(side, index)
@@ -200,7 +202,7 @@ func quick_transfer(side: String, index: int) -> void:
 	status = ""
 	var source := slots_for(side)
 	var target := slots_for("storage" if side == "bag" else "bag")
-	if target.is_empty() or source[index].is_empty():
+	if target.is_empty() or index<0 or index>=source.size() or source[index].is_empty():
 		return
 	var original := int(source[index]["count"])
 	var remaining := original
@@ -262,6 +264,7 @@ func _report(text: String) -> void:
 	message.emit(text)
 
 func save_state() -> Error:
+	if defeated: return ERR_UNAVAILABLE
 	if save_hook.is_valid(): return save_hook.call(path)
 	return write_file(path, export_data())
 
@@ -363,7 +366,7 @@ func export_data() -> Dictionary:
 func apply_data(data: Dictionary) -> void:
 	bags.clear()
 	containers.clear()
-	for id: String in data.get("bags", {}): bags[id] = _sanitize_slots(data.bags[id])
+	for id: String in data.get("bags", {}): bags[id] = _sanitize_slots(data.bags[id],9 if id.begins_with("npc:") else CAPACITY)
 	for id: String in data.get("containers", {}): containers[id] = _sanitize_slots(data.containers[id])
 	layouts = data.get("rooms", {}).duplicate(true)
 	resource_hits = data.get("harvesting", {}).duplicate()

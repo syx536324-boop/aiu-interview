@@ -1,7 +1,9 @@
 # Renders primitive wooden furniture with plank joints, wooden pegs and distinct shapes.
 extends Node2D
 
-const NAMES := {"campfire":"篝火","building_bench":"建筑台", "workbench": "工作台", "fence": "围栏", "stove": "灶台", "bed": "木床", "table": "木桌", "chair": "木椅", "cabinet": "木柜", "chest": "木箱"}
+const NAMES := {"fence_gate":"栅栏门","campfire":"篝火","building_bench":"建筑台", "workbench": "工作台", "fence": "围栏", "stove": "灶台", "bed": "木床", "table": "木桌", "chair": "木椅", "cabinet": "木柜", "chest": "木箱"}
+var gate_open := false
+var hp := 10.0
 var lit := false
 var lamp: PointLight2D
 var gift_origin: Dictionary = {}
@@ -33,6 +35,7 @@ func configure_record(record: Dictionary) -> void:
 	configure([record["kind"], Vector2(record["at"][0], record["at"][1]), Vector2(record["size"][0], record["size"][1]), int(record.get("variant", 0))])
 	gift_origin = record.get("gift_origin", {}).duplicate(true)
 	lit = bool(record.get("lit",false))
+	gate_open=bool(record.get("gate_open",false)); hp=clampf(float(record.get("hp",10)),0,10)
 	public_fixture = bool(record.get("public_fixture",false))
 	fixture_id = record["id"]
 	orientation = int(record.get("orientation", 0)) % 4
@@ -49,7 +52,7 @@ func visual_bounds() -> Rect2:
 
 func record() -> Dictionary:
 	var at := visual_bounds().position
-	return {"lit":lit,"public_fixture":public_fixture,"gift_origin":gift_origin.duplicate(true), "id": fixture_id, "kind": kind, "at": [at.x, at.y], "size": [base_size.x, base_size.y], "variant": variant, "orientation": orientation}
+	return {"gate_open":gate_open,"hp":hp,"lit":lit,"public_fixture":public_fixture,"gift_origin":gift_origin.duplicate(true), "id": fixture_id, "kind": kind, "at": [at.x, at.y], "size": [base_size.x, base_size.y], "variant": variant, "orientation": orientation}
 
 func _ready() -> void:
 	if kind!="campfire" or preview: return
@@ -72,6 +75,7 @@ func is_storage() -> bool:
 	return kind == "cabinet" or kind == "chest"
 
 func collision_bounds() -> Rect2:
+	if kind=="fence_gate" and gate_open: return Rect2(position+Vector2(-size.x/2,-5),Vector2(2,4))
 	return Rect2(position + Vector2(-size.x / 2 + 2, -size.y + 5), Vector2(size.x - 4, maxf(4, size.y - 6)))
 
 func _board(rect: Rect2, horizontal := true) -> void:
@@ -97,6 +101,13 @@ func _draw() -> void:
 		draw_rect(Rect2(x - 1, y - 1, size.x + 2, size.y + 2), Color(0.25, 0.8, 0.4, 0.35) if preview_valid else Color(0.95, 0.25, 0.2, 0.45))
 	draw_rect(Rect2(x, -3, size.x, 4), Color(0.18, 0.11, 0.07, 0.25))
 	match kind:
+		"fence_gate":
+			for post_x in [x,x+size.x-3]: _board(Rect2(post_x,-16,3,17),false)
+			if gate_open:
+				_board(Rect2(x+2,-22,3,22),false)
+			else:
+				_board(Rect2(x+2,-12,size.x-4,3)); _board(Rect2(x+2,-6,size.x-4,3))
+				draw_line(Vector2(x+2,-4),Vector2(x+size.x-2,-13),light,2)
 		"campfire":
 			for at in [Vector2(-9,-7),Vector2(-6,-2),Vector2(5,-2),Vector2(9,-7),Vector2(0,-12)]: draw_circle(at,3,Color("7f8175"))
 			draw_line(Vector2(-6,-5),Vector2(6,-2),wood,3)

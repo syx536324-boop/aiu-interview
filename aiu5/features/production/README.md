@@ -48,3 +48,5 @@ open_upgrade由U打开自建房升级，所有配方与进度取construction.upg
 ## 0.8.1接口与规则
 
 scissors_tools通过available／options／perform／advance提供普通剪刀采集与裁剪。production.open_scissors仅打开采集页，UI使用snapshot与perform请求；牛皮1→皮革2，羊毛2每成年羊300在线秒，藤条1每森林草丛120在线秒；export_state／restore保存冷却。cloth配方silk5→cloth1、60在线秒；床追加cloth5。
+
+0.9.0：工作台新增绳子（布3）、栅栏门（木4）、铁镐（木1粗铁2）。建筑台草药屋木50石30，30秒施工。殖民地铁匠铺按function识别、每座独立炉队列；草药屋按function支持汤剂。NPC与婚恋动作仍经workshop快照和perform请求。

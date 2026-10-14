@@ -2,6 +2,7 @@
 extends RefCounted
 
 const TYPES := {
+	"fence_gate":{"name":"栅栏门","size":Vector2(24,12)},
 	"campfire":{"name":"篝火","size":Vector2(24,24)},
 	"building_bench": {"name":"建筑台","size":Vector2(96,80)},
 	"workbench": {"name": "工作台", "size": Vector2(36, 24)},

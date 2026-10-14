@@ -38,7 +38,7 @@ func _near(actor: Node, at: Vector2, radius: float) -> bool:
 func _enemies(actor: Node, at: Vector2, radius: float, limit := 100) -> Array:
 	var found: Array=[]
 	if actor.room_id!="": return found
-	for enemy: Node in session.combat.enemies.values():
+	for enemy: Node in session.combat.target_enemies():
 		if enemy.hp>0 and enemy.get_parent()!=null and enemy.global_position.distance_to(at)<=radius and _near(actor,enemy.global_position,200): found.append(enemy)
 	found.sort_custom(func(a: Node,b: Node) -> bool: return a.global_position.distance_squared_to(at)<b.global_position.distance_squared_to(at))
 	return found.slice(0,limit)
@@ -408,7 +408,7 @@ func _step(delta: float) -> void:
 					session.homestead.refresh()
 		if area.kind in ["pit","firewall"]:
 			var interval := 3.0 if area.kind=="pit" else 1.0
-			for enemy: Node in session.combat.enemies.values():
+			for enemy: Node in session.combat.target_enemies():
 				if enemy.hp<=0 or enemy.get_parent()==null: continue
 				if _contains(area,enemy.global_position):
 					area.ticks[enemy.enemy_id]=float(area.ticks.get(enemy.enemy_id,0))+span
@@ -416,7 +416,7 @@ func _step(delta: float) -> void:
 						area.ticks[enemy.enemy_id]-=interval; _damage(enemy,4 if area.kind=="pit" else 3,str(area.actor))
 				else: area.ticks.erase(enemy.enemy_id)
 		if area.kind=="array" and float(area.hp)>0:
-			for enemy: Node in session.combat.enemies.values():
+			for enemy: Node in session.combat.target_enemies():
 				if enemy.hp>0 and enemy.get_parent()!=null and enemy.global_position.distance_to(pos(area))<=32:
 					area.ticks[enemy.enemy_id]=float(area.ticks.get(enemy.enemy_id,0))+span
 					if area.ticks[enemy.enemy_id]>=2: area.ticks[enemy.enemy_id]-=2; area.hp=maxf(0,float(area.hp)-10*0.8)

@@ -24,6 +24,8 @@ func start(village: Node2D) -> void:
 	world._label("西河", Vector2(110, 920))
 	world._label("东侧高山", Vector2(2160, 380))
 	world._label("南部荒野", Vector2(1060, 1160))
+	var frontier := preload("res://features/landscape/frontier.gd").new()
+	world.add_child(frontier); frontier.start(world)
 	world.refresh_obstacles()
 
 func water_target(at: Vector2) -> void:
@@ -31,6 +33,7 @@ func water_target(at: Vector2) -> void:
 	world.points.river.position = Vector2(2 if at.x < 12 else edge + 10, clampf(at.y, 20, 1580))
 
 static func protected(bounds: Rect2) -> bool:
+	if preload("res://features/landscape/frontier.gd").protected(bounds): return true
 	if bounds.intersects(Rect2(8, 0, 32, 600)) or bounds.intersects(Rect2(8, 600, 96, 1000)): return true
 	if bounds.intersects(preload("res://features/village/layout.gd").FOREST_PLAZA): return true
 	if bounds.intersects(MOUNTAINS.grow(4)) or bounds.intersects(PLAZA): return true

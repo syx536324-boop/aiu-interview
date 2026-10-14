@@ -335,7 +335,9 @@ func run() -> void:
 	s.magic.ensure(chief.chief_id).element=""
 	s.interiors.enter(s.world.active_resident,s.world.home_data(real_house))
 	hp=s.construction.records[real_house].hp
-	chief._physics_process(0)
+	await frames(2)
+	s.tribes.war.cooldowns[chief.enemy_id]=0
+	s.tribes.war._act(chief.enemy_id,chief,0)
 	check(is_equal_approx(hp-s.construction.records[real_house].hp,7.84),"chief element comes from tribe even when player progression restores without NPC state")
 	s.interiors.leave(s.world.active_resident,s.world.objects,s.world.home_data(real_house).door)
 	s._sync_view()

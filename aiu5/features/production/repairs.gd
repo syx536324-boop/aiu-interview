@@ -1,7 +1,7 @@
 # Offers and atomically repairs individual broken stone/iron weapons at the smith furnace.
 extends RefCounted
 const Wear := preload("res://features/combat/durability.gd")
-const MATERIALS := {"knife":"stone", "iron_knife":"crude_iron", "pickaxe":"stone", "stone_axe":"stone", "stone_sword":"stone", "iron_axe":"crude_iron", "iron_sword":"crude_iron"}
+const MATERIALS := {"knife":"stone", "iron_knife":"crude_iron", "pickaxe":"stone","iron_pickaxe":"crude_iron", "stone_axe":"stone", "stone_sword":"stone", "iron_axe":"crude_iron", "iron_sword":"crude_iron"}
 static func _weapon(session: Node, id: String) -> Dictionary:
 	var actor_id: String = session.world.active_resident.resident_id
 	if id == "repair:equipped":
@@ -29,7 +29,7 @@ static func options(session: Node) -> Array:
 			"enabled":session.inventory.has_item(actor_id,material)})
 	return result
 static func perform(session: Node, id: String) -> bool:
-	if session.world.active_resident.room_id!="blacksmith" or not session.production._valid("smelt"): return false
+	if not session.production.is_smith() or not session.production._valid("smelt"): return false
 	var record := _weapon(session,id)
 	if not _broken(record):
 		session.production.message.emit("只能修复损坏的石制或铁制武器。")

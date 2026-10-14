@@ -7,6 +7,8 @@ signal names_result(ok: bool, message: String)
 
 const NameProfile := preload("res://features/identity/name_profile.gd")
 
+var tribes: Node
+var wildlife: Node
 var world: Node2D
 var interiors: Node2D
 var inventory: Node
@@ -129,6 +131,7 @@ func _process(delta: float) -> void:
 		state_changed.emit(snapshot())
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(tribes) and not tribes.romance.ceremony.is_empty(): get_viewport().set_input_as_handled(); return
 	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_RIGHT and event.pressed:
 		if is_instance_valid(combat) and combat.ready_for_action():
 			if is_instance_valid(simulation): simulation.flush()
@@ -136,6 +139,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if is_instance_valid(tribes) and not tribes.romance.ceremony.is_empty(): get_viewport().set_input_as_handled(); return
 	if not is_instance_valid(world) or event.is_echo() or menu_paused:
 		return
 	if is_instance_valid(gifts) and gifts.opened:
@@ -265,7 +269,7 @@ func close_roster() -> void:
 func refresh_interface() -> void:
 	if not is_instance_valid(world):
 		return
-	world.set_player_input_enabled(not overview and not menu_paused and not (is_instance_valid(gifts) and gifts.opened) and not roster_open and not inventory.opened and not editor.opened and attributes_id == "" and not awakening_open and (not is_instance_valid(production) or not production.opened))
+	world.set_player_input_enabled((not is_instance_valid(tribes) or tribes.romance.ceremony.is_empty()) and not overview and not menu_paused and not (is_instance_valid(gifts) and gifts.opened) and not roster_open and not inventory.opened and not editor.opened and attributes_id == "" and not awakening_open and (not is_instance_valid(production) or not production.opened))
 	state_changed.emit(snapshot())
 
 func toggle_inventory() -> void:
@@ -311,6 +315,7 @@ func interact() -> void:
 	if is_instance_valid(persistence): persistence.save_now()
 
 func _interact_impl() -> void:
+	if is_instance_valid(tribes) and tribes.interact(): return
 	if world.active_resident.room_id != "":
 		var context: Dictionary = interiors.context(world.active_resident)
 		if context.get("id", "") == "exit":
@@ -325,7 +330,7 @@ func _interact_impl() -> void:
 		elif context.get("id", "") == "workbench":
 			production.open_near()
 		elif context.get("id", "") == "stove":
-			if world.active_resident.room_id == "blacksmith": production.open_near()
+			if production.is_smith(): production.open_near()
 			else:
 				var before: Dictionary = inventory.export_data()
 				if homestead.stove(world.active_resident): production.commit(before,"灶台操作已保存。")
@@ -423,7 +428,7 @@ func snapshot() -> Dictionary:
 		if not context.is_empty():
 			prompt = "E  " + str(context["label"]) + " · " + str(context["action"])
 			interaction_detail = str(context.get("description", ""))
-			if world.active_resident.room_id in ["herb_house", "forest_herb_house"] and context.get("id", "") == "workbench":
+			if tribes.romance.clinic(world.home_data(world.active_resident.room_id)) and context.get("id", "") == "workbench":
 				prompt = "E / T 草药屋 · 合成汤剂"
 				interaction_detail = "大补汤：生命健康回满 · 补气汤：健康+5、生命+3"
 	elif nearest != "":
@@ -441,7 +446,7 @@ func snapshot() -> Dictionary:
 	if is_instance_valid(homestead) and inside and interiors.context(world.active_resident).get("id", "") == "stove":
 		prompt = "E 灶台 · " + ("剩余 %d 秒" % ceili(homestead.cooking.remaining) if homestead.cooking.remaining > 0 else ("领取熟肉" if homestead.cooking.ready > 0 else "放入生猪肉"))
 		prompt += " / T 冶炼铁矿"
-		if world.active_resident.room_id == "blacksmith": prompt = "E / T 铁匠铺 · 冶炼铁矿 / 领取粗铁"
+		if production.is_smith(): prompt = "E / T 铁匠铺 · 冶炼铁矿 / 领取粗铁"
 	if inside and world.home_data(world.active_resident.room_id).get("tower",false) and interiors.context(world.active_resident).get("id","")!="exit":
 		prompt="箭楼顶部 · 鼠标瞄准 / J 射箭"
 	if not inside and is_instance_valid(grounds) and (nearest == "" or nearest.begins_with("npc:")):
@@ -481,10 +486,10 @@ func snapshot() -> Dictionary:
 		"resident": world.active_resident.resident_name, "selected": selected,
 		"inside": inside, "room_name": str(world.home_data(world.active_resident.room_id).get("name", "")), "founder_names": world.founder_names(),
 		"role": world.active_resident.role_label, "roster": roster, "roster_open": roster_open,
-		"population": world.residents.size(), "npc_count": world.residents.size() - world.controllable.size(), "homes": world.houses.size(),
+		"population": world.residents.filter(func(a: Node)->bool:return not a.dead).size()+tribes.population.members.keys().filter(func(id: String)->bool:return tribes.population.friendly(id) and tribes.population.node(id).hp>0).size(), "npc_count": tribes.population.members.keys().filter(func(id: String)->bool:return tribes.population.friendly(id) and tribes.population.node(id).hp>0).size(), "homes": world.houses.size(),
 		"biome": "西岸森林" if world.active_resident.position.x < 0 and not inside else "干旱地带",
 		"water": water_full, "water_text": inventory.Catalog.Water.summary(inventory.ensure_bag(world.active_resident.resident_id)), "watered": watered, "gate_open": gate_open,
-		"overview": overview, "prompt": prompt, "crop_detail": crop_detail, "detail": interaction_detail if interaction_detail != "" else crop_detail, "underground": world.active_resident.room_id == "mine",
+		"pregnancy":tribes.romance.hud_status(world.active_resident.resident_id) if is_instance_valid(tribes) else "", "overview": overview, "prompt": prompt, "crop_detail": crop_detail, "detail": interaction_detail if interaction_detail != "" else crop_detail, "underground": world.active_resident.room_id == "mine",
 		"notice": notice if notice_time > 0 else ""
 	}
 
@@ -525,11 +530,11 @@ func use_selected() -> void:
 			close_inventory()
 			toggle_furnishing()
 			editor.choose_gift_bed(int(selection.index))
-	elif item in ["campfire","workbench", "fence", "building_bench", "cabinet", "table", "chair", "chest"]:
+	elif item in ["campfire","workbench", "fence", "fence_gate", "building_bench", "cabinet", "table", "chair", "chest"]:
 		close_inventory()
 		toggle_furnishing()
 		editor.choose(item)
-	elif homestead.Meat.RAW.has(item) and world.active_resident.room_id != "" and interiors.context(world.active_resident).get("id","")=="stove" and world.active_resident.room_id!="blacksmith":
+	elif homestead.Meat.RAW.has(item) and world.active_resident.room_id != "" and interiors.context(world.active_resident).get("id","")=="stove" and not production.is_smith():
 		var before: Dictionary = inventory.export_data()
 		if homestead.stove(world.active_resident,item): production.commit(before,"已提交灶台烹饪操作。")
 		inventory.selection.clear()

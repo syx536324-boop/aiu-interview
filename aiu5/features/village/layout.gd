@@ -1,11 +1,11 @@
 # Declares settlement size, housing, roads and resident records without gameplay behavior.
 extends RefCounted
 
-const SIZE := Vector2(4800, 1600)
-# The map doubles northward: y runs -1600..1600, so BOUNDS is 4800x3200 world pixels.
+const SIZE := Vector2(4800, 4800)
+# World bounds are x=-2400..4800 and y=-1600..4800: 7200x6400, preserving all older coordinates.
 const MIN := Vector2(-2400, -1600)
 const BOUNDS := Rect2(MIN, SIZE - MIN)
-const FOREST := Rect2(-2400, 0, 2400, 1600)
+const FOREST := Rect2(-2400, 0, 2400, 4800)
 # The woodland continues north of the original map, with the same gatherable mix.
 const FOREST_NORTH := Rect2(-2400, -1600, 2400, 1600)
 # Mountain plateau: the north-east quadrant above the desert, reached from the desert floor.
@@ -17,7 +17,7 @@ const CLIFF := Rect2(-40, -30, 2480, 30)
 # Western escarpment of the plateau: the highland is otherwise unreachable on foot.
 const PLATEAU_WALL := Rect2(-8, -1600, 16, 1570)
 # Eastern extension: a mountain zone east of the old border, with the Yunye tribe on its mid-slope.
-const MOUNTAINS_EAST := Rect2(2400, -1600, 2400, 3200)
+const MOUNTAINS_EAST := Rect2(2400, -1600, 2400, 6400)
 # North-south ridge sealing the mountains off; a second cloud ladder opens a pass through it.
 const RIDGE := Rect2(2400, -1600, 30, 3200)
 # Yunye tribe territory on the mountainside (山腰).

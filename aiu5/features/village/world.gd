@@ -43,6 +43,7 @@ var pigs: Array[CharacterBody2D] = []
 var cows: Array[CharacterBody2D] = []
 var extra_homes: Dictionary = {}
 var active_resident: CharacterBody2D
+var legacy_barriers: Dictionary={}
 var gate_visual: Node2D
 var gate_body: StaticBody2D
 var overview := false
@@ -55,7 +56,9 @@ var obstacle_bodies: Dictionary = {}
 
 func _ready() -> void:
 	for home: Dictionary in Layout.HOMES:
-		if settlement != "starter" or home.get("always", false) or home.id in ["kitchen", "house", "round_house", "herb_house"]: homes.append(home)
+		if settlement=="starter_v2":
+			if str(home.id).begins_with("forest_") or home.id in ["kitchen","blacksmith"]: homes.append(home)
+		elif settlement != "starter" or home.get("always", false) or home.id in ["kitchen", "house", "round_house", "herb_house"]: homes.append(home)
 	terrain = Terrain.new()
 	terrain.name = "SandAndFarmland"
 	add_child(terrain)
@@ -69,11 +72,15 @@ func _ready() -> void:
 	add_child(haze)
 	haze.start(self)
 	_build_landmarks()
-	_build_pen()
+	if settlement=="starter_v2":
+		gate_visual=Fence.new(); gate_visual.visible=false; objects.add_child(gate_visual)
+		gate_body=_body(gate_visual,Vector2(-2390,-1590),Vector2(1,1)); gate_body.collision_layer=0
+		for key: String in ["well","farm","gate","trough"]: points.erase(key)
+	else: _build_pen()
 	_scatter_desert_props()
 	_rebuild_navigation(false)
 	_spawn_residents()
-	_spawn_pigs()
+	if settlement!="starter_v2": _spawn_pigs()
 	camera = Camera2D.new()
 	camera.name = "FollowingCamera"
 	# Closer following view: the 640x400 viewport shows 492x308 world pixels at 1.3x zoom.
@@ -198,7 +205,7 @@ func water_farm() -> void:
 func set_gate_open(value: bool) -> void:
 	gate_visual.open = value
 	gate_visual.queue_redraw()
-	gate_body.set_deferred("collision_layer", 0 if value else 1)
+	gate_body.set_deferred("collision_layer", 0 if settlement=="starter_v2" or gate_visual.hp<=0 or value else 1)
 	_rebuild_navigation(value)
 	for resident in residents:
 		resident.navigation = PackedVector2Array()
@@ -327,6 +334,10 @@ func _build_landmarks() -> void:
 			house.add_child(KitchenDetail.new())
 		points[data["id"]] = {"position": data["door"], "radius": 25.0, "label": data["name"], "action": "进屋", "description": data["description"]}
 		_label(data["name"], data["at"] + Vector2(10, 0))
+	if settlement!="starter_v2": _build_old_landmarks()
+	_build_altars()
+
+func _build_old_landmarks() -> void:
 	var well := _prop(DESERT, Rect2(0, 48, 32, 32), Vector2(318, 170), Vector2(25, 18))
 	well.name = "Well"
 	well.add_child(WellDetail.new())
@@ -338,6 +349,8 @@ func _build_landmarks() -> void:
 	_label("水井", Vector2(321, 170))
 	_label("小农田", Vector2(236, 231))
 	_label("猪圈", Vector2(422, 210))
+
+func _build_altars() -> void:
 	altar = Altar.new()
 	altar.name = "CeremonialAltar"
 	altar.position = Vector2(548, 310)
@@ -377,6 +390,8 @@ func _fence(at: Vector2, length: float, vertical: bool, gate := false) -> void:
 	var size := Vector2(5, length + 2) if vertical else Vector2(length, 5)
 	var center := Vector2(0, length / 2) if vertical else Vector2(length / 2, 0)
 	var body := _body(visual, center, size)
+	visual.body=body; visual.world=self; body.set_meta("barrier_fixture",visual)
+	legacy_barriers[str(at)]=visual
 	if gate:
 		gate_visual = visual
 		gate_body = body
@@ -413,12 +428,11 @@ func _scatter_desert_props() -> void:
 func _spawn_residents() -> void:
 	for data: Dictionary in Layout.PLAYERS:
 		_spawn_resident(data, true)
-	if settlement != "starter":
+	if settlement not in ["starter","starter_v2"]:
 		for data: Dictionary in Layout.NPCS:
 			_spawn_resident(data, false)
 
-	for data: Dictionary in Layout.FOREST_NPCS:
-		_spawn_resident(data, false)
+	# External village inhabitants are owned by the tribe population module.
 
 func _spawn_resident(data: Dictionary, playable: bool) -> void:
 	var resident := Resident.new()
@@ -452,3 +466,10 @@ func _spawn_pigs() -> void:
 		pig.position = Vector2(406 + i * 20, 247)
 		objects.add_child(pig)
 		pigs.append(pig)
+func fence_state() -> Dictionary:
+	var result: Dictionary={}
+	for id: String in legacy_barriers: result[id]=legacy_barriers[id].hp
+	return result
+func restore_fences(data: Dictionary) -> void:
+	for id: String in legacy_barriers:
+		var f: Node=legacy_barriers[id]; f.hp=clampf(float(data.get(id,10)),0,10); f.damage(0)

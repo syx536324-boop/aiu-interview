@@ -1,5 +1,17 @@
 # Simulates one nearby hostile from another tribe; defeated state is persistent and never respawns on a timer.
 extends CharacterBody2D
+var npc_runtime: Node
+var npc_level := 1
+var resident_id := ""
+var gender := "male"
+var room_id := ""
+var dead := false
+var controlled := false
+var friendly := false
+var navigation := PackedVector2Array()
+var facing := 0
+var patrol_index := 0
+var idle_time := 0.0
 var combat: Node
 var enemy_id := ""
 var hp := 30.0
@@ -15,7 +27,7 @@ var territory := Rect2()
 var chief_id := ""
 var shot_cooldown := 0.0
 var mana := 0
-const ROLE_NAMES := {"civilian": "平民", "archer": "弓箭手", "charger": "冲锋手", "chief": "村长"}
+const ROLE_NAMES := {"farmer":"农民","miner":"矿工","civilian": "平民", "archer": "弓箭手", "charger": "战士", "chief": "村长"}
 const TRIBE_NAMES := {"raider": "外部落", "forest": "森林部落", "barbarian": "野蛮部落", "yunye": "云野部落"}
 
 func configure_tribe(tribe_name: String, npc_role: String, area: Rect2, max_hp := 20.0) -> void:
@@ -53,11 +65,15 @@ func _ready() -> void:
 	add_to_group("hostile_targets")
 	refresh()
 func refresh() -> void:
+	dead=hp<=0
+	if friendly: remove_from_group("hostile_targets")
+	elif not is_in_group("hostile_targets"): add_to_group("hostile_targets")
 	visible = hp > 0
 	collision_layer = 8 if hp > 0 else 0
 	set_physics_process(hp > 0)
 	queue_redraw()
 func _physics_process(delta: float) -> void:
+	if is_instance_valid(npc_runtime): return
 	cooldown = maxf(0,cooldown-delta)
 	pursuit = maxf(0,pursuit-delta)
 	shot_cooldown = maxf(0,shot_cooldown-delta)
@@ -103,7 +119,8 @@ func _physics_process(delta: float) -> void:
 			if ranged and session.magic.branches.barrier_blocks(global_position,actor.global_position): return
 			session.vitals.hurt(actor.resident_id,1,{"kind":"ranged" if ranged else "melee","enemy":enemy_id,"element":str(combat.CHIEF_ELEMENT.get(tribe,"")) if role=="chief" else ""})
 func _draw() -> void:
-	draw_colored_polygon(PackedVector2Array([Vector2(-3,-28),Vector2(3,-28),Vector2(0,-25)]),Color("e37657"))
+	if is_instance_valid(npc_runtime): draw_rect(Rect2(-2,-34,4,2),Color("dc9aab") if gender=="female" else Color("81b9d3"))
+	draw_colored_polygon(PackedVector2Array([Vector2(-3,-28),Vector2(3,-28),Vector2(0,-25)]),Color("90d9ae") if friendly else Color("e37657"))
 	draw_rect(Rect2(-10,-22,20,3),Color("392d27"))
 	draw_rect(Rect2(-10,-22,20*hp/max_hp,3),Color("bf7060"))
 

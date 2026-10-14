@@ -14,18 +14,21 @@ var captions: Control
 var signature := ""
 var build_count := 0
 const MAP_RECT := Rect2(104, 90, 432, 288)
-const SCALE := 0.06
-const MAP_OFFSET_Y := 48.0
+const SCALE := 0.045
+const MAP_OFFSET_Y := 0.0
 # Exploration fog: a chunk stays lit for thirty seconds after it was loaded; the home village is always lit.
 const FOG_SECONDS := 30
 const FOG_CELL := Vector2(320, 200)
 var lit: Dictionary = {}
 var fog
+var all_markers: Array=[]
+var caption_visibility := ""
+var visibility_left := 0.0
 
 class Fog extends Control:
 	const CELL := Vector2(320, 200)
-	const SCALE := 0.06
-	const OFFSET_Y := 48.0
+	const SCALE := 0.045
+	const OFFSET_Y := 0.0
 	const SECONDS := 30.0
 	var lit: Dictionary = {}
 	var origin := Vector2.ZERO
@@ -37,18 +40,18 @@ class Fog extends Control:
 		queue_redraw()
 	func _draw() -> void:
 		var now := Time.get_ticks_msec()
-		for cy in range(-8, 8):
+		for cy in range(-8, 24):
 			for cx in range(-8, 15):
 				var id := Vector2i(cx, cy)
 				var area := Rect2(Vector2(id) * CELL, CELL)
 				if home.intersects(area): continue
 				if lit.has(id) and now - int(lit[id]) <= int(SECONDS * 1000.0): continue
-				draw_rect(Rect2((area.position - origin) * SCALE + Vector2(0, OFFSET_Y), area.size * SCALE), Color(0.02, 0.02, 0.03, 0.92))
+				draw_rect(Rect2((area.position - origin) * SCALE + Vector2(54, OFFSET_Y), area.size * SCALE), Color(0.02, 0.02, 0.03, 1.0))
 
 
 static func project(at: Vector2) -> Vector2:
-	# The widened map (7200x3200) fits the 432x288 panel at this scale, centred vertically.
-	return (at - Layout.MIN) * SCALE + Vector2(0, MAP_OFFSET_Y)
+	# The 7200x6400 map fits the 432x288 panel, centred horizontally.
+	return (at - Layout.MIN) * SCALE + Vector2(54, MAP_OFFSET_Y)
 
 class Captions extends Control:
 	var entries: Array[Dictionary] = []
@@ -147,9 +150,7 @@ func start(village: Node2D, outdoor: Node2D, crops: Node) -> void:
 	_label("北", Vector2(545, 96), 12)
 	_label("红点：外部落敌人",Vector2(104,76),9)
 	_label("黑：未探索 · 走过点亮30秒",Vector2(376,76),9)
-	_label("西岸森林", Vector2(110, 108), 11)
-	_label("沙漠", Vector2(480, 108), 11)
-	_label("东山", Vector2(548, 241), 11)
+	move_child(fog,get_child_count()-1)
 	visible = false
 
 func _label(text: String, at: Vector2, font_size: int) -> void:
@@ -182,12 +183,14 @@ func present() -> void:
 	for actor in world.residents:
 		if actor.dead: continue
 		var at: Vector2 = actor.position if actor.room_id == "" else world.home_data(actor.room_id).door
-		entries.append({"at": project(at), "active": actor == world.active_resident, "playable": actor.can_control})
+		entries.append({"world_at":at,"at": project(at), "active": actor == world.active_resident, "playable": actor.can_control})
 	if is_instance_valid(world.streamer.session.combat):
 		for enemy in world.streamer.session.combat.enemies.values():
-			if enemy.hp>0: entries.append({"at":project(enemy.position),"active":false,"playable":false,"enemy":true})
-	markers.entries = entries
-	markers.queue_redraw()
+			if enemy.hp>0:
+				var at: Vector2=enemy.position if enemy.room_id=="" else world.home_data(enemy.room_id).door
+				entries.append({"world_at":at,"at":project(at),"active":false,"playable":enemy.friendly,"enemy":not enemy.friendly})
+	all_markers=entries
+	_refresh_visibility(true)
 	visible = true
 
 func _fill(image: Image, area: Rect2, color: Color) -> void:
@@ -206,7 +209,7 @@ func _build() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = world.resource_seed
 	for i in range(210):
-		_fill(image,Rect2(Vector2(rng.randf_range(-2350,-50),rng.randf_range(-1560,1560)),Vector2(20,26)),Color("3b6345"))
+		_fill(image,Rect2(Vector2(rng.randf_range(-2350,-50),rng.randf_range(-1560,4760)),Vector2(20,26)),Color("3b6345"))
 	_fill(image, Layout.MOUNTAINS_EAST, Color("4b5259"))
 	if not world.haze.visited:
 		# The highlands stay fogged on the map until the player actually reaches them.
@@ -230,22 +233,27 @@ func _build() -> void:
 	for home: Dictionary in world.homes:
 		_fill(image, Rect2(home.at, home.region.size), Color("75533d"))
 		_fill(image, Rect2(home.door - Vector2(5, 5), Vector2(10, 10)), Color("f4d594"))
-	_fill(image, Rect2(384, 211, 96, 63), Color("9d835b"))
-	_fill(image, Rect2(48, 406, 120, 80), Color("88754d"))
-	_fill(image, Rect2(326, 180, 18, 23), Color("526f75"))
+	if world.points.has("gate"): _fill(image, Rect2(384, 211, 96, 63), Color("9d835b"))
+	if world.points.has("cow_trough"): _fill(image, Rect2(48, 406, 120, 80), Color("88754d"))
+	if world.points.has("well"): _fill(image, Rect2(326, 180, 18, 23), Color("526f75"))
 	_fill(image, Rect2(533, 297, 30, 22), Color("9f7658"))
 	_fill(image, Rect2(501, 249, 94, 35), Color("b2915d"))
 	_fill(image, Rect2(2045, 425, 50, 30), Color("45453c"))
 	for fixture in grounds.fixtures: _fill(image, fixture.visual_bounds(), Color("72533b"))
+	for route: Array in preload("res://features/landscape/frontier.gd").RIVERS:
+		for j in range(route.size()-1):
+			var a: Vector2=route[j]; var b: Vector2=route[j+1]
+			for i in range(ceili(a.distance_to(b)/8)+1): _fill(image,Rect2(a.move_toward(b,i*8)-Vector2(9,9),Vector2(18,18)),Color("518d96"))
 	texture = ImageTexture.create_from_image(image)
 	background.texture = texture
-	captions.arrange(_building_names())
+	caption_visibility=""
+	_refresh_visibility(true)
 
 func _building_names() -> Array[Dictionary]:
 	var records: Array[Dictionary] = []
 	for home: Dictionary in world.homes:
 		var bounds := Rect2(project(home.at), home.region.size * SCALE)
-		records.append({"id": home.id, "text": home.name, "at": bounds.get_center(), "bounds": bounds})
+		records.append({"world_at":home.at+home.region.size/2,"id": home.id, "text": home.name, "at": bounds.get_center(), "bounds": bounds})
 	var facilities := [
 		{"id":"forest_altar", "text":"青木祭台", "area":Rect2(Layout.FOREST_ALTAR-Vector2(30,26),Vector2(60,26))},
 		{"id": "well", "text": "水井", "area": Rect2(326, 180, 18, 23)},
@@ -254,7 +262,44 @@ func _building_names() -> Array[Dictionary]:
 		{"id": "altar", "text": "祭台", "area": Rect2(533, 297, 30, 22)},
 		{"id": "altar_display", "text": "祭坛", "area": Rect2(501, 249, 94, 35)},
 		{"id": "mine", "text": "矿洞", "area": Rect2(2045, 425, 50, 30)}]
+	if is_instance_valid(world.streamer.session.tribes) and world.streamer.session.tribes.mine_marked:
+		for facility: Dictionary in facilities:
+			if facility.id=="mine": facility["permanent"]=true
 	for facility: Dictionary in facilities:
+		if facility.id=="well" and not world.points.has("well"): continue
+		if facility.id=="pig_pen" and not world.points.has("gate"): continue
+		if facility.id=="cow_shed" and not world.points.has("cow_trough"): continue
 		var bounds := Rect2(project(facility.area.position), facility.area.size * SCALE)
-		records.append({"id": facility.id, "text": facility.text, "at": bounds.get_center(), "bounds": bounds})
+		records.append({"permanent":facility.get("permanent",false),"world_at":facility.area.get_center(),"id": facility.id, "text": facility.text, "at": bounds.get_center(), "bounds": bounds})
+	if is_instance_valid(world.streamer.session.tribes):
+		for tribe: String in world.streamer.session.tribes.relics.visuals:
+			var at: Vector2=world.streamer.session.tribes.relics.visuals[tribe].position
+			records.append({"world_at":at,"id":"relic:"+tribe,"text":str(world.streamer.session.tribes.names[tribe])+"圣品","at":project(at),"bounds":Rect2(project(at),Vector2(1,1))})
+	for region: Dictionary in [{"id":"region_forest","text":"西岸森林","at":Vector2(-2000,400)},{"id":"region_desert","text":"沙漠","at":Vector2(1200,400)},{"id":"region_east","text":"东山","at":Vector2(3600,200)}]:
+		records.append({"world_at":region.at,"id":region.id,"text":region.text,"at":project(region.at),"bounds":Rect2(project(region.at),Vector2(1,1))})
 	return records
+
+# Shared visibility follows the same cell/home exemption as the fog layer.
+func point_lit(at: Vector2) -> bool:
+	var cell := Vector2i((at/FOG_CELL).floor())
+	if Layout.HOME_LIT.intersects(Rect2(Vector2(cell)*FOG_CELL,FOG_CELL)): return true
+	return lit.has(cell) and Time.get_ticks_msec()-int(lit[cell])<=FOG_SECONDS*1000
+func _refresh_visibility(force := false) -> void:
+	if not is_instance_valid(markers) or not is_instance_valid(captions): return
+	markers.entries=all_markers.filter(func(record: Dictionary)->bool:return point_lit(record.world_at))
+	markers.queue_redraw()
+	var records: Array[Dictionary]=[]
+	for record: Dictionary in _building_names():
+		if record.get("permanent",false) or point_lit(record.world_at): records.append(record)
+	var next := JSON.stringify(records.map(func(record: Dictionary)->String:return record.id))
+	if force or next!=caption_visibility:
+		caption_visibility=next; captions.arrange(records)
+		var permanent := get_node_or_null("PermanentMineLabel")
+		if permanent==null:
+			permanent=Label.new(); permanent.add_theme_font_override("font",captions.font); permanent.add_theme_color_override("font_color",Color("f6e6bf")); permanent.name="PermanentMineLabel"; permanent.text="矿洞（已标记）"; permanent.add_theme_font_size_override("font_size",10); permanent.position=MAP_RECT.position+project(Vector2(2070,440)); add_child(permanent)
+		permanent.visible=records.any(func(r: Dictionary)->bool:return r.get("permanent",false))
+func _process(delta: float) -> void:
+	if not visible: return
+	visibility_left-=delta
+	if visibility_left<=0:
+		visibility_left=0.1; _refresh_visibility()

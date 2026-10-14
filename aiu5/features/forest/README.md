@@ -32,3 +32,5 @@ generate(cell) 排除 Layout.FOREST_VILLAGE 整块青木村空地及新增连接
 ## 0.8.1接口与规则
 
 silk_catalog.extra(resource_seed,id,harvest)对空手桑叶采集独立30%判定，新增mulberry_harvests持久化计数。采集事务中桑叶和额外蚕丝一起提交，满包不推进；草丛普通剪刀冷却归production.scissors_tools，与种子判定独立。
+
+0.9.0：生成与加载窗口均扩到y=-8..23，覆盖新南部森林；保留旧资源ID，避开新增河流与不可砍巨树。

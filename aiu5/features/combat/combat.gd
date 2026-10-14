@@ -13,7 +13,7 @@ const TRIBES := {
 	"barbarian": {"area": Rect2(200, -1500, 2000, 1300), "hp": 20.0},
 	"yunye": {"area": Rect2(2850, -1050, 900, 700), "hp": 20.0}
 }
-const TRIBE_ROLES := {"civilian": 12, "archer": 4, "charger": 4}
+const TRIBE_ROLES := {"civilian": 12, "archer": 4, "charger": 3}
 const CHIEF_ELEMENT := {"forest": "wood", "barbarian": "fire", "yunye": "earth"}
 const Layout := preload("res://features/village/layout.gd")
 var session: Node
@@ -25,11 +25,12 @@ var cooldown := 0.0
 var demolition_cooldown := 0.0
 func reach(weapon: String) -> float:
 	# Haze on the highlands shortens ranged reach; melee distance is unaffected.
-	return Gear.attack_range(weapon) * session.world.haze.range_scale()
+	return Gear.attack_range(weapon) * (session.world.haze.range_scale() if weapon=="bow" else 1.0)
 func start(controller: Node) -> void:
 	session = controller
 	scissors.combat=self
 	for id: String in SPAWNS:
+		if session.world.settlement=="starter_v2": continue
 		var enemy := Enemy.new()
 		enemy.combat = self
 		enemy.enemy_id = id
@@ -142,15 +143,15 @@ func attack_clicked(at: Vector2) -> bool:
 	var clicked: CharacterBody2D
 	# Hit-test the visible body sprite, rather than selecting a different enemy near the pointer.
 	for enemy: CharacterBody2D in enemies.values():
-		if enemy.hp>0 and enemy.get_parent()!=null and Rect2(enemy.global_position+Vector2(-8,-16),Vector2(16,20)).has_point(at):
+		if not enemy.friendly and enemy.hp>0 and enemy.get_parent()!=null and Rect2(enemy.global_position+Vector2(-8,-16),Vector2(16,20)).has_point(at):
 			clicked=enemy
 			break
-	if not is_instance_valid(clicked): return false
+	if not is_instance_valid(clicked): return _attack_structure(at,weapon)
 	if actor.global_position.distance_to(clicked.global_position)>reach(weapon):
 		message.emit("目标超出武器攻击范围。")
 		return false
 	if not Rect2(Vector2.ZERO,Vector2(640,400)).has_point(actor.get_canvas_transform()*clicked.global_position): return false
-	var query := PhysicsRayQueryParameters2D.create(actor.global_position,clicked.global_position,1|8|4,[actor.get_rid()])
+	var query := PhysicsRayQueryParameters2D.create(actor.global_position,clicked.global_position,1|8|4|16,[actor.get_rid()])
 	if actor.get_world_2d().direct_space_state.intersect_ray(query).get("collider")!=clicked: return false
 	if weapon=="bow" or (weapon=="magic_scissors" and actor.global_position.distance_to(clicked.global_position)>=40): return fire(clicked.global_position)
 	return _melee(clicked.global_position,weapon,clicked)
@@ -164,13 +165,13 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 	var candidate: CharacterBody2D
 	var nearest := (minf(reach(weapon),39.9999) if weapon=="magic_scissors" else reach(weapon))+0.0001
 	for enemy: CharacterBody2D in enemies.values()+session.livestock.animals:
-		if enemy.hp <= 0 or enemy.get_parent() == null: continue
+		if ("friendly" in enemy and enemy.friendly) or enemy.hp <= 0 or enemy.get_parent() == null: continue
 		var gap := actor.global_position.distance_to(enemy.global_position)
 		if (not is_instance_valid(clicked) or enemy==clicked) and gap < nearest and direction.dot(actor.global_position.direction_to(enemy.global_position)) >= 0.3:
 			candidate = enemy
 			nearest = gap
 	if is_instance_valid(candidate):
-		var query := PhysicsRayQueryParameters2D.create(actor.global_position,candidate.global_position,1|8|4)
+		var query := PhysicsRayQueryParameters2D.create(actor.global_position,candidate.global_position,1|8|4|16)
 		var hit: Dictionary = actor.get_world_2d().direct_space_state.intersect_ray(query)
 		if hit.get("collider") == candidate:
 			if candidate.is_in_group("creature_targets"):
@@ -188,6 +189,7 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 			var dealt: float= session.magic.attack_damage(actor.resident_id)+session.magic.skills.drain_on_hit(candidate,actor.resident_id)
 			session.magic.branches.observe_hit(candidate.enemy_id,dealt)
 			var hp_before: float=candidate.hp
+			if is_instance_valid(session.tribes): session.tribes.war.provoke(candidate.tribe)
 			candidate.hp=maxf(0,float(candidate.hp)-dealt)
 			session.magic.enchants.on_hit(actor.resident_id,candidate,session.magic.ensure(actor.resident_id).weapon_wear,hp_before-float(candidate.hp))
 			if candidate.hp<=0: session.magic.credit_points(actor.resident_id,25)
@@ -228,6 +230,7 @@ func hit_enemy(enemy: CharacterBody2D, raw: float, actor_id := "", record: Dicti
 	session.magic.branches.note_combat(attacker)
 	session.magic.branches.observe_hit(enemy.enemy_id,dealt)
 	var hp_before: float=enemy.hp
+	if is_instance_valid(session.tribes): session.tribes.war.provoke(enemy.tribe)
 	enemy.hp=maxf(0,float(enemy.hp)-dealt)
 	session.magic.enchants.on_hit(attacker,enemy,record,hp_before-float(enemy.hp))
 	enemy.pursuit = 6.0
@@ -287,3 +290,47 @@ func apply_weapon_hit(target: Node, raw: float, actor: String, record: Dictionar
 	session.magic.branches.note_combat(actor)
 	session.magic.enchants.on_hit(actor,target,record,before-float(target.hp))
 	return true
+
+func _attack_structure(at: Vector2, weapon: String) -> bool:
+	if not is_instance_valid(session.tribes): return false
+	var actor: Node=session.world.active_resident
+	var target: Node
+	var location := Vector2.ZERO
+	for tribe: String in session.tribes.relics.visuals:
+		var visual: Node=session.tribes.relics.visuals[tribe]
+		if Rect2(visual.global_position-Vector2(10,25),Vector2(20,36)).has_point(at) and session.tribes.relics.owner(tribe)!="player": target=visual.body; location=visual.global_position; break
+	if target==null:
+		for fixture: Node in session.grounds.fixtures:
+			if fixture.kind in ["fence","fence_gate"] and fixture.visual_bounds().has_point(at): target=fixture.get_node("FurnitureBody"); location=target.global_position; break
+	if target==null:
+		for fixture: Node in session.world.legacy_barriers.values():
+			if fixture.hp>0 and fixture.visual_bounds().has_point(at): target=fixture.body; location=target.global_position; break
+	if target==null or actor.global_position.distance_to(location)>reach(weapon): return false
+	if not Rect2(Vector2.ZERO,Vector2(640,400)).has_point(actor.get_canvas_transform()*location): return false
+	var query := PhysicsRayQueryParameters2D.create(actor.global_position,location,1|4|8|16,[actor.get_rid()])
+	if actor.get_world_2d().direct_space_state.intersect_ray(query).get("collider")!=target: return false
+	if weapon=="bow" or (weapon=="magic_scissors" and actor.global_position.distance_to(location)>=40): return fire(location)
+	var before: Dictionary=session.inventory.export_data()
+	if not _structure_damage(target,session.magic.attack_damage(actor.resident_id),actor.resident_id): return false
+	session.magic.consume_weapon(actor.resident_id); session.magic.branches.note_combat(actor.resident_id)
+	if not session.production.commit(before,"命中目标建筑。"): return false
+	_spawn_swing(actor,actor.global_position.direction_to(location),weapon); return true
+func _structure_damage(body: Node, raw: float, actor: String) -> bool:
+	if body.is_in_group("relic_targets"):
+		var tribe := str(body.get_meta("tribe")); session.tribes.war.provoke(tribe)
+		return session.tribes.relics.hit(tribe,raw,actor)
+	if body.has_meta("barrier_fixture"):
+		var fixture: Node=body.get_meta("barrier_fixture")
+		if not is_instance_valid(fixture) or fixture.hp<=0: return false
+		if fixture.has_method("damage"): fixture.damage(raw); return true
+		fixture.hp=maxf(0,fixture.hp-raw)
+		if fixture.hp<=0: session.grounds.remove_fixture(fixture)
+		else: fixture.queue_redraw()
+		return true
+	return false
+func hit_structure(body: Node, raw: float, actor: String) -> bool:
+	var before: Dictionary=session.inventory.export_data()
+	if not _structure_damage(body,raw,actor): return false
+	return session.production.commit(before,"命中目标建筑，状态已保存。")
+func target_enemies() -> Array:
+	return enemies.values().filter(func(enemy: Node)->bool:return not enemy.friendly)

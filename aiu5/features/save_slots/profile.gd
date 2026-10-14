@@ -14,4 +14,4 @@ static func configure(world: Node) -> void:
 			var resources: Variant = data.session.get("resource_world", {})
 			if resources is Dictionary: world_seed = int(resources.get("seed", world_seed))
 	world.resource_seed = maxi(1, world_seed)
-	world.settlement = "starter" if selected == "starter" else "expanded"
+	world.settlement = selected if selected in ["starter","starter_v2"] else "expanded"

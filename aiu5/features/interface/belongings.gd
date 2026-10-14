@@ -261,7 +261,7 @@ func _update_slots(buttons: Array[Button], slots: Array, side: String, selected:
 		button.get_node("ItemName").text = Catalog.ITEMS[id]["name"] if id != "" else ""
 		button.get_node("ItemName").add_theme_font_size_override("font_size", 9 if id != "" and str(Catalog.ITEMS[id].name).length() >= 4 else 10)
 		button.get_node("Count").text = str(slot["count"]) if id != "" and slot["count"] > 1 else ""
-		button.tooltip_text = Catalog.ITEMS[id]["name"] + "\n" + Catalog.ITEMS[id]["description"] if id != "" else "空格 · %d / 21" % (index + 1)
+		button.tooltip_text = Catalog.ITEMS[id]["name"] + "\n" + Catalog.ITEMS[id]["description"] if id != "" else "空格 · %d / %d" % [index+1,slots.size()]
 		if id != "": button.tooltip_text += Wear.Origin.describe(slot)
 		if Wear.Origin.magical(slot): button.get_node("ItemName").text = "✦" + button.get_node("ItemName").text
 		if id != "": button.tooltip_text = "【"+Categories.label(id)+"】"+button.tooltip_text

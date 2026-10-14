@@ -73,6 +73,16 @@ func _draw() -> void:
 		draw_line(Vector2(12,8),Vector2(12,16),Color("f4e7b8"),1)
 		return
 	match art_item:
+		"rope":
+			for d in [Vector2(0,0),Vector2(0,3)]: draw_arc(Vector2(12,11)+d,7,0,TAU,18,Color("c2a16f"),2)
+			draw_line(Vector2(6,15),Vector2(4,23),Color("dbb88a"),2)
+		"fence_gate":
+			for x in [3,20]: draw_rect(Rect2(x,4,3,19),Color("bd8e57"))
+			for y in [8,16]: draw_rect(Rect2(5,y,17,3),Color("926642"))
+			draw_line(Vector2(5,20),Vector2(20,7),Color("d5aa71"),2)
+		"iron_pickaxe":
+			draw_line(Vector2(5,23),Vector2(17,5),Color("ae8250"),3)
+			draw_arc(Vector2(12,14),10,PI*1.15,TAU*0.95,8,Color("b3c1c6"),3)
 		"cowhide":
 			draw_colored_polygon(PackedVector2Array([Vector2(3,3),Vector2(10,6),Vector2(21,3),Vector2(17,13),Vector2(22,22),Vector2(12,19),Vector2(2,22),Vector2(6,13)]),Color("b3865b"))
 			draw_rect(Rect2(10,9,5,8),Color("72533a"))

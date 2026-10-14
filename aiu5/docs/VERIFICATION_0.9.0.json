@@ -1,0 +1,191 @@
+{
+  "version": "0.9.0",
+  "rules": "three controlled founders plus two starter NPCs; multiple spouses; player-hosted NPC wedding16 bread split8/8; one auto birth cycle per request",
+  "source_and_export_checks": {
+    "multi-ui-final": [
+      "ROMANCE_UI_OK checks=24"
+    ],
+    "multi-tribes-final": [
+      "TRIBES_FINAL_OK checks=30"
+    ],
+    "multi-start-final": [
+      "NEW_START_OK checks=12"
+    ],
+    "multi-deep-final": [
+      "TRIBES_DEEP_OK checks=32"
+    ],
+    "multi-branches-final": [
+      "BRANCHES_SMOKE_OK checks=305"
+    ],
+    "npc-wedding-transaction": [
+      "NPC_WEDDING_OK checks=28"
+    ],
+    "exported-npc-wedding": [
+      "NPC_WEDDING_OK checks=25"
+    ],
+    "exported-multi-tribes": [
+      "TRIBES_FINAL_OK checks=30"
+    ],
+    "regression-elements-2": [
+      "ELEMENTAL_CHECKS=1244",
+      "ELEMENTAL_FAILURES=[]",
+      "ELEMENTAL_SKILLS_OK"
+    ],
+    "regression-weapons": [
+      "WEAPONS_PLAN_OK checks=164"
+    ],
+    "overview-final": [
+      "OVERVIEW_VISIBILITY_OK checks=10"
+    ],
+    "wildlife-2": [
+      "WILDLIFE_OK checks=293 trials=648 probability=0.289"
+    ]
+  },
+  "performance": [
+    {
+      "draw_calls_median": 188.0,
+      "forest_nodes": 0,
+      "frame_interval_max_ms": 17.047,
+      "frame_interval_median_ms": 16.664,
+      "frame_interval_p95_ms": 16.791,
+      "frame_interval_p99_ms": 16.872,
+      "mode": "normal",
+      "process_median_ms": 8.074,
+      "render_objects_median": 4445.0,
+      "resource_chunks": 20,
+      "resource_nodes": 9,
+      "terrain_chunks": 25
+    },
+    {
+      "draw_calls_median": 56.0,
+      "forest_nodes": 0,
+      "frame_interval_max_ms": 17.064,
+      "frame_interval_median_ms": 16.665,
+      "frame_interval_p95_ms": 16.69,
+      "frame_interval_p99_ms": 16.953,
+      "mode": "overview",
+      "process_median_ms": 5.946,
+      "render_objects_median": 1117.0,
+      "resource_chunks": 20,
+      "resource_nodes": 9,
+      "terrain_chunks": 25
+    },
+    {
+      "draw_calls_median": 60.0,
+      "forest_nodes": 0,
+      "frame_interval_max_ms": 17.148,
+      "frame_interval_median_ms": 16.66,
+      "frame_interval_p95_ms": 16.764,
+      "frame_interval_p99_ms": 16.985,
+      "mode": "interior",
+      "process_median_ms": 5.701,
+      "render_objects_median": 856.0,
+      "resource_chunks": 12,
+      "resource_nodes": 9,
+      "terrain_chunks": 25
+    },
+    {
+      "draw_calls_median": 257.0,
+      "forest_nodes": 0,
+      "frame_interval_max_ms": 17.0,
+      "frame_interval_median_ms": 16.667,
+      "frame_interval_p95_ms": 16.88,
+      "frame_interval_p99_ms": 16.935,
+      "mode": "east",
+      "process_median_ms": 6.812,
+      "render_objects_median": 2575.0,
+      "resource_chunks": 25,
+      "resource_nodes": 46,
+      "terrain_chunks": 28
+    },
+    {
+      "draw_calls_median": 256.0,
+      "forest_nodes": 53,
+      "frame_interval_max_ms": 16.878,
+      "frame_interval_median_ms": 16.662,
+      "frame_interval_p95_ms": 16.771,
+      "frame_interval_p99_ms": 16.861,
+      "mode": "forest",
+      "process_median_ms": 7.589,
+      "render_objects_median": 2818.0,
+      "resource_chunks": 25,
+      "resource_nodes": 0,
+      "terrain_chunks": 25
+    },
+    {
+      "draw_calls_median": 289.0,
+      "forest_nodes": 171,
+      "frame_interval_max_ms": 17.102,
+      "frame_interval_median_ms": 16.667,
+      "frame_interval_p95_ms": 16.807,
+      "frame_interval_p99_ms": 16.908,
+      "mode": "north_forest",
+      "process_median_ms": 9.676,
+      "render_objects_median": 1199.0,
+      "resource_chunks": 0,
+      "resource_nodes": 0,
+      "terrain_chunks": 25
+    },
+    {
+      "draw_calls_median": 94.0,
+      "forest_nodes": 0,
+      "frame_interval_max_ms": 17.33,
+      "frame_interval_median_ms": 16.664,
+      "frame_interval_p95_ms": 16.854,
+      "frame_interval_p99_ms": 17.02,
+      "mode": "plateau",
+      "process_median_ms": 23.822,
+      "render_objects_median": 8606.0,
+      "resource_chunks": 0,
+      "resource_nodes": 0,
+      "terrain_chunks": 25
+    },
+    {
+      "draw_calls_median": 258.0,
+      "forest_nodes": 0,
+      "frame_interval_max_ms": 16.985,
+      "frame_interval_median_ms": 16.668,
+      "frame_interval_p95_ms": 16.78,
+      "frame_interval_p99_ms": 16.918,
+      "mode": "mountains",
+      "process_median_ms": 7.832,
+      "render_objects_median": 5633.0,
+      "resource_chunks": 0,
+      "resource_nodes": 0,
+      "terrain_chunks": 25
+    },
+    {
+      "draw_calls_median": 255.0,
+      "forest_nodes": 132,
+      "frame_interval_max_ms": 17.041,
+      "frame_interval_median_ms": 16.664,
+      "frame_interval_p95_ms": 16.898,
+      "frame_interval_p99_ms": 16.945,
+      "mode": "southern_forest",
+      "process_median_ms": 9.229,
+      "render_objects_median": 1242.0,
+      "resource_chunks": 25,
+      "resource_nodes": 0,
+      "terrain_chunks": 25
+    },
+    {
+      "forest_nodes": 124,
+      "max_ms": 17.293,
+      "mode": "forest_cross_chunk_sweep",
+      "p95_ms": 16.868,
+      "p99_ms": 17.177
+    },
+    {
+      "max_ms": 17.184,
+      "mode": "cross_chunk_sweep",
+      "p95_ms": 16.963,
+      "p99_ms": 17.139
+    }
+  ],
+  "installer": {
+    "filename": "AIU5-Setup-0.9.0-win64.exe",
+    "bytes": 330657512,
+    "sha256": "dd9b45ed7ef97c495bcec9de267ca929bdee67baf08be143ba8503a4bdc7d3c4"
+  },
+  "player_saves": "All probes use isolated paths; installation and publication not covered by this source/build record."
+}

@@ -25,6 +25,8 @@ func start(village: Node2D, items: Node) -> void:
 	world = village
 	inventory = items
 	animals.assign(world.pigs)
+	if world.settlement=="starter_v2":
+		_refresh_points(); return
 	_build_shed()
 	_spawn("cow:1", "cow", "male", MATURITY, Vector2(82, 451))
 	_spawn("cow:2", "cow", "female", MATURITY, Vector2(126, 455))
@@ -53,7 +55,7 @@ func _build_shed() -> void:
 	world._label("牛棚", Vector2(65, 397))
 	world.points.cow_trough = {"position": Vector2(155, 444), "radius": 23.0, "label": "牛棚食槽", "action": "喂牛 · 1谷物"}
 
-func _spawn(id: String, kind: String, gender: String, age: float, at: Vector2) -> CharacterBody2D:
+func _spawn(id: String, kind: String, gender: String, age: float, at: Vector2, wild_bounds := Rect2()) -> CharacterBody2D:
 	# A newly created animal must not inherit time accumulated before its birth.
 	if not settling: settle()
 	var animal := Animal.new()
@@ -72,6 +74,7 @@ func _spawn(id: String, kind: String, gender: String, age: float, at: Vector2) -
 	if kind=="sheep":
 		animal.pen_bounds=Herd.SHEEP_PASTURE
 		animal.feeding_point=Herd.SHEEP_FEEDING
+	if wild_bounds.has_area(): animal.pen_bounds=wild_bounds; animal.set_meta("wild_bounds",[wild_bounds.position.x,wild_bounds.position.y,wild_bounds.size.x,wild_bounds.size.y])
 	animal.position = at.clamp(animal.pen_bounds.position, animal.pen_bounds.end)
 	world.objects.add_child(animal)
 	animals.append(animal)
@@ -248,18 +251,18 @@ func export_state() -> Dictionary:
 	settle()
 	var records: Array = []
 	for animal in animals:
-		records.append({"gift_origin":animal.get_meta("gift_origin",{}), "id": animal.animal_id, "species": animal.species, "sex": animal.sex, "growth": animal.growth, "cooldown": animal.cooldown, "fed": animal.fed, "hp":animal.hp,
+		records.append({"wild_bounds":animal.get_meta("wild_bounds",[]),"gift_origin":animal.get_meta("gift_origin",{}), "id": animal.animal_id, "species": animal.species, "sex": animal.sex, "growth": animal.growth, "cooldown": animal.cooldown, "fed": animal.fed, "hp":animal.hp,
 			"position": [animal.position.x, animal.position.y], "target": [animal.target.x, animal.target.y], "feeding": animal.feeding_time, "pause": animal.pause_time})
 	return {"animals": records, "next_ids": next_ids.duplicate(), "fauna_version":1,"herd_version":2}
 
 func restore(data: Dictionary, legacy_pigs: Array = []) -> void:
 	pending_delta = 0
-	var records: Array = data.get("animals", _legacy_records(legacy_pigs)).duplicate(true)
-	if int(data.get("fauna_version",0))<1:
+	var records: Array = data.get("animals", [] if world.settlement=="starter_v2" else _legacy_records(legacy_pigs)).duplicate(true)
+	if world.settlement!="starter_v2" and int(data.get("fauna_version",0))<1:
 		var ids: Array = records.map(func(r: Dictionary) -> String: return str(r.get("id","")))
 		for r: Dictionary in Fauna.initial_records():
 			if r.id not in ids: records.append(r)
-	if int(data.get("herd_version",0))<2:
+	if world.settlement!="starter_v2" and int(data.get("herd_version",0))<2:
 		var ids: Array=records.map(func(r: Dictionary) -> String: return str(r.get("id","")))
 		for r: Dictionary in Herd.initial_sheep():
 			if r.id not in ids: records.append(r)
@@ -280,7 +283,11 @@ func restore(data: Dictionary, legacy_pigs: Array = []) -> void:
 		var record: Dictionary = wanted[id]
 		var at := Vector2(float(record.position[0]), float(record.position[1]))
 		var animal := find_animal(id)
-		if animal == null: animal = _spawn(id, record.species, record.get("sex", "female"), float(record.get("growth", MATURITY)), at)
+		var area := Rect2()
+		var wild: Array=record.get("wild_bounds",[])
+		if wild.size()==4: area=Rect2(wild[0],wild[1],wild[2],wild[3])
+		if animal == null: animal = _spawn(id, record.species, record.get("sex", "female"), float(record.get("growth", MATURITY)), at,area)
+		if area.has_area(): animal.pen_bounds=area; animal.set_meta("wild_bounds",wild)
 		animal.set_meta("gift_origin", record.get("gift_origin",{}))
 		animal.sex = "male" if record.get("sex", "female") == "male" else "female"
 		animal.hp = clampf(float(record.get("hp",10)),0.01,10)

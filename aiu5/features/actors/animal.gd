@@ -64,13 +64,16 @@ func _physics_process(delta: float) -> void:
 	feeding_time = maxf(0.0, feeding_time - delta)
 	pause_time -= delta
 	velocity = Vector2.ZERO
-	if pause_time <= 0:
+	if has_meta("tether_target"):
+		var owner_at: Vector2=get_meta("tether_target")
+		if position.distance_to(owner_at)>2: velocity=position.direction_to(owner_at)*96*float(get_meta("magic_slow_rate",1.0))
+	elif pause_time <= 0:
 		if position.distance_to(target) > 3.0:
 			velocity = position.direction_to(target) * (11.0 if adult() else 8.0)*float(get_meta("magic_slow_rate",1.0))
 		elif feeding_time <= 0:
 			_choose_target()
 	move_and_slide()
-	position = position.clamp(pen_bounds.position, pen_bounds.end)
+	if not has_meta("tether_target"): position = position.clamp(pen_bounds.position, pen_bounds.end)
 	if absf(velocity.x) > 0.1: sprite.flip_h = velocity.x < 0.0
 	sprite.frame = int(animation_time * 5) % 2 if velocity.length_squared() > 1 or feeding_time > 0 else 0
 	if species=="sheep" and (velocity.length_squared()>1 or feeding_time>0): queue_redraw()

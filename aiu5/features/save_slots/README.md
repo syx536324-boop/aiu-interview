@@ -6,3 +6,5 @@
 
 
 新建slot.json同时保存随机seed；已有无种子槽位在resolve选择进入时生成并写入一个种子，避免每次启动不同。完整快照resource_world.seed优先于元数据，恢复后仍保持原世界。controller只将选定seed传给Profile；Profile在World构建前设定world.resource_seed。生成版本不支持或种子非法的快照不可进入。
+
+0.9.0：新村落profile=starter_v2，主村两间功能房、三名创始人；老profile保留原建筑与资产。只有主村圣品毁灭才清当前档及回退点，失败状态拒绝续存。

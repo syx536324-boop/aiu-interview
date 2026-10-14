@@ -19,7 +19,7 @@ func start(village: Node2D, farming: Node, records: Array) -> void:
 	world = village
 	homestead = farming
 	for record: Dictionary in records:
-		if record.get("kind", "") in ["workbench", "fence", "building_bench", "campfire"]:
+		if record.get("kind", "") in ["workbench", "fence", "fence_gate", "building_bench", "campfire"]:
 			add_fixture(record)
 	world.refresh_obstacles()
 
@@ -47,6 +47,7 @@ func _collider(fixture: Node2D) -> void:
 	var rect: Rect2 = fixture.collision_bounds()
 	var body: StaticBody2D = world._body(fixture, rect.get_center() - fixture.position, rect.size)
 	body.name = "FurnitureBody"
+	if fixture.kind in ["fence","fence_gate"]: body.set_meta("barrier_fixture",fixture)
 	world.refresh_obstacles()
 
 func relocate(fixture: Node2D, at: Vector2, direction: int) -> void:
@@ -73,22 +74,22 @@ func nearby(actor: CharacterBody2D) -> Dictionary:
 	var nearest: Dictionary = {}
 	var distance := 22.0
 	for fixture in fixtures:
-		if fixture.kind not in ["workbench","building_bench","campfire"]: continue
+		if fixture.kind not in ["workbench","building_bench","campfire","fence_gate"]: continue
 		var bounds: Rect2 = fixture.collision_bounds()
 		var point: Vector2 = actor.position + Vector2(0, -3)
 		var gap := point.distance_to(point.clamp(bounds.position, bounds.end))
 		if gap < distance:
 			distance = gap
-			nearest = {"id": fixture.kind, "fixture": fixture, "label": fixture.display_name(), "action": "点亮 / 熄灭" if fixture.kind=="campfire" else "建造" if fixture.kind=="building_bench" else "分类合成", "description": "E切换点亮/熄灭；照明96×96世界像素，火系三级H可点亮。" if fixture.kind=="campfire" else "E投入材料建造木屋、石屋、铁屋或箭楼" if fixture.kind=="building_bench" else "E打开分类界面，选物品后确认合成；制作需60秒"}
+			nearest = {"id": fixture.kind, "fixture": fixture, "label": fixture.display_name(), "action": "开 / 关门" if fixture.kind=="fence_gate" else "点亮 / 熄灭" if fixture.kind=="campfire" else "建造" if fixture.kind=="building_bench" else "分类合成", "description": "E切换点亮/熄灭；照明96×96世界像素，火系三级H可点亮。" if fixture.kind=="campfire" else "E投入材料建造木屋、石屋、铁屋或箭楼" if fixture.kind=="building_bench" else "E打开分类界面，选物品后确认合成；制作需60秒"}
 	return nearest
 
 func land_error(bounds: Rect2, actor: Node2D, building := true, original: Node2D = null) -> String:
 	if not world.BOUNDS.grow(-16).encloses(bounds): return "请在地图范围内的空地上放置。"
 	if Geography.protected(bounds): return "请保留河流、桥梁、高山和祭祀广场的空间。"
-	if bounds.intersects(Herd.SHEEP_PASTURE.grow(4)): return "请保留羊群的活动与喂食空间。"
-	if bounds.intersects(Shed.BOUNDS.grow(4)): return "请保留牛棚、食槽和出入口的空间。"
+	if world.settlement!="starter_v2" and bounds.intersects(Herd.SHEEP_PASTURE.grow(4)): return "请保留羊群的活动与喂食空间。"
+	if world.settlement!="starter_v2" and bounds.intersects(Shed.BOUNDS.grow(4)): return "请保留牛棚、食槽和出入口的空间。"
 	if bounds.intersects(Land.LAKE.grow(7)): return "湖泊与岸边取水处需要保持畅通。"
-	if bounds.intersects(Rect2(377, 202, 112, 82)): return "请保留猪圈、食槽和木门的空间。"
+	if world.settlement!="starter_v2" and bounds.intersects(Rect2(377, 202, 112, 82)): return "请保留猪圈、食槽和木门的空间。"
 	for key: String in world.points:
 		if key.begins_with("wood:") or key.begins_with("animal:") or key == "river": continue
 		if bounds.grow(16).has_point(world.points[key].position): return "请为房门、设施和取水点留出通路。"
@@ -105,13 +106,17 @@ func land_error(bounds: Rect2, actor: Node2D, building := true, original: Node2D
 	return ""
 
 func placement_error(ghost: Node2D, original: Node2D = null) -> String:
-	if ghost.kind not in ["workbench", "fence", "building_bench", "campfire"]: return "户外支持部署工作台和围栏。"
+	if ghost.kind not in ["workbench", "fence", "fence_gate", "building_bench", "campfire"]: return "户外支持部署工作台和围栏。"
 	var error := land_error(ghost.visual_bounds(), world.active_resident, true, original)
 	if error != "": return error
+	if ghost.kind=="fence_gate": return ""
 	var original_obstacles: Array[Rect2] = world.logical_obstacles(world.gate_visual.open)
 	var obstacles: Array[Rect2] = world.logical_obstacles(world.gate_visual.open, original)
 	# An isolated rectangle in open ground cannot close an existing passage.
 	if not obstacles.any(func(rect: Rect2) -> bool: return ghost.collision_bounds().grow(12).intersects(rect)): return ""
+	# Accessibility checks consider gates open; closed gates may deliberately enclose livestock.
+	for existing in fixtures:
+		if existing.kind=="fence_gate": obstacles.erase(existing.collision_bounds())
 	obstacles.append(ghost.collision_bounds())
 	var routes = world.navigation
 	var targets: Array[Vector2] = []

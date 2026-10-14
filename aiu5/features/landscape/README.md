@@ -13,3 +13,5 @@ view.render_region由streaming按活动区域更新，远处山、河和广场�
 西侧边界移到-2400，现有四桥连通森林；river取水目标按角色所在河岸定位，林西岸也可给桶与杯补水。森林地图规则见features/forest。
 
 绘制森林中部青木祭台铺地，protected(bounds) 保护该祭台广场，避免玩家部署或开垦遮挡设施。
+
+0.9.0：地图7200×6400。frontier.gd拥有森林支流、可通行桥隙及9棵原生巨树；protected供资源/建筑排除，nearest_water供NPC补水。几何按视窗裁剪。

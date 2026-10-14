@@ -162,7 +162,7 @@ func _render() -> void:
 		else: details.text += str(selected.detail)
 	var job: Dictionary = current.get("job",{})
 	progress.visible = not job.is_empty()
-	if job.is_empty(): job_label.text = "材料已支付的施工可用木系三阶完成。" if current.get("mode","")=="upgrade" else "确认后扣除材料；完成后放入制作角色背包。"
+	if job.is_empty(): job_label.text = "材料已支付的施工可用木系三阶完成。" if current.get("mode","")=="upgrade" else ("选择左侧操作，确认后执行。" if current.get("mode","")=="tribes" else "确认后扣除材料；完成后放入制作角色背包。")
 	else:
 		var remaining := float(job.remaining)
 		progress.max_value=float(job.get("duration",60))

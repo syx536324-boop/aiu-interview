@@ -61,7 +61,7 @@ func allowed(at: Vector2, kind := "tree") -> bool:
 
 func chunk(cell: Vector2i) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	if cell.x < 0 or cell.y < 0 or cell.x > 7 or cell.y > 7: return result
+	if cell.x < 0 or cell.y < 0 or cell.x > 7 or cell.y > 23: return result
 	# Explicit integer mixing avoids global RNG, load order and wall-clock dependencies.
 	state = (seed ^ ((cell.x + 1) * 73856093) ^ ((cell.y + 1) * 19349663) ^ (VERSION * 83492791)) & 0xffffffff
 	var region := biome(Vector2(cell) * CHUNK_SIZE + CHUNK_SIZE / 2)

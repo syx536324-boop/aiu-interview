@@ -56,7 +56,7 @@ func capture_session() -> Dictionary:
 	for id: String in interiors.rooms:
 		inventory.layouts[id] = interiors.rooms[id].export_layout()
 	inventory.layouts["outdoors"] = grounds.export_layout()
-	return {"achievements":session.achievements.export_state(),"foraging":session.foraging.export_state(),"day_night":session.day_night.export_state() if is_instance_valid(session.day_night) else {}, "resource_world": session.resources.export_state(), "settlement": world.settlement, "actors": actors, "pigs": pigs, "selected": session.selected, "selected_id": world.active_resident.resident_id, "gate": session.gate_open,
+	return {"legacy_fences":world.fence_state(),"tribes":session.tribes.export_state() if is_instance_valid(session.tribes) else {},"wildlife":session.wildlife.export_state() if is_instance_valid(session.wildlife) else {},"achievements":session.achievements.export_state(),"foraging":session.foraging.export_state(),"day_night":session.day_night.export_state() if is_instance_valid(session.day_night) else {}, "resource_world": session.resources.export_state(), "settlement": world.settlement, "actors": actors, "pigs": pigs, "selected": session.selected, "selected_id": world.active_resident.resident_id, "gate": session.gate_open,
 		"names": world.founder_names(), "vitals": vitals.export_state(), "magic": session.magic.export_state(), "construction":session.construction.export_state(), "production":session.production.export_state(), "combat":session.combat.export_state(), "forest":session.forest.export_state(), "homestead": homestead.export_state(), "livestock": livestock.export_state(), "mining": mining.export_state()}
 
 func restore_session(data: Dictionary) -> void:
@@ -73,6 +73,10 @@ func restore_session(data: Dictionary) -> void:
 	for actor in world.residents:
 		if actor.room_id != "":
 			interiors.leave(actor, world.objects, interiors.outdoor_position(actor))
+	if is_instance_valid(session.tribes):
+		for id: String in session.tribes.population.members:
+			var npc: Node=session.tribes.population.node(id)
+			if is_instance_valid(npc) and npc.room_id!="": interiors.leave(npc,world.objects,interiors.outdoor_position(npc))
 	for room: Node2D in interiors.rooms.values():
 		if room.get_parent() == interiors: interiors.remove_child(room)
 		room.queue_free()
@@ -84,7 +88,9 @@ func restore_session(data: Dictionary) -> void:
 	session.foraging.restore(data.get("foraging",{}))
 	session.construction.restore(data.get("construction",{}))
 	session.production.restore(data.get("production",{}))
+	if is_instance_valid(session.tribes): session.tribes.restore(data.get("tribes",{}))
 	session.combat.restore(data.get("combat",{}))
+	if is_instance_valid(session.tribes): session.tribes.population.reapply()
 	session.forest.restore(data.get("forest",{}))
 	session.magic.restore(data.get("magic", {}))
 	for actor in world.residents:
@@ -101,12 +107,14 @@ func restore_session(data: Dictionary) -> void:
 		actor.navigation = PackedVector2Array()
 		interiors.outside_positions[actor.resident_id] = _vector(saved.get("outside", [322, 224]))
 	livestock.restore(data.get("livestock", {}), data.get("pigs", []))
+	if is_instance_valid(session.wildlife): session.wildlife.restore(data.get("wildlife",{}))
 	var names: Dictionary = data.get("names", {})
 	if names.has("male") and names.has("female"): world.apply_founder_names(names.male, names.female)
 	vitals.restore(data.get("vitals", {}))
 	if is_instance_valid(session.day_night): session.day_night.restore(data.get("day_night",{}))
 	homestead.restore(data.get("homestead", {}))
 	session.gate_open = bool(data.get("gate", false))
+	world.restore_fences(data.get("legacy_fences",{}))
 	world.set_gate_open(session.gate_open)
 	harvesting.restore()
 	session.resources.restore(data.get("resource_world", {}))
@@ -120,6 +128,7 @@ func restore_session(data: Dictionary) -> void:
 	session._sync_view()
 	session.refresh_interface()
 	restoring = false
+	if is_instance_valid(session.tribes): session.tribes.post_restore()
 
 func _vector(value: Array) -> Vector2:
 	return Vector2(float(value[0]), float(value[1]))
@@ -153,6 +162,7 @@ func _process(delta: float) -> void:
 		save_now()
 
 func _notification(what: int) -> void:
+	if what==NOTIFICATION_WM_CLOSE_REQUEST and inventory.defeated: get_tree().quit(); return
 	if what == NOTIFICATION_WM_CLOSE_REQUEST and ready_to_save:
 		if save_now(): get_tree().quit()
 		else: message.emit("退出前存档尚未成功，窗口暂时保留；稍后再次关闭重试。")
@@ -170,6 +180,7 @@ func _on_deaths() -> void:
 		message.emit("该角色已阵亡，已切换到仍存活的村民。")
 
 func restore_checkpoint() -> bool:
+	if is_instance_valid(session.tribes) and session.tribes.relics.failed: return false
 	restore_queued = false
 	if checkpoint.is_empty():
 		message.emit("没有可用的祭台存档。")

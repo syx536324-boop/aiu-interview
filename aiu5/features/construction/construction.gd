@@ -38,13 +38,14 @@ func build(actor: CharacterBody2D, bench: Node2D, kind: String) -> bool:
 		else:
 			spot = Vector2(clampf(actor.position.x, Layout.CLIFF.position.x + 24, Layout.CLIFF.end.x - 24), Layout.CLIFF.end.y)
 	records[id] = {"id": id, "kind": kind, "at": [spot.x, spot.y], "hp": definition.hp, "max_hp": definition.hp, "defense": definition.defense, "wall": wall}
+	if kind=="herb_house": records[id]["job"]={"level":1,"initial":true,"duration":30.0,"remaining":30.0,"boost_left":0.0,"boost_rate":1.0}
 	if HouseRules.is_house(kind):
 		var level := int(HouseRules.HOUSE_LEVELS[kind])
 		records[id].merge({"level":level,"crystals":{},"job":{"level":level,"initial":true,"duration":30.0,"remaining":30.0,"boost_left":0.0,"boost_rate":1.0}})
 	if not ladder: session.grounds.remove_fixture(bench)
 	_attach(id)
 	session.world.refresh_obstacles()
-	return session.production.commit(before, "%s%s%s。" % ["开始建设" if HouseRules.is_house(kind) else "建成",definition.name,"，需30在线秒，建筑台已消耗" if HouseRules.is_house(kind) else ("" if ladder else "，建筑台已消耗")])
+	return session.production.commit(before, "%s%s%s。" % ["开始建设" if HouseRules.is_house(kind) or kind=="herb_house" else "建成",definition.name,"，需30在线秒，建筑台已消耗" if HouseRules.is_house(kind) or kind=="herb_house" else ("" if ladder else "，建筑台已消耗")])
 func _attach(id: String) -> void:
 	var record: Dictionary = records[id]
 	var at := Vector2(record.at[0], record.at[1])
@@ -65,7 +66,7 @@ func _attach(id: String) -> void:
 	var building: bool=record.get("job",{}).get("initial",false)
 	var name := str(definition.name) + (" Lv.%d" % int(record.get("level",1)) if HouseRules.is_house(record.kind) else "") + ("废墟" if ruined else ("（施工中）" if building else ""))
 	var home := {"id": id, "name": name, "at": at, "region": Rect2(Vector2.ZERO, Catalog.FOOTPRINT), "door": at + Vector2(48, 91),
-		"description": "%s · 生命 %.1f/%.0f · 防御%d（减伤%d%%）" % [name, record.hp, record.max_hp, record.defense, record.defense], "built": true, "tower": record.kind == "arrow_tower" and not ruined, "ruined": ruined, "building":building}
+		"description": "%s · 生命 %.1f/%.0f · 防御%d（减伤%d%%）" % [name, record.hp, record.max_hp, record.defense, record.defense], "function":"herb_house" if record.kind=="herb_house" else "", "built": true, "tower": record.kind == "arrow_tower" and not ruined, "ruined": ruined, "building":building}
 	session.world.homes.append(home)
 	home.description=describe(record)
 	session.world.points[id] = {"position": home.door, "radius": 25.0, "label": name, "action": "搜寻废墟" if ruined else ("登上顶部" if home.tower else "进屋"), "description": home.description}
@@ -75,7 +76,8 @@ func _attach(id: String) -> void:
 	node.position = at + Vector2(48, 79)
 	node.name = id.replace(":", "_")
 	session.world.objects.add_child(node)
-	if not ruined: session.world._body(node, Vector2(0,-38), Vector2(90,72))
+	if not ruined:
+		var body: Node=session.world._body(node, Vector2(0,-38), Vector2(90,72)); body.set_meta("constructed_home",id)
 	nodes[id] = node
 	session.world.houses.append(node)
 func _make_room(id: String) -> Node2D:
@@ -83,6 +85,9 @@ func _make_room(id: String) -> Node2D:
 	var tower: bool = home.tower
 	var room: Node2D = Roof.new() if tower else Room.new()
 	var saved: Array = session.interiors.layout_overrides.get(id, [{"missing": true}])
+	if records[id].kind=="herb_house":
+		room.configure(home,{"size":Vector2(224,160),"floor":Color("8b7954"),"mats":[],"furniture":[["workbench",Vector2(24,36),Vector2(48,28),1],["bed",Vector2(152,48),Vector2(32,48),0]]},saved)
+		return room
 	room.configure(home, {"size": Vector2(96,80) if tower else Vector2(208,144), "floor": Color("ba9362") if not home.ruined else Color("8d806a"),
 		"mats": [] if tower else [Rect2(18,94,38,20)],
 		"furniture": [] if tower else [["bed",Vector2(18,34),Vector2(32,48),0],["chest",Vector2(155,39),Vector2(28,20),1],["table",Vector2(87,42),Vector2(48,24),2],["chair",Vector2(102,78),Vector2(14,18),0]]}, saved)
@@ -153,6 +158,8 @@ func restore(data: Dictionary) -> void:
 				var target := clampi(int(job.get("level",level)),level,mini(HouseRules.MAX_LEVEL,level+1))
 				var duration := HouseRules.duration(target,bool(job.get("initial",false)))
 				record.job={"level":target,"initial":bool(job.get("initial",false)),"duration":duration,"remaining":clampf(float(job.get("remaining",duration)),0,duration),"boost_left":clampf(float(job.get("boost_left",0)),0,20),"boost_rate":clampf(float(job.get("boost_rate",1)),1,1.5),"crystal":str(job.get("crystal","")) if str(job.get("crystal","")) in HouseRules.ELEMENTS and HouseRules.needs_crystal(target) else ""}
+		if source.kind=="herb_house" and source.get("job",{}) is Dictionary and not source.get("job",{}).is_empty():
+			record.job={"level":1,"initial":true,"duration":30.0,"remaining":clampf(float(source.job.get("remaining",30)),0,30),"boost_left":0.0,"boost_rate":1.0}
 		records[id] = record
 		next_id = maxi(next_id,int(id.trim_prefix("built:"))+1)
 		_attach(id)
@@ -244,6 +251,8 @@ func _refresh_record(id: String) -> void:
 func finish_job(id: String) -> void:
 	if not records.has(id) or records[id].get("job",{}).is_empty() or records[id].hp<=0: return
 	var r: Dictionary=records[id]
+	if r.kind=="herb_house":
+		r.job={}; _remove_home(id); _attach(id); session.world.refresh_obstacles(); message.emit("草药屋建设完成。"); return
 	var crystal: String=str(r.job.get("crystal",""))
 	if crystal in HouseRules.ELEMENTS: r.crystals[crystal]=int(r.crystals.get(crystal,0))+1
 	var target := int(r.job.level)

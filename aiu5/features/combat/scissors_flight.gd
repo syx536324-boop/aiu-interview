@@ -36,13 +36,14 @@ func advance(delta: float) -> void:
 			var direction := Vector2(f.direction[0],f.direction[1])
 			var length := minf(float(f.remaining),220.0*maxf(0,delta))
 			var to := from+direction*length
-			var query := PhysicsRayQueryParameters2D.create(from,to,1|4|8)
+			var query := PhysicsRayQueryParameters2D.create(from,to,1|4|8|16)
 			var hit: Dictionary=s.world.get_world_2d().direct_space_state.intersect_ray(query)
 			if s.magic.branches.barrier_blocks(from,to): f.phase="return"
 			elif not hit.is_empty():
 				var before: Dictionary=s.inventory.export_data()
 				f.phase="return"; f.at=[hit.position.x,hit.position.y]
-				if hit.collider.is_in_group("hostile_targets") or hit.collider.is_in_group("creature_targets"):
+				if hit.collider.is_in_group("relic_targets") or hit.collider.has_meta("barrier_fixture"): combat.hit_structure(hit.collider,float(f.damage),str(f.actor))
+				elif hit.collider.is_in_group("hostile_targets") or hit.collider.is_in_group("creature_targets"):
 					if not combat.apply_weapon_hit(hit.collider,float(f.damage),str(f.actor),f.record): continue
 					if not s.production.commit(before,"魔法剪刀命中并飞回。"): return
 			else:

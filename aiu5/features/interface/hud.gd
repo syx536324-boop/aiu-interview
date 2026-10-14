@@ -26,6 +26,7 @@ var crop_label: Label
 var notice_label: Label
 var clock_label: Label
 var view_label: Label
+var pregnancy_label: Label
 var population_label: Label
 var help_label: Label
 var belongings_hint: Label
@@ -56,6 +57,8 @@ func _ready() -> void:
 	add_child(root)
 	_panel(root, Rect2(0, 0, 640, 28), Color("3e3429"))
 	_text(root, "赤沙村", Vector2(14, 5), 14, Color("f6dfa7"))
+	pregnancy_label=_text(root,"",Vector2(12,88),10,Color("edbb99"))
+	pregnancy_label.size=Vector2(200,18); pregnancy_label.clip_text=true
 	population_label = _text(root, "", Vector2(76, 8), 10, Color("baad8e"))
 	status_label = _text(root, "", Vector2(282, 7), 11, Color("e9dbb8"))
 	status_label.size = Vector2(344, 18)
@@ -149,6 +152,7 @@ func bind_session(session: Node) -> void:
 	_present(session.snapshot())
 
 func _present(state: Dictionary) -> void:
+	pregnancy_label.text=str(state.get("pregnancy",""))
 	var cycle: Dictionary = state.get("day_night",{})
 	clock_label.text = "第%d天 %s\n%s" % [int(cycle.get("day",1)),cycle.get("clock","08:00"),cycle.get("phase","白昼")]
 	var weapon: Dictionary = state.get("weapon",{})

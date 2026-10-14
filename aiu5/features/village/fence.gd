@@ -1,12 +1,16 @@
 # Renders a timber fence segment, including the swinging pen gate.
 extends Node2D
 
+var hp := 10.0
+var body: StaticBody2D
+var world: Node
 var length := 16.0
 var vertical := false
 var is_gate := false
 var open := false
 
 func _draw() -> void:
+	if hp<=0: return
 	if vertical or (is_gate and open):
 		for y in range(0, int(length), 4):
 			draw_rect(Rect2(-2, y - 8, 4, 4), Color("90603e"))
@@ -26,3 +30,9 @@ func _post(point: Vector2) -> void:
 	draw_rect(Rect2(point + Vector2(-2, -13), Vector2(5, 15)), Color("684834"))
 	draw_rect(Rect2(point + Vector2(-1, -13), Vector2(3, 13)), Color("b68350"))
 	draw_rect(Rect2(point + Vector2(-1, -13), Vector2(3, 2)), Color("e6bc7f"))
+func visual_bounds() -> Rect2:
+	return Rect2(position+Vector2(-4,-14),Vector2(10,length+18) if vertical or (is_gate and open) else Vector2(length+8,18))
+func damage(raw: float) -> void:
+	hp=maxf(0,hp-raw)
+	if is_instance_valid(body): body.collision_layer=0 if hp<=0 or (is_gate and open) else 1
+	queue_redraw(); world.refresh_obstacles()

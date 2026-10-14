@@ -10,6 +10,7 @@ func _ready() -> void:
 	$Inventory.start()
 	$Harvesting.start($World, $Inventory)
 	$Interiors.layout_overrides = $Inventory.layouts
+	$Interiors.minimal_start=$World.settlement=="starter_v2"
 	$FurnitureEditor.start($World, $Interiors, $Inventory)
 	$Session.start($World, $Interiors, $Inventory, $FurnitureEditor, $Harvesting)
 	$Homestead.start($World, $Interiors, $Inventory)
@@ -67,6 +68,10 @@ func _ready() -> void:
 	torches.start($Session)
 	$Session.day_night = $DayNight
 	$DayNight.start($Session)
+	var wildlife := preload("res://features/livestock/wildlife.gd").new()
+	wildlife.name="Wildlife"; add_child(wildlife); $Session.wildlife=wildlife; wildlife.start($Session)
+	var tribes := preload("res://features/tribes/tribes.gd").new()
+	tribes.name="Tribes"; add_child(tribes); $Session.tribes=tribes; tribes.start($Session)
 	$Persistence.start($Session, $Vitals, $Homestead, $Grounds)
 	$HUD.bind_session($Session)
 	$HUD.resident_requested.connect($Session.select_resident)

@@ -69,12 +69,13 @@ func create_slot(title: String) -> Dictionary:
 	var folder := _folder(id)
 	if DirAccess.dir_exists_absolute(folder) or DirAccess.make_dir_recursive_absolute(folder) != OK:
 		return {"ok": false, "error": "无法建立新存档，请检查磁盘空间。"}
-	var metadata := {"id": id, "title": title, "profile": "starter", "seed": _new_seed(), "created_at": int(Time.get_unix_time_from_system())}
+	var metadata := {"id": id, "title": title, "profile": "starter_v2", "seed": _new_seed(), "created_at": int(Time.get_unix_time_from_system())}
 	if _write(folder + "/slot.json", metadata) != OK:
 		return {"ok": false, "error": "存档资料写入失败，已有存档未被覆盖。"}
 	return {"ok": true, "slot": _decorate(metadata)}
 
 func _valid_state(data: Dictionary) -> bool:
+	if data.get("session",{}).get("tribes",{}).get("relics",{}).get("failed",false): return false
 	if int(data.get("version", 0)) not in [1, 2]: return false
 	var session: Variant = data.get("session")
 	if not session is Dictionary or not session.get("actors") is Dictionary: return false
@@ -108,10 +109,12 @@ func _decorate(metadata: Dictionary) -> Dictionary:
 	var session: Dictionary = state.get("session", {}) if state.get("session") is Dictionary else {}
 	result.saved_at = FileAccess.get_modified_time(result.path) if result.valid else 0
 	result.population = session.get("actors", {}).size() if result.valid else 3
+	for r: Dictionary in session.get("tribes",{}).get("population",{}).get("members",{}).values():
+		if float(r.get("hp",0))>0 and session.get("tribes",{}).get("relics",{}).get("states",{}).get(str(r.get("tribe","")),{}).get("owner","")=="player": result.population+=1
 	var resources: Dictionary = session.get("resource_world", {}) if session.get("resource_world", {}) is Dictionary else {}
 	result.seed = maxi(1, int(resources.get("seed", result.get("seed", str(result.id).hash() & 0x7fffffff))))
 	result.profile = str(session.get("settlement", result.get("profile", "expanded")))
-	result.homes = 3 if result.profile == "starter" else 8
+	result.homes = 2 if result.profile=="starter_v2" else (3 if result.profile=="starter" else 8)
 	return result
 
 func slots() -> Array[Dictionary]:

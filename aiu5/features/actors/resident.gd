@@ -55,6 +55,7 @@ func _physics_process(delta: float) -> void:
 	elapsed += delta
 	var direction := Vector2.ZERO
 	var speed := SPEED
+	if not controlled and has_meta("tribal_escort"): return
 	if controlled:
 		if input_enabled:
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")

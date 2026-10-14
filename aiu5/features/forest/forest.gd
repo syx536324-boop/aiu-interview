@@ -27,7 +27,7 @@ func start(controller: Node) -> void:
 	session = controller
 func generate(cell: Vector2i) -> Array[Dictionary]:
 	var records: Array[Dictionary] = []
-	if cell.x < -8 or cell.x >= 0 or cell.y < -8 or cell.y >= 8: return records
+	if cell.x < -8 or cell.x >= 0 or cell.y < -8 or cell.y >= 24: return records
 	var rng := RandomNumberGenerator.new()
 	rng.seed = session.world.resource_seed ^ ((cell.x + 17) * 73856093) ^ ((cell.y + 1) * 19349663)
 	for i in range(19):
@@ -41,7 +41,7 @@ func generate(cell: Vector2i) -> Array[Dictionary]:
 		for route: Array in Layout.ROADS:
 			for j in range(route.size()-1):
 				if at.distance_to(Geometry2D.get_closest_point_to_segment(at,route[j],route[j+1])) < 38: on_path = true
-		if on_path: continue
+		if on_path or preload("res://features/landscape/frontier.gd").protected(bounds): continue
 		records.append({"id":"forest1:%d:%d:%d" % [cell.x,cell.y,i],"kind":kind,"at":at,"cell":cell})
 	return records
 func focus(at: Vector2, indoors: bool) -> void:
@@ -60,7 +60,7 @@ func focus(at: Vector2, indoors: bool) -> void:
 	for cell: Vector2i in descriptors.keys():
 		if session.world.terrain.distance(cell,center) > 2: descriptors.erase(cell)
 	if not inside:
-		for y in range(maxi(-8,center.y-2),mini(8,center.y+3)):
+		for y in range(maxi(-8,center.y-2),mini(24,center.y+3)):
 			for x in range(maxi(-8,center.x-2),mini(0,center.x+3)):
 				var cell := Vector2i(x,y)
 				if not descriptors.has(cell): prepare_queue.append(cell)

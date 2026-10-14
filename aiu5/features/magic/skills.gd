@@ -41,7 +41,7 @@ func _enemy(actor: CharacterBody2D, at: Vector2) -> CharacterBody2D:
 	var result: CharacterBody2D
 	var distance := 22.0
 	if not _outdoors(actor): return null
-	for enemy: CharacterBody2D in session.combat.enemies.values():
+	for enemy: CharacterBody2D in session.combat.target_enemies():
 		if enemy.hp<=0 or enemy.get_parent()==null: continue
 		var gap := enemy.global_position.distance_to(at)
 		if gap<distance and _visible(actor,enemy.global_position,200) and _line_clear(actor,enemy.global_position):

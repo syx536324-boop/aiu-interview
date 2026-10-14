@@ -34,8 +34,8 @@ func start(village: Node2D, rooms: Node2D, belongings: Node) -> void:
 	world._label("湖泊 · 取水", Vector2(118, 171))
 	world.points["lake"] = {"position": Vector2(157, 205), "radius": 22.0, "label": "绿洲湖泊", "action": "装满桶与杯"}
 	world.points["altar"]["action"] = "保存祭台存档"
-	world.points["well"]["action"] = "装满桶与杯"
-	plots = Grid.split([{"x": 218.0, "y": 230.0, "w": 80.0, "h": 48.0, "age": 0.0, "dry": true, "crop": "wheat", "growth": 0.0}])
+	if world.points.has("well"): world.points["well"]["action"] = "装满桶与杯"
+	plots = [] if world.settlement=="starter_v2" else Grid.split([{"x": 218.0, "y": 230.0, "w": 80.0, "h": 48.0, "age": 0.0, "dry": true, "crop": "wheat", "growth": 0.0}])
 	refresh()
 	world.refresh_obstacles()
 

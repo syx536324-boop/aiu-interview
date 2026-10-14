@@ -8,6 +8,9 @@ const Water := preload("res://features/inventory/water_catalog.gd")
 const STARTING := {"seeds":3, "rice_seeds":3}
 
 const ITEMS := {
+	"rope":{"name":"绳子","limit":99,"use_label":"查看牵绳","description":"工作台：布3→绳子1，60在线秒。靠近牛、猪、羊按E绑上，每根对应一只；全部角色合计最多同时两根。解开返还绳子。"},
+	"fence_gate":{"name":"栅栏门","limit":99,"use_label":"部署栅栏门","description":"工作台：木头4→栅栏门1，60在线秒。F部署，靠近按E开关；生命10，可被武器摧毁。"},
+	"iron_pickaxe":{"name":"铁镐","limit":1,"use_label":"装备武器","description":"工作台：木头1＋粗铁2，60在线秒。可采矿，攻击2、范围30世界像素、间隔1秒；用于矿工5级升级。"},
 	"magic_scissors":{"name":"魔法剪刀","limit":1,"use_label":"装备武器","description":"仅摄像头赐予剪刀可得；基础攻击3＋min(赐予等级×0.2,10)，射程80世界像素。距离不足40时0.5秒一次；40及以上1秒一次，飞出命中后自动飞回。需视线无遮挡，可在12级选择四系属性。"},
 	"cowhide":{"name":"牛皮","limit":99,"description":"击杀牛获得1张，与牛肉一起掉落；背包选剪刀可将牛皮1裁成皮革2。"},
 	"silk":{"name":"蚕丝","limit":99,"description":"空手采桑叶时30%概率额外得到1份；工作台5蚕丝制作1布。"},
@@ -78,7 +81,7 @@ const ITEMS := {
 	"water_cup": {"name": "满水木杯", "limit": 1, "use_label": "饮水（一杯）", "description": "装满水的木质水杯；一次喝一杯，饥渴+4并留下空杯，可重新装水。不能灌溉。"},
 	"cooked_pork": {"name": "熟猪肉", "limit": 99, "description": "灶台E投入生猪肉1，60在线秒后E领取1份。食用饥饿+4、健康+1，健康达到7解除肠胃炎。"},
 	"workbench": {"name": "工作台", "limit": 20, "description": "公共工作台或已有工作台：木头3＋石头1，60在线秒。F部署，靠近E打开合成；回收返还成品。"},
-	"fence": {"name": "围栏", "limit": 99, "description": "工作台：木头4→围栏1，60在线秒。F部署，回收返还；需留出通道。"},
+	"fence": {"name": "围栏", "limit": 99, "description": "工作台：木头4→围栏1，60在线秒。F部署，回收返还；生命10，可被武器摧毁；可配合栅栏门围养牲畜。"},
 	"seeds": {"name": "小麦种子", "limit": 99, "use_label": "选择种子 / 播种", "description": "新角色初始3个；森林草丛每2在线分钟20%概率生成一种种子。湿润空田G播种，8分钟成熟，收获小麦1＋种子2。"},
 	"rice_seeds": {"name": "水稻种子", "limit": 99, "use_label": "选择种子 / 播种", "description": "新角色初始3个；森林草丛每2在线分钟20%概率生成一种种子。湿润空田G播种，8分钟成熟，收获稻谷1＋种子2。"},
 	"wheat": {"name": "小麦", "limit": 99, "description": "小麦种子在湿润空田G播种，8在线分钟成熟，G收获小麦1＋种子2。工作台3小麦做面包；亦可喂动物。", "use_label": "喂动物（1份）"},

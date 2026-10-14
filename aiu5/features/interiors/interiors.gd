@@ -7,6 +7,7 @@ var rooms: Dictionary = {}
 var special_rooms: Dictionary = {}
 var outside_positions: Dictionary = {}
 var layout_overrides: Dictionary = {}
+var minimal_start := false
 
 func enter(resident: CharacterBody2D, home: Dictionary) -> void:
 	var room_id: String = home["id"]
@@ -17,7 +18,9 @@ func enter(resident: CharacterBody2D, home: Dictionary) -> void:
 		else:
 			room = Room.new()
 			var saved: Variant = layout_overrides.get(room_id, [{"missing": true}])
-			room.configure(home, Layout.ROOMS[room_id], saved if saved is Array else [{"missing": true}])
+			var room_data: Dictionary=Layout.ROOMS[room_id].duplicate(true)
+			if minimal_start and room_id in ["kitchen","blacksmith"]: room_data.furniture=room_data.furniture.filter(func(r: Array)->bool:return r[0]=="stove")
+			room.configure(home, room_data, saved if saved is Array else [{"missing": true}])
 		room.name = room_id
 		room.position = Vector2(2048 + (rooms.size() % 4) * 512, 2048 + floori(rooms.size() / 4.0) * 512)
 		add_child(room)

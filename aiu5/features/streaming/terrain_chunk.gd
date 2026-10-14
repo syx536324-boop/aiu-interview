@@ -3,6 +3,7 @@ extends Node2D
 
 const FLOOR := preload("res://assets/ninja_adventure/Backgrounds/Tilesets/TilesetFloor.png")
 const Layout := preload("res://features/village/layout.gd")
+var legacy_pen := true
 var area: Rect2
 var paths: Array[Vector2] = []
 var grains: Array[Vector2] = []
@@ -155,7 +156,7 @@ func _draw() -> void:
 				draw_rect(Rect2(fx, -53.0 - float(i % 3) * 4.0, 3, 2), Color(0.93, 0.95, 0.98, 0.8))
 		return
 	var pen := Rect2(386, 211, 92, 60).intersection(area)
-	if pen.has_area():
+	if legacy_pen and pen.has_area():
 		draw_rect(pen, Color("c49b6c"))
 		for row in range(4):
 			for col in range(7):
