@@ -11,3 +11,7 @@
 ## 魔法分支接入（0.8.0）
 
 统一tick依次推进生存、主干技能、分支技能、施工和火把。分支设施／草丛／状态／冷却与施工仅推进在线时间，恢复存档reset清除待结算时间。
+
+## 0.9.1在线计时修复
+
+Production及Foraging由统一Simulation时钟驱动；start显式启用领域的process标志。这两个节点无需自己的_process回调，避免重复计算时间。tests/crafting_clock_probe.tscn以真实帧检查菜单中的进度、冶炼、资源补充、暂停及读档，不直接调用elapse。

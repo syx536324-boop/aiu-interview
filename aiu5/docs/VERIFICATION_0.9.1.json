@@ -1,0 +1,35 @@
+{
+  "source": {
+    "version": "0.9.1",
+    "tests": {
+      "clock-headless": "CRAFTING_CLOCK_PROBE_OK checks=62",
+      "clock-gpu-final": "CRAFTING_CLOCK_PROBE_OK checks=63",
+      "crafting-transactions": "CRAFTING_SMOKE_OK",
+      "smith-transactions": "SMITH_SMOKE_OK"
+    },
+    "clock_implementation": "External Simulation; Production/Foraging enabled at start; no additional frame clock",
+    "real_player_data_used": false
+  },
+  "exported": [
+    "CRAFTING_CLOCK_PROBE_OK checks=62"
+  ],
+  "installed": [
+    "CRAFTING_CLOCK_PROBE_OK checks=62"
+  ],
+  "installation": {
+    "version": "0.9.1",
+    "player_sha256_unchanged": true,
+    "player_files": 15,
+    "isolated_restart_passed": true,
+    "craft_clock_probe_passed": true,
+    "backup": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\craft-091\\player-before-install-20261014-210316",
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+    "override_removed": true
+  },
+  "installer": {
+    "filename": "AIU5-Setup-0.9.1-win64.exe",
+    "bytes": 330669490,
+    "sha256": "2ec477a6342869d0cba4a1d7c7794b4010562dfcd69800621f38a4c9bd0b2fd9"
+  },
+  "version": "0.9.1"
+}

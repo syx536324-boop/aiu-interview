@@ -1,10 +1,10 @@
 # 沙盘上的生活
 
-Godot 4.7.2 Windows 村落生存游戏，当前本地版本 **0.9.0**。每24真实分钟为一天；暂停、全图、离线不推进经营计时。
+Godot 4.7.2 Windows 村落生存游戏，当前本地版本 **0.9.1**。每24真实分钟为一天；暂停、全图、离线不推进经营计时。
 
 ## 安装与运行
 
-双击 `exports/AIU5-Setup-0.9.0-win64.exe`，从开始菜单“沙盘上的生活”启动。安装器随附本地摄像头识别环境，升级不改动玩家存档。正式已发布版本见 [aiu-interview Releases](https://github.com/syx536324-boop/aiu-interview/releases)。
+双击 `exports/AIU5-Setup-0.9.1-win64.exe`，从开始菜单“沙盘上的生活”启动。安装器随附本地摄像头识别环境，升级不改动玩家存档。正式已发布版本见 [aiu-interview Releases](https://github.com/syx536324-boop/aiu-interview/releases)。
 
 源码启动：
 
@@ -49,3 +49,5 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path D:\aiu5 res://tests/trib
 ```
 
 第三方资源见 [资源声明](THIRD_PARTY_NOTICES.md)。摄像头18类首版模型的实物准确率仍需逐类验收。
+
+0.9.1修复在线生产计时：工作台打开时制作进度持续推进，冶炼和散落材料补充同样由统一时钟驱动；全图、暂停和离线仍冻结。

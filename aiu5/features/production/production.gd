@@ -51,6 +51,8 @@ var mode := ""
 var fixture: Node2D
 func start(controller: Node) -> void:
 	session = controller
+	# Simulation owns elapsed time and checks this domain enable flag.
+	set_process(true)
 	scissors.production=self
 func allowed(actor: CharacterBody2D) -> bool:
 	return (not is_instance_valid(session.tribes) or session.tribes.romance.ceremony.is_empty()) and not actor.dead and not session.overview and not session.menu_paused and session.persistence.ready_to_save and not session.persistence.restoring and not session.persistence.restore_queued

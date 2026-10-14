@@ -19,6 +19,8 @@ class Pickup extends Node2D:
 			draw_colored_polygon(PackedVector2Array([Vector2(-5,1),Vector2(-4,-4),Vector2(1,-6),Vector2(5,-2),Vector2(4,2)]),Color("999d8d"))
 func start(controller: Node) -> void:
 	session = controller
+	# Simulation owns elapsed time and checks this domain enable flag.
+	set_process(true)
 	_build()
 func _build() -> void:
 	# Each village has its own predictable entry point, avoiding any dependence on camera gifts.
