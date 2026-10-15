@@ -16,10 +16,10 @@
 
 ## 交付
 
-- [ ] B1：最终源码与截图提交。
+- [x] B1：最终源码与截图提交。
 - [x] B2：0.10.0 Windows导出、安装包、隔离安装125＋29项GPU验收及本机升级完成；真实存档SHA256不变。
-- [ ] B3：完整副本同步、aiu-interview源码推送及Release发布。
-- [ ] B4：补齐最终发布证据。
+- [x] B3：完整副本同步、aiu-interview源码推送及Release发布。
+- [x] B4：补齐最终发布证据。
 
 可复现入口：tests/run_npc_attitude_regression.ps1。全部验证与交付详情见[VERIFICATION_0.10.0.json](VERIFICATION_0.10.0.json)。旧阶段记录保留在VERIFICATION_NPC_ATTITUDE_0.10.0.json。
 
