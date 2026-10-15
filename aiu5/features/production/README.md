@@ -54,3 +54,7 @@ scissors_tools通过available／options／perform／advance提供普通剪刀采
 ## 0.9.1在线计时修复
 
 Production及Foraging由统一Simulation时钟驱动；start显式启用领域的process标志。这两个节点无需自己的_process回调，避免重复计算时间。tests/crafting_clock_probe.tscn以真实帧检查菜单中的进度、冶炼、资源补充、暂停及读档，不直接调用elapse。
+
+## 新手指引事件
+
+`craft_completed(recipe,actor_id)` 只在工作台任务的成品实际交付时发出（含满包后领取），启动制作不会触发。订阅状态参与同一次保存，失败整体回滚。

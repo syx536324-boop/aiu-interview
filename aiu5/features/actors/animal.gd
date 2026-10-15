@@ -2,8 +2,11 @@
 extends CharacterBody2D
 
 var animal_id := ""
-var hp := 10.0
-var max_hp := 10.0
+const MAX_HEALTH := 10.0
+var hp := MAX_HEALTH:
+	set(value): hp = clampf(value, 0.0, MAX_HEALTH)
+var max_hp := MAX_HEALTH:
+	set(_value): max_hp = MAX_HEALTH
 var species := "pig"
 var sex := "female"
 var growth := 300.0
@@ -41,6 +44,16 @@ func _ready() -> void:
 	add_to_group("creature_targets")
 	if species == "cow": add_to_group("cow_targets")
 	if species=="sheep": sprite.visible=false
+
+func attack_bounds() -> Rect2:
+	# Clicking uses the drawn body, including the smaller juvenile sprite.
+	if species == "sheep":
+		var scale_factor := 1.0 if adult() else 0.65
+		return Rect2(global_position + Vector2(-12, -18) * scale_factor, Vector2(24, 22) * scale_factor)
+	if is_instance_valid(sprite) and is_instance_valid(sprite.texture):
+		var local := sprite.get_rect()
+		return Rect2(global_position + sprite.position + local.position * sprite.scale, local.size * sprite.scale)
+	return Rect2(global_position + Vector2(-8, -16), Vector2(16, 20))
 
 func adult() -> bool:
 	return growth >= 300.0

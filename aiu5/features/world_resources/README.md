@@ -15,3 +15,6 @@
 测试：tests/world_resources_smoke.gd覆盖确定性、访问顺序、禁区、密度、预算、真实E采集、建造碰撞、跨区释放/重载、旧农田保护、重启和祭台回退；tests/resource_quit_smoke.gd及其verify第二进程检查全图暂停时窗口关闭与远区采集状态恢复。启动和测试命令见根README。
 
 森林使用独立features/forest模块与forest1稳定ID，旧沙漠gen1资源及采集记录保持。focus支持负区块，负区块不生成沙漠枯木/石矿；森林草药与林木仍只在附近创建。
+
+
+0.10.0：density.gd以种子和稳定ID筛选枯木60%／其他80%，描述生成顺序及幸存坐标不变，采集进度兼容。

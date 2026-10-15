@@ -27,31 +27,7 @@ func _draw() -> void:
 		_draw_colored_polygon(PackedVector2Array([Vector2(2160, y + 35), Vector2(2250, y - 10), Vector2(2290, y + 160), Vector2(2200, y + 100)]), Color("8f979e"))
 		_draw_colored_polygon(PackedVector2Array([Vector2(2250, y - 10), Vector2(2380, y + 100), Vector2(2400, y + 210), Vector2(2290, y + 160)]), Color("596066"))
 		for offset in [Vector2(20, 80), Vector2(65, 140)]: _draw_line(Vector2(2130, y) + offset, Vector2(2150, y - 12) + offset, Color("c2cad1"), 2)
-	# Southern cliff of the mountain plateau; a deployed cloud ladder opens a gap through it.
-	var cliff: Rect2 = preload("res://features/village/layout.gd").CLIFF
-	_draw_rect(cliff.grow(6), Color("6d675e"))
-	_draw_rect(cliff, Color("8d867b"))
-	for x in range(int(cliff.position.x), int(cliff.end.x), 24):
-		_draw_line(Vector2(x, cliff.position.y + 4), Vector2(x + 12, cliff.end.y - 3), Color("5f5a52"), 2)
-	# Snow-capped rim: the highland edge reads brighter than the shaded cliff face below it.
-	_draw_rect(Rect2(cliff.position.x, cliff.position.y - 6, cliff.size.x, 6), Color("cfd8df"))
-	_draw_rect(Rect2(cliff.position.x, cliff.position.y - 6, cliff.size.x, 2), Color("eef3f7"))
-	# Western escarpment closing the plateau off from the northern forest.
-	var wall: Rect2 = preload("res://features/village/layout.gd").PLATEAU_WALL
-	_draw_rect(wall.grow(4), Color("6d675e"))
-	_draw_rect(wall, Color("8d867b"))
-	for y in range(int(wall.position.y), int(wall.end.y), 24):
-		_draw_line(Vector2(wall.position.x + 4, y), Vector2(wall.end.x - 3, y + 12), Color("5f5a52"), 2)
-	_draw_rect(Rect2(wall.position.x - 6, wall.position.y, 6, wall.size.y), Color("cfd8df"))
-	_draw_rect(Rect2(wall.position.x - 6, wall.position.y, 2, wall.size.y), Color("eef3f7"))
-	# Eastern ridge wall sealing the mountain zone off from the plateau and the desert.
-	var ridge: Rect2 = preload("res://features/village/layout.gd").RIDGE
-	_draw_rect(ridge.grow(4), Color("5f666d"))
-	_draw_rect(ridge, Color("7e858c"))
-	for y in range(int(ridge.position.y), int(ridge.end.y), 24):
-		_draw_line(Vector2(ridge.position.x + 4, y), Vector2(ridge.end.x - 3, y + 12), Color("525960"), 2)
-	_draw_rect(Rect2(ridge.end.x, ridge.position.y, 6, ridge.size.y), Color("cfd8df"))
-	_draw_rect(Rect2(ridge.end.x, ridge.position.y, 2, ridge.size.y), Color("eef3f7"))
+	# Exposed escarpments are rendered by CliffVisual, below actors and outside ground haze.
 	# Snow-capped peaks across the eastern mountain zone.
 	for y in range(-1560, 1560, 260):
 		for x in range(2620, 4700, 420):

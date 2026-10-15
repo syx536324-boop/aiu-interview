@@ -1,0 +1,8 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+CRAFTING_CLOCK_PROGRESS initial=60.0 remaining=57.9333333333333 progress=2.07 tree_paused=false
+CRAFTING_CLOCK_RESTART saved_forage=3.33333333333333 restored_forage=3.33333333333333
+CRAFTING_CLOCK_SMELT initial=30.0 remaining=29.499647
+CRAFTING_CLOCK_FORAGING initial=120.0 remaining=119.491686666667
+CRAFTING_CLOCK_FAILURES=[]
+CRAFTING_CLOCK_PROBE_OK checks=62

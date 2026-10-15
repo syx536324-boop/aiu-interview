@@ -1,0 +1,5 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ONBOARDING_PROBE_DIRECTORY=C:\Users\shao\Desktop\aiu\.setup\release-0100\final-onboarding/onboarding-128365
+ONBOARDING_FAILURES=[]
+ONBOARDING_PROBE_OK checks=65

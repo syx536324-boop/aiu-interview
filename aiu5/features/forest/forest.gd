@@ -1,6 +1,7 @@
 # Streams seeded western woodland and persists herb depletion plus online mulberry regrowth.
 extends Node
 signal message(text: String)
+const Density := preload("res://features/world_resources/density.gd")
 const Silk := preload("res://features/forest/silk_catalog.gd")
 var mulberry_harvests: Dictionary={}
 const Seeds := preload("res://features/forest/seed_patches.gd")
@@ -43,7 +44,8 @@ func generate(cell: Vector2i) -> Array[Dictionary]:
 				if at.distance_to(Geometry2D.get_closest_point_to_segment(at,route[j],route[j+1])) < 38: on_path = true
 		if on_path or preload("res://features/landscape/frontier.gd").protected(bounds): continue
 		records.append({"id":"forest1:%d:%d:%d" % [cell.x,cell.y,i],"kind":kind,"at":at,"cell":cell})
-	return records
+	# All candidates consume the original RNG before a stable ID selects the survivors.
+	return Density.filter_records(records,session.world.resource_seed)
 func focus(at: Vector2, indoors: bool) -> void:
 	var next: Vector2i = session.world.terrain.cell(at)
 	if center == next and inside == indoors: return

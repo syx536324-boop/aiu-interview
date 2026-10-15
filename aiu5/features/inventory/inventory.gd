@@ -9,6 +9,7 @@ const Wear := preload("res://features/combat/durability.gd")
 const Origin := preload("res://features/gifts/provenance.gd")
 const Torch := preload("res://features/lighting/torch_record.gd")
 var defeated := false
+var transfer_commit: Callable
 var save_hook: Callable
 const CAPACITY := 21
 var gift_events: Dictionary = {}
@@ -177,8 +178,10 @@ func slot_clicked(side: String, index: int, quick := false) -> void:
 		var source := slots_for(selection["side"])
 		var source_index := int(selection["index"])
 		if side != selection["side"] or index != source_index:
+			var before := export_data()
+			var storage_before := slots_for("storage").duplicate(true)
 			transfer_slots(source, source_index, slots, index)
-			_save_and_notify()
+			_finish_transfer(before,storage_before)
 		selection.clear()
 	changed.emit()
 
@@ -204,6 +207,8 @@ func quick_transfer(side: String, index: int) -> void:
 	var target := slots_for("storage" if side == "bag" else "bag")
 	if target.is_empty() or index<0 or index>=source.size() or source[index].is_empty():
 		return
+	var before := export_data()
+	var storage_before := slots_for("storage").duplicate(true)
 	var original := int(source[index]["count"])
 	var remaining := original
 	var id := str(source[index]["item"])
@@ -213,7 +218,7 @@ func quick_transfer(side: String, index: int) -> void:
 				target[i] = source[index]
 				source[index] = {}
 				selection.clear()
-				_save_and_notify()
+				_finish_transfer(before,storage_before)
 				return
 		_report("目标的21格已满，武器仍保留在原处。")
 		return
@@ -239,10 +244,31 @@ func quick_transfer(side: String, index: int) -> void:
 	if remaining == original:
 		_report("目标的 21 格已满，物品仍保留在原处。")
 	else:
-		_save_and_notify()
+		_finish_transfer(before,storage_before)
 		if remaining > 0:
 			_report("目标空间不足，剩余物品仍保留在原处。")
 	changed.emit()
+
+# A storage operation is one atomic save, including any tribal theft event. Swapping
+# from the bag can also take an existing cabinet item; full/no-op moves never count.
+func _finish_transfer(before: Dictionary, storage_before: Array) -> void:
+	var removed := false
+	var prior := _storage_counts(storage_before)
+	var after := _storage_counts(slots_for("storage"))
+	for item: String in prior:
+		if int(after.get(item,0)) < int(prior[item]): removed = true
+	if transfer_commit.is_valid(): transfer_commit.call(before,container_id,removed)
+	else: _save_and_notify()
+
+func _storage_counts(slots: Array) -> Dictionary:
+	var totals := {}
+	for slot: Dictionary in slots:
+		if slot.is_empty(): continue
+		var record := slot.duplicate(true)
+		record.erase("count")
+		var key := JSON.stringify(record)
+		totals[key] = int(totals.get(key,0)) + int(slot.count)
+	return totals
 
 func container_empty(id: String) -> bool:
 	for slot: Dictionary in ensure_container(id):

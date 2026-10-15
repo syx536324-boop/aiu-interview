@@ -1,6 +1,7 @@
 # Owns proximity-checked workshop recipes, iron-bucket sand collection and online smelting transactions.
 extends Node
 signal message(text: String)
+signal craft_completed(recipe: String, actor_id: String)
 const Categories := preload("res://features/inventory/categories.gd")
 const CraftQueue := preload("res://features/production/craft_queue.gd")
 const Herbs := preload("res://features/forest/catalog.gd")

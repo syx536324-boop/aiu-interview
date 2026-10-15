@@ -7,6 +7,7 @@ const Land := preload("res://features/homestead/land.gd")
 const Shed := preload("res://features/livestock/shed.gd")
 const Harvesting := preload("res://features/harvesting/harvesting.gd")
 const Mining := preload("res://features/mining/mining.gd")
+const Density := preload("res://features/world_resources/density.gd")
 const VERSION := 1
 const CHUNK_SIZE := Vector2(320, 200)
 const MAX_PER_CHUNK := 7
@@ -17,6 +18,8 @@ var state := 1
 func configure(world_seed: int, fixed_obstacles: Array[Rect2]) -> void:
 	seed = maxi(1, world_seed)
 	blocked = fixed_obstacles.duplicate()
+	# Density must never make a previously rejected location reassign stable IDs.
+	for at: Vector2 in Density.DECORATIVE_DEADWOOD: blocked.append(Density.decorative_bounds(at))
 	# Depleted legacy anchors still reserve the same area, so progress never shifts generated IDs.
 	for record: Dictionary in Harvesting.TREES:
 		blocked.append(Rect2(record.at - Vector2(18, 54), Vector2(36, 62)))
@@ -86,4 +89,5 @@ func chunk(cell: Vector2i) -> Array[Dictionary]:
 		result.append({"id": "gen1:%d:%d:%s:%d" % [cell.x, cell.y, kind, ordinal], "at": at, "kind": kind, "variant": int(_next() % 3)})
 		counts[kind] += 1
 		if result.size() >= MAX_PER_CHUNK: break
-	return result
+	# Build every old descriptor first: filtering never changes the integer RNG stream.
+	return Density.filter_records(result,seed,Density.DEADWOOD_PERCENT)

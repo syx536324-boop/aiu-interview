@@ -7,3 +7,5 @@
 规则常量为PRE_VISIT_ALPHA、RING_ALPHAS、BAND、RANGE_SCALE；`tests/haze_probe.gd`验证确认的浓度、高原及山地射程和云野敌对态度。视觉检查见`tests/maintenance_visual.gd`，硬件采样见`tests/performance_probe.gd`。
 
 `tests/haze_pixels_probe.gd`在实际GPU上测量四侧和角落的像素，验证90%／70%／40%真实浓度、由外向内递减以及中央透明，防止方向错误和重复叠加。
+
+0.10.0：雾霾遮罩避开不可行走的外侧竖直崖面，让海拔轮廓保持清晰；高地地表、视野三层浓度及射程缩放维持既有数值。

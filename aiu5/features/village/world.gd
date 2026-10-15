@@ -1,6 +1,7 @@
 # Assembles the arid settlement, colliders, residents, livestock and following camera.
 extends Node2D
 
+const Density := preload("res://features/world_resources/density.gd")
 const Terrain := preload("res://features/village/terrain.gd")
 const Fence := preload("res://features/village/fence.gd")
 const WellDetail := preload("res://features/village/well_detail.gd")
@@ -219,6 +220,10 @@ func logical_obstacles(gate_open := false, excluded: Node = null) -> Array[Rect2
 			continue
 		if (body.collision_layer == 0 and body != gate_body) or (body == gate_body and gate_open) or body.get_parent() == excluded: continue
 		if body.get_parent() != null and body.get_parent().is_queued_for_deletion(): continue
+		# Rotated river colliders supply conservative strips from their exact water polygon.
+		if body.has_meta("navigation_footprint"):
+			result.append_array(body.get_meta("navigation_footprint"))
+			continue
 		var collision: CollisionShape2D = body.get_child(0)
 		var shape: RectangleShape2D = collision.shape
 		result.append(Rect2(body.global_position + collision.position - shape.size / 2, shape.size))
@@ -412,7 +417,9 @@ func _build_pen() -> void:
 	_body(trough, Vector2(0, -5), Vector2(20, 8))
 
 func _scatter_desert_props() -> void:
-	for p in [Vector2(46, 80), Vector2(78, 263), Vector2(547, 68), Vector2(864, 340), Vector2(680, 540)]:
+	for i in range(Density.DECORATIVE_DEADWOOD.size()):
+		var p: Vector2 = Density.DECORATIVE_DEADWOOD[i]
+		if not Density.retained(resource_seed,Density.decorative_id(i),Density.DEADWOOD_PERCENT): continue
 		_prop(DESERT, Rect2(128, 144, 32, 48), p, Vector2(19, 10))
 	for p in [Vector2(134, 45), Vector2(850, 96)]:
 		_prop(DESERT, Rect2(160, 64, 64, 48), p, Vector2(15, 12))

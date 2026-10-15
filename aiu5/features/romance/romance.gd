@@ -89,6 +89,13 @@ func gift(target: String) -> bool:
   s.inventory.apply_data(before); s._set_notice("面包不足或对方背包已满，赠礼未完成。"); return false
  affinity[pair(source,target)]=mini(100,liking(source,target)+5)
  return s.production.commit(before,"送出面包，好感度%d／100。"%liking(source,target))
+
+# 关系事件使用：按事件结算成对好感，统一夹在0～100。
+func shift_liking(a: String,b: String,delta: int) -> int:
+ if a==b: return 50
+ var value := clampi(liking(a,b)+delta,0,100)
+ affinity[pair(a,b)]=value
+ return value
 func marry(target: String,house: String) -> bool:
  var s: Node=runtime.session; var source: String=s.world.active_resident.resident_id
  if not can_marry(source,target) or not homes().any(func(h: Dictionary)->bool:return str(h.id)==house): return false

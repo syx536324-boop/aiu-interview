@@ -25,6 +25,8 @@ func collect(production: Node, station: String, actor_id: String) -> bool:
 		production.message.emit("背包已满，成品保留在工作台，腾出空间后领取。")
 		return false
 	jobs.erase(station)
+	# Persist successful output delivery and its tutorial progress atomically.
+	production.craft_completed.emit(str(job.recipe),actor_id)
 	return production.commit(before,"已获得%s。" % job.name)
 func elapse(production: Node, delta: float) -> void:
 	if delta<=0: return

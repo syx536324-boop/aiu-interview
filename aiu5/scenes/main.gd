@@ -72,7 +72,23 @@ func _ready() -> void:
 	wildlife.name="Wildlife"; add_child(wildlife); $Session.wildlife=wildlife; wildlife.start($Session)
 	var tribes := preload("res://features/tribes/tribes.gd").new()
 	tribes.name="Tribes"; add_child(tribes); $Session.tribes=tribes; tribes.start($Session)
+	# 未归附部落成员的日常行为与招式运行域，在部落域启动后注入。
+	var npc_skills: Node
+	var guards: Node
+	if ResourceLoader.exists("res://features/combat/npc_skills.gd"):
+		npc_skills = (load("res://features/combat/npc_skills.gd") as Script).new(); npc_skills.name="NpcSkills"; add_child(npc_skills); tribes.npc_skills=npc_skills
+	if ResourceLoader.exists("res://features/tribes/guards.gd"):
+		guards = (load("res://features/tribes/guards.gd") as Script).new(); guards.name="Guards"; add_child(guards); tribes.guards=guards
+	if is_instance_valid(guards): guards.start(tribes)
+	if is_instance_valid(npc_skills): npc_skills.start(tribes, guards)
+	var onboarding := preload("res://features/onboarding/onboarding.gd").new()
+	onboarding.name="Onboarding"; add_child(onboarding); $Session.onboarding=onboarding; onboarding.start($Session)
+	$Foraging.gathered.connect(onboarding.record_pickup)
+	$Production.craft_completed.connect(onboarding.record_craft)
+	$Mining.deposit_mined.connect(onboarding.record_mining)
 	$Persistence.start($Session, $Vitals, $Homestead, $Grounds)
+	var onboarding_view := preload("res://features/onboarding/view.gd").new()
+	onboarding_view.name="OnboardingView"; add_child(onboarding_view); onboarding_view.bind(onboarding,$Session)
 	$HUD.bind_session($Session)
 	$HUD.resident_requested.connect($Session.select_resident)
 	$HUD.weapon_requested.connect($Session.weapon_slot_clicked)

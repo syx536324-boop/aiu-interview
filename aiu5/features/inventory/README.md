@@ -43,3 +43,6 @@
 ## 0.8.1接口与规则
 
 新增cowhide、silk、cloth、vine、magic_scissors，总77种。普通scissors非武器；读取旧origin=player_gift的scissors迁移magic_scissors。来源字段gift_level通过Origin.fields保留，普通与赐予不混堆，赋属性门槛12。来源说明与docs/ITEM_SOURCES.md对应。
+
+
+0.10.0：跨箱柜点击交换和Shift快速存取由_finish_transfer统一结算，检查实际移出的数量，空操作和满包不记偷窃，保存失败整体恢复。

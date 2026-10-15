@@ -1,0 +1,18 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WALL blacksmith at= (824.0, 272.5027) bottom= 268.0
+WALL forest_herb_house at= (-1328.0, 742.5027) bottom= 738.0
+WALL forest_chief_house at= (-1076.0, 748.5027) bottom= 744.0
+WALL forest_wood_house at= (-1318.0, 912.5027) bottom= 908.0
+WALL forest_stone_house at= (-1076.0, 916.5027) bottom= 912.0
+WALL herb_house at= (-228.0, 292.5027) bottom= 288.0
+WALL kitchen at= (377.0, 387.5027) bottom= 383.0
+WALL house at= (240.0, 164.5027) bottom= 160.0
+WALL round_house at= (440.0, 148.5027) bottom= 144.0
+WALL awning_house at= (722.0, 148.5027) bottom= 144.0
+WALL chief_house at= (678.0, 258.5027) bottom= 254.0
+WALL straw_house at= (790.0, 368.5027) bottom= 364.0
+WALL wood_house at= (582.0, 464.5027) bottom= 460.0
+WALL stone_house at= (225.8235, 474.5027) bottom= 470.0
+NPC navigation result: (309.9017, 223.64) route=0 remaining=4 slides=2
+VILLAGE_SMOKE_OK: 8 reachable houses, seven atlas styles and a kitchen chimney, 13 residents / 3 controllable / 10 NPCs, chief ceremony, dynamic roster, panel, dialogue, movement, collisions, farming, pigs, expanded boundaries and NPC navigation

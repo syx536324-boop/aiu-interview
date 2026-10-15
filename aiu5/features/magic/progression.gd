@@ -43,8 +43,14 @@ func max_mana(id: String) -> int:
 	return Catalog.mana_limit(int(ensure(id).level))
 
 func _actor(id: String) -> CharacterBody2D:
+	if id == "": return null
 	for actor in session.world.controllable:
 		if actor.resident_id == id: return actor
+	# 非玩家角色（部落村长等）不在可控名单里，按敌人/成员编号回退解析。
+	if is_instance_valid(session.combat):
+		for candidate in session.combat.enemies.values():
+			if candidate.enemy_id == id or candidate.resident_id == id: return candidate
+			if candidate.chief_id != "" and candidate.chief_id == id: return candidate
 	return null
 
 func _error(id: String) -> String:
@@ -249,6 +255,15 @@ func restore(data: Dictionary) -> void:
 	for actor in session.world.controllable:
 		var source: Variant = residents.get(actor.resident_id, {}) if residents is Dictionary else {}
 		states[actor.resident_id] = Catalog.restore_state(source if source is Dictionary else {})
+
+	# Enemy chiefs and profession NPCs are explicit casters too. Preserve their saved
+	# element/equipment instead of dropping them when restoring only the player roster.
+	for npc: Node in session.combat.enemies.values():
+		var id := str(npc.chief_id) if str(npc.chief_id)!="" else str(npc.enemy_id)
+		var source: Variant=residents.get(id,{}) if residents is Dictionary else {}
+		if source is Dictionary and not source.is_empty(): states[id]=Catalog.restore_state(source)
+		elif str(npc.role)=="chief": session.combat._configure_chief(id,session.combat.CHIEF_ELEMENT.get(str(npc.tribe),"earth"))
+		else: ensure(id)
 
 	skills.restore(data.get("effects",{}))
 	branches.restore(data.get("branches",{}))

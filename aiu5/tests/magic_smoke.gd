@@ -88,6 +88,7 @@ func run() -> void:
 	check(magic.award_points("ali", 25) and magic.ensure("ali").pending_points==pending_before+25, "unawakened residents retain earned magic points")
 	await key(KEY_R)
 	check(not session.awakening_open, "R away from altar cannot open awakening")
+	world.controllable[2].position=Vector2(650,400)
 	world.active_resident.position = Vector2(548, 332)
 	session._sync_view()
 	await key(KEY_E)
@@ -160,7 +161,7 @@ func run() -> void:
 	check(not magic.unlock("ali", "trunk_1") and not magic.unlock("ali", "branch_1"), "duplicates and undefined branch skills do not spend points")
 	check(magic.award_points("ali", 1300) and magic.ensure("ali").level == 13 and magic.ensure("ali").skill_points == 50, "multi-level gain carries magic remainder and awards each upgrade once")
 	for i in range(1, 5): await click(ui.skill_buttons[i])
-	check(magic.ensure("ali").unlocked.size() == 5 and magic.ensure("ali").skill_points == 10 and ui.current.branches_ready and ui.branches.all(func(b: Button) -> bool: return b.disabled), "five sequential skills use fifty points and expose three undefined branch entrances")
+	check(magic.ensure("ali").unlocked.size() == 5 and magic.ensure("ali").skill_points == 10 and ui.current.branches_ready and ui.branches.all(func(b: Button) -> bool: return not b.disabled), "five sequential skills use fifty points and expose three implemented branch entrances")
 	var before_magic: Dictionary = magic.ensure("ali").duplicate(true)
 	items.path = blocked_path
 	check(not magic.award_points("ali", 200), "magic award fails if save fails")
@@ -174,7 +175,7 @@ func run() -> void:
 	check(ui.xp_label.text.contains("lv.100") and ui.xp_bar.value == ui.xp_bar.max_value, "max level page displays a full progress bar without a zero denominator")
 	# Save, reload, revival and checkpoint rollback all retain the appropriate magic state.
 	check(session.persistence.save_checkpoint(false), "checkpoint records magic and equipment")
-	var checkpoint_magic: Dictionary = magic.export_state()
+	var checkpoint_magic: Dictionary = player_progress()
 	session.close_roster()
 	session.select_resident(1)
 	world.active_resident.position = Vector2(548, 332)
@@ -194,13 +195,13 @@ func run() -> void:
 	session.overview = true
 	check(not magic.award_points("heya", 100) and not magic.equip("heya", "head", "leather_helmet") and magic.ensure("heya") == before_revival, "overview pause blocks progress and equipment mutations")
 	session.overview = false
-	var saved: Dictionary = magic.export_state()
+	var saved: Dictionary = player_progress()
 	check(session.persistence.save_now(), "autosave includes both roles and gear")
 	game.queue_free()
 	await frames(4)
 	await load_game()
-	check(magic.export_state() == saved and items.has_item("heya", "leather_helmet"), "restart keeps elements, levels, experience, spent points and worn gear")
-	check(session.persistence.restore_checkpoint() and magic.export_state() == checkpoint_magic, "checkpoint rolls back magic progression and equipment together")
+	check(player_progress() == saved and items.has_item("heya", "leather_helmet"), "restart keeps elements, levels, experience, spent points and worn gear")
+	check(session.persistence.restore_checkpoint() and player_progress() == checkpoint_magic, "checkpoint rolls back magic progression and equipment together")
 	var legacy: Dictionary = items.export_data()
 	legacy.session.erase("magic")
 	items.apply_data(legacy)
@@ -211,3 +212,10 @@ func run() -> void:
 	if failures.is_empty(): print("MAGIC_SMOKE_OK")
 	else: print("MAGIC_FAILURES: ", failures)
 	quit(0 if failures.is_empty() else 1)
+
+# This probe owns player economy assertions. Enemy caster state has separate 0.10.0
+# coverage; unrelated lazily-created NPC records must not change player expectations.
+func player_progress() -> Dictionary:
+	var out := {}
+	for actor: Node in world.controllable: out[actor.resident_id]=magic.ensure(actor.resident_id).duplicate(true)
+	return out

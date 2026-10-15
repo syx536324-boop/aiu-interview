@@ -42,6 +42,7 @@ var menu_paused := false
 var torches: Node
 var achievements: Node
 var foraging: Node
+var onboarding: Node
 var forest: Node
 var nearest := ""
 var notice := "沿沙路探索村落；靠近设施按 E 互动。"

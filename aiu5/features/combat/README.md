@@ -45,3 +45,9 @@ J近战在相同武器距离、朝向和遮挡规则下可选中牛，箭扫掠�
 ## 0.8.1接口与规则
 
 weapon_catalog定义石刀2、铁刀4；magic_scissors攻击3、范围80、interval(item,distance)在40像素分界取0.5／1秒。combat只接受实际敌人且无遮挡；scissors_flight负责扫掠命中、自动回收及飞行持久化，scissor_visual显示轨迹与回收。attack_damage和weapon_enchants接口来自magic，保存失败回滚耐久、护盾、冷却与飞行。
+
+
+0.10.0：动物参与精确右键选中，距离/间隔/遮挡与正常武器一致；魔法伤害也可激怒受击森林部落。
+
+
+0.10.0：NPC的所有入站伤害统一使用magic.damage_rate，技能、灼烧与武器均只结算一次招架／水盾并遵守50%／55%上限；普通守卫攻击复用war.strike的真实箭、职业伤害和冷却。

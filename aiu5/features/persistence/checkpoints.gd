@@ -56,7 +56,7 @@ func capture_session() -> Dictionary:
 	for id: String in interiors.rooms:
 		inventory.layouts[id] = interiors.rooms[id].export_layout()
 	inventory.layouts["outdoors"] = grounds.export_layout()
-	return {"legacy_fences":world.fence_state(),"tribes":session.tribes.export_state() if is_instance_valid(session.tribes) else {},"wildlife":session.wildlife.export_state() if is_instance_valid(session.wildlife) else {},"achievements":session.achievements.export_state(),"foraging":session.foraging.export_state(),"day_night":session.day_night.export_state() if is_instance_valid(session.day_night) else {}, "resource_world": session.resources.export_state(), "settlement": world.settlement, "actors": actors, "pigs": pigs, "selected": session.selected, "selected_id": world.active_resident.resident_id, "gate": session.gate_open,
+	return {"legacy_fences":world.fence_state(),"tribes":session.tribes.export_state() if is_instance_valid(session.tribes) else {},"wildlife":session.wildlife.export_state() if is_instance_valid(session.wildlife) else {},"achievements":session.achievements.export_state(),"foraging":session.foraging.export_state(),"onboarding":session.onboarding.export_state() if is_instance_valid(session.onboarding) else {},"day_night":session.day_night.export_state() if is_instance_valid(session.day_night) else {}, "resource_world": session.resources.export_state(), "settlement": world.settlement, "actors": actors, "pigs": pigs, "selected": session.selected, "selected_id": world.active_resident.resident_id, "gate": session.gate_open,
 		"names": world.founder_names(), "vitals": vitals.export_state(), "magic": session.magic.export_state(), "construction":session.construction.export_state(), "production":session.production.export_state(), "combat":session.combat.export_state(), "forest":session.forest.export_state(), "homestead": homestead.export_state(), "livestock": livestock.export_state(), "mining": mining.export_state()}
 
 func restore_session(data: Dictionary) -> void:
@@ -86,6 +86,7 @@ func restore_session(data: Dictionary) -> void:
 	grounds.restore(inventory.layouts.get("outdoors", []))
 	session.achievements.restore(data.get("achievements",{}))
 	session.foraging.restore(data.get("foraging",{}))
+	if is_instance_valid(session.onboarding): session.onboarding.restore(data.get("onboarding",{}))
 	session.construction.restore(data.get("construction",{}))
 	session.production.restore(data.get("production",{}))
 	if is_instance_valid(session.tribes): session.tribes.restore(data.get("tribes",{}))

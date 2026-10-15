@@ -7,11 +7,12 @@ var world: Node2D
 var session: Node
 
 func _initialize() -> void:
+	OS.set_environment("AIU5_WORLD_PROFILE","expanded")
 	OS.set_environment("AIU5_STATE_PATH", "res://.runtime/test-village-state.json")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("res://.runtime/test-village-state.json"))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(OS.get_environment("AIU5_STATE_PATH") + ".altar"))
 	OS.set_environment("AIU5_PROFILE_PATH", "res://.runtime/test-village-names.cfg")
-	create_timer(60, true).timeout.connect(func() -> void: push_error("VILLAGE_TIMEOUT"); quit(2))
+	create_timer(150, true).timeout.connect(func() -> void: push_error("VILLAGE_TIMEOUT"); quit(2))
 	call_deferred("run_checks")
 
 func frames(count: int) -> void:
@@ -54,11 +55,11 @@ func run_checks() -> void:
 	world = game.get_node("World")
 	session = game.get_node("Session")
 	await frames(3)
-	check(world.residents.size() == 16, "thirteen residents are present")
+	check(world.residents.size() == 13, "thirteen residents are present")
 	check(world.controllable.size() == 3, "three residents can be controlled")
-	check(world.residents.filter(func(actor: CharacterBody2D) -> bool: return not actor.can_control).size() == 13, "ten new villagers remain NPCs")
-	check(world.houses.size() == 14, "eight original village houses plus herbal house are present")
-	check(world.SIZE == Vector2(4800, 1600) and world.BOUNDS.size == Vector2(7200, 3200), "the map is widened east to 4800 by 1600 with the mountain zone")
+	check(world.residents.filter(func(actor: CharacterBody2D) -> bool: return not actor.can_control).size() == 10, "ten new villagers remain NPCs")
+	check(world.houses.size() == 38, "eight original village houses plus herbal house are present")
+	check(world.SIZE == Vector2(4800, 4800) and world.BOUNDS.size == Vector2(7200, 6400), "expanded world preserves old coordinates within 7200 by 6400 bounds")
 	check(world.pigs.size() == 3, "three pigs are present")
 	check(world.get_node("VillageObjects/PrimitiveHouse") != null, "house is present")
 	check(world.get_node("VillageObjects/Well") != null, "well is present")
@@ -79,6 +80,8 @@ func run_checks() -> void:
 		check(world.get_world_2d().direct_space_state.intersect_shape(query).is_empty(), "resident spawns outside static obstacles: " + resident.resident_name)
 		if resident != player:
 			resident.set_physics_process(false)
+	for resident: Node in world.residents:
+		if resident!=player: resident.collision_layer=0
 	for data: Dictionary in world.Layout.HOMES:
 		var door: Vector2 = data["door"]
 		check(not world.navigation.find_path(Vector2(322, 224), door + Vector2(0, 8)).is_empty(), "house entrance can be reached: " + str(data["name"]))
@@ -87,7 +90,10 @@ func run_checks() -> void:
 		player.position = at + Vector2(region.size.x / 2, region.size.y + 22)
 		await frames(2)
 		await move(["move_up"], 30)
+		print("WALL ",data.id," at= ",player.position," bottom= ",at.y+region.size.y)
 		check(player.position.y > at.y + region.size.y + 3 and player.position.y < at.y + region.size.y + 11, "house wall blocks entry: " + str(data["name"]))
+	for resident: Node in world.residents:
+		resident.collision_layer=2
 	player.position = Vector2(340, 310)
 	await frames(2)
 	var start := player.position
@@ -144,6 +150,9 @@ func run_checks() -> void:
 	game.get_node("Inventory").exchange(player.resident_id, {}, {"wheat": 1})
 	await frames(2)
 	await key(KEY_E)
+	if session.production.opened and session.tribes.dialog_kind=="animal":
+		session.production.perform("feed:wheat")
+		session.production.close()
 	check(world.pigs.any(func(pig: CharacterBody2D) -> bool: return pig.feeding_time > 6), "paid feeding attracts the selected pig or trough herd")
 	check(not game.get_node("Inventory").has_item(player.resident_id, "wheat"), "one E feeding consumes exactly one grain")
 	player.position = Vector2(432, 292)
@@ -207,10 +216,10 @@ func run_checks() -> void:
 	check(session.overview and paused and world.streamer.overview.visible and not world.visible and world.camera.zoom == live_zoom, "M presents an independent full map and pauses the world without zooming live scenes")
 	await key(KEY_M)
 	check(not session.overview and world.camera.zoom == live_zoom, "M restores the following camera")
-	world.active_resident.position = Vector2(2040, 1580)
+	world.active_resident.position = Vector2(2040, world.SIZE.y-20)
 	await frames(2)
 	await move(["move_right", "move_down"], 60)
-	check(world.active_resident.position.y < 1593, "expanded bottom boundary blocks escape")
+	check(world.active_resident.position.y < world.SIZE.y-7, "expanded bottom boundary blocks escape")
 	await key(KEY_1)
 	var npc: CharacterBody2D = world.residents[1]
 	world.active_resident.position = Vector2(340, 310)

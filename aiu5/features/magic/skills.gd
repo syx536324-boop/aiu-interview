@@ -12,6 +12,8 @@ var projectiles: Array = []
 var hut_nodes: Dictionary = {}
 var projectile_nodes: Array[Node2D] = []
 var target_nodes: Dictionary = {}
+# Effects cast by tribe NPCs onto the player's side; they mirror the enemy marks below.
+var hostile_marks: Dictionary = {}
 func start(owner_magic: Node) -> void:
 	magic = owner_magic
 	session = magic.session
@@ -37,10 +39,76 @@ func _visible(actor: CharacterBody2D, at: Vector2, radius: float) -> bool:
 func _line_clear(actor: CharacterBody2D, at: Vector2) -> bool:
 	var query := PhysicsRayQueryParameters2D.create(actor.global_position,at,1|4,[actor.get_rid()])
 	return actor.get_world_2d().direct_space_state.intersect_ray(query).is_empty()
+func _npc_line_clear(actor: CharacterBody2D, at: Vector2) -> bool:
+	# NPC 常站在祭台等静态地形里；只豁免紧贴本体（24像素内）的地形重叠，真实墙体仍会挡住视线。
+	var origin: Vector2=actor.global_position
+	var from: Vector2=origin
+	for i in range(8):
+		var gap := from.distance_to(at)
+		if gap<=6.0: return true
+		var query := PhysicsRayQueryParameters2D.create(from,at,1|4,[actor.get_rid()])
+		var hit: Dictionary=actor.get_world_2d().direct_space_state.intersect_ray(query)
+		if hit.is_empty(): return true
+		# 命中点就在射线起点说明仍嵌在自身所站地形里；否则只有超出本体24像素的遮挡才算墙。
+		if hit.position.distance_to(from)>1.0 and origin.distance_to(hit.position)>24.0: return false
+		from=hit.position+(at-hit.position)/maxf(0.001,hit.position.distance_to(at))*6.0
+	return false
+func _npc(id: String) -> CharacterBody2D:
+	# Magic ids resolve to tribe members and chiefs as well as controlled residents.
+	if id=="" or not is_instance_valid(session.combat): return null
+	for key: String in session.combat.enemies:
+		var npc: CharacterBody2D=session.combat.enemies[key]
+		if not is_instance_valid(npc): continue
+		if npc.enemy_id==id or npc.resident_id==id or (str(npc.role)=="chief" and npc.chief_id==id): return npc
+	return null
+func _caster(id: String) -> CharacterBody2D:
+	var resident: CharacterBody2D=magic._actor(id) if is_instance_valid(magic) else null
+	if is_instance_valid(resident): return resident
+	return _npc(id)
+func _is_npc(actor: Node) -> bool:
+	return is_instance_valid(actor) and "enemy_id" in actor
+func _life_of(id: String) -> float:
+	var npc := _npc(id)
+	if is_instance_valid(npc): return float(npc.hp)
+	return float(session.vitals.ensure(id).life)
+func _max_life_of(id: String) -> float:
+	var npc := _npc(id)
+	if is_instance_valid(npc): return float(npc.max_hp)
+	return max_life(id)
+func _heal_actor(id: String, amount: float) -> void:
+	var npc := _npc(id)
+	if is_instance_valid(npc):
+		npc.hp=minf(npc.max_hp,float(npc.hp)+maxf(0.0,amount))
+		npc.refresh()
+		return
+	session.vitals.heal(id,amount)
+func _npc_damage(actor_id: String, target: CharacterBody2D, raw: float, element: String) -> void:
+	# NPC 对玩家村落成员的伤害统一由 combat.apply_npc_damage 做声誉裁决。
+	var caster: CharacterBody2D=_caster(actor_id)
+	if not is_instance_valid(caster) or not ("resident_id" in target): return
+	session.combat.apply_npc_damage(caster,str(target.resident_id),raw,{"kind":"magic","element":element,"tribe":str(caster.tribe)})
+func _authorized(actor_id: String, rank: int) -> bool:
+	if learned(actor_id,rank): return true
+	# 敌对村长每系只配两招，因此主干四、五级对村长放行（玩家语义不变）。
+	var npc := _npc(actor_id)
+	return is_instance_valid(npc) and str(npc.role)=="chief" and rank in [4,5]
+func _reject_npc(npc: bool, text: String) -> bool:
+	return false if npc else _reject(text)
 func _enemy(actor: CharacterBody2D, at: Vector2) -> CharacterBody2D:
+	if not _outdoors(actor): return null
+	if _is_npc(actor):
+		# NPC 施法者以玩家阵营为敌对目标（相对于施法者判定）。
+		var target: CharacterBody2D
+		var reach := 22.0
+		for resident: CharacterBody2D in session.world.controllable:
+			if resident.dead or resident.get_parent()==null: continue
+			var resident_gap := resident.global_position.distance_to(at)
+			if resident_gap<reach and _visible(actor,resident.global_position,200) and _npc_line_clear(actor,resident.global_position):
+				target=resident
+				reach=resident_gap
+		return target
 	var result: CharacterBody2D
 	var distance := 22.0
-	if not _outdoors(actor): return null
 	for enemy: CharacterBody2D in session.combat.target_enemies():
 		if enemy.hp<=0 or enemy.get_parent()==null: continue
 		var gap := enemy.global_position.distance_to(at)
@@ -85,15 +153,19 @@ func _landing(actor: CharacterBody2D, at: Vector2) -> bool:
 	query.exclude=[actor.get_rid()]
 	return actor.get_world_2d().direct_space_state.intersect_shape(query).is_empty()
 func cast(rank: int, at: Vector2) -> bool:
+	return cast_for(session.world.active_resident.resident_id,rank,at)
+func cast_for(actor_id: String, rank: int, at: Vector2) -> bool:
 	if is_instance_valid(session.simulation): session.simulation.flush()
-	var actor: CharacterBody2D=session.world.active_resident
-	var id: String=actor.resident_id
+	var actor: CharacterBody2D=_caster(actor_id)
+	if not is_instance_valid(actor): return false
+	var npc: bool=_is_npc(actor)
+	var id: String=actor_id
 	if not session.combat.ready_for_action() or (is_instance_valid(session.gifts) and session.gifts.opened): return false
-	if rank<2 or rank>5 or not learned(id,rank): return _reject("请在 C → 属性 → 技能树依次点亮该技能。")
+	if rank<2 or rank>5 or not _authorized(id,rank): return _reject_npc(npc,"请在 C → 属性 → 技能树依次点亮该技能。")
 	var element: String=magic.ensure(id).element
 	var cost: int=Rules.COSTS[rank-1]
 	var stats: Dictionary=session.vitals.ensure(id)
-	if float(stats.mana)<cost: return _reject("魔力不足，该技能需要%d点魔力。" % cost)
+	if float(stats.mana)<cost: return _reject_npc(npc,"魔力不足，该技能需要%d点魔力。" % cost)
 	var enemy: CharacterBody2D
 	var plot := -1
 	var cells: Array=[]
@@ -124,27 +196,27 @@ func cast(rank: int, at: Vector2) -> bool:
 	elif rank==4:
 		match element:
 			"wood":
-				if stats.life>=max_life(id): return _reject("生命已满，无需回春。")
+				if _life_of(id)>=_max_life_of(id): return _reject_npc(npc,"生命已满，无需回春。")
 			"fire":
 				enemy=_enemy(actor,at)
-				if not is_instance_valid(enemy): return _reject("鼠标指向200像素内可见的敌人。")
+				if not is_instance_valid(enemy): return _reject_npc(npc,"鼠标指向200像素内可见的敌人。")
 			"earth":
-				if not _outdoors(actor) or not _visible(actor,at,100) or huts.has(id): return _reject("在户外鼠标指向100像素内空地；已有土屋时不能重复生成。")
+				if not _outdoors(actor) or not _visible(actor,at,100) or huts.has(id): return _reject_npc(npc,"在户外鼠标指向100像素内空地；已有土屋时不能重复生成。")
 				destination=at.snapped(Vector2(16,16))
 				var error: String=session.grounds.land_error(Rect2(destination-Vector2(16,26),Vector2(32,32)),actor)
-				if error!="" or not _line_clear(actor,at): return _reject(error if error!="" else "土屋位置被障碍遮挡。")
+				if error!="" or not _line_clear(actor,at): return _reject_npc(npc,error if error!="" else "土屋位置被障碍遮挡。")
 	elif rank==5:
 		if element in ["wood","water"]:
 			enemy=_enemy(actor,at)
-			if not is_instance_valid(enemy): return _reject("鼠标指向200像素内可见的敌人。")
+			if not is_instance_valid(enemy): return _reject_npc(npc,"鼠标指向200像素内可见的敌人。")
 		elif element=="fire":
-			if not _outdoors(actor) or not _visible(actor,at,200) or actor.global_position.distance_to(at)<4: return _reject("在户外朝鼠标方向发射火球，最远200像素。")
+			if not _outdoors(actor) or not _visible(actor,at,200) or actor.global_position.distance_to(at)<4: return _reject_npc(npc,"在户外朝鼠标方向发射火球，最远200像素。")
 		elif element=="earth":
-			if not _outdoors(actor): return _reject("瞬移需在户外使用。")
+			if not _outdoors(actor): return _reject_npc(npc,"瞬移需在户外使用。")
 			var direction := actor.global_position.direction_to(at)
 			if direction==Vector2.ZERO: direction=[Vector2.DOWN,Vector2.UP,Vector2.LEFT,Vector2.RIGHT][actor.facing]
 			destination=actor.global_position+direction*80
-			if not _landing(actor,destination) or not _line_clear(actor,destination): return _reject("80像素处落点或路径有障碍，魔力未扣除。")
+			if not _landing(actor,destination) or not _line_clear(actor,destination): return _reject_npc(npc,"80像素处落点或路径有障碍，魔力未扣除。")
 	var before: Dictionary=session.inventory.export_data()
 	# Vessel conversion keeps gift provenance and is allowed only if all selected conversions fit.
 	if rank==3 and element=="water":
@@ -155,6 +227,8 @@ func cast(rank: int, at: Vector2) -> bool:
 				return _reject("背包空间不足，容器和魔力保持原样。")
 	if (rank==4 and element=="fire") or (rank==5 and element in ["wood","water","fire"]): magic.branches.note_combat(id)
 	stats.mana-=cost
+	# 村长的魔力池与 enemy.mana 镜像同步，enemy.gd 的远程射击仍读同一个数。
+	if npc: actor.mana=int(clampf(float(stats.mana),0.0,float(magic.max_mana(id))))
 	if not buffs.has(id): buffs[id]={"empower":0.0,"shield":0.0,"regen":0.0,"regen_tick":0.0}
 	if rank==2: buffs[id].empower=120.0
 	elif rank==3:
@@ -192,16 +266,38 @@ func cast(rank: int, at: Vector2) -> bool:
 	magic.branches._area(id,"cast",actor.global_position,0.8,Vector2(24,24),Vector2.RIGHT)
 	magic.branches._rebuild_visuals()
 	session.vitals._sync_actors()
+	# NPC 施法不写入玩家操作日志；状态由在线时钟与自动存档接管。
+	if npc: return true
 	var info := Rules.entry(element,rank)
 	var text := "施放%s，消耗%d魔力。" % [info.name,cost]
 	if rank==3 and element=="earth": text+=" 已开垦%d格。" % cells.size()
 	return session.production.commit(before,text)
 func _mark(enemy: CharacterBody2D, actor: String, kind: String, duration: float) -> void:
+	# NPC 对玩家的持续效果走独立登记，避免把玩家当成 enemy.gd 目标。
+	if not ("enemy_id" in enemy):
+		_hostile_mark(enemy,actor,kind,duration)
+		return
 	var root_allowed := kind in ["wood","water"] and float(magic.branches.control_locks.get(enemy.enemy_id,0))<=0
 	if root_allowed: magic.branches.control_locks[enemy.enemy_id]=10.0
 	# Each caster/effect pair refreshes rather than stacking free repeated damage.
 	marks[enemy.enemy_id+":"+actor+":"+kind]={"enemy":enemy.enemy_id,"actor":actor,"kind":kind,"remaining":duration,"tick":0.0,"root":1.0 if root_allowed else 0.0,"drain":kind=="wood"}
 	_refresh_targets()
+func _hostile_mark(target: CharacterBody2D, actor: String, kind: String, duration: float) -> void:
+	# 村长对玩家的藤缚/水泡沿用既有禁锢与渴值规则：先禁锢 1 秒，再按间隔结算。
+	var pid := str(target.resident_id)
+	if pid=="": return
+	if kind in ["wood","water"] and not magic.branches.immune_control(pid):
+		magic.branches.player_status(pid,"rooted",1.0)
+	hostile_marks[pid+":"+actor+":"+kind]={"player":pid,"actor":actor,"kind":kind,"remaining":duration,"tick":0.0,"drain":kind=="wood"}
+func consume_hostile_drain(target: CharacterBody2D, actor_id: String) -> float:
+	# 村长下一次命中的汲取：治疗施法者本体的 enemy.hp。
+	if not is_instance_valid(target) or not ("resident_id" in target): return 0.0
+	var key := str(target.resident_id)+":"+actor_id+":wood"
+	if not hostile_marks.has(key) or not hostile_marks[key].drain: return 0.0
+	hostile_marks[key].drain=false
+	var amount := minf(2.0,_life_of(str(target.resident_id)))
+	if amount>0: _heal_actor(actor_id,amount)
+	return amount
 func rooted(enemy_id: String) -> bool:
 	if is_instance_valid(magic.branches) and magic.branches.rooted(enemy_id): return true
 	for mark: Dictionary in marks.values():
@@ -225,12 +321,12 @@ func _step(delta: float) -> void:
 		var b: Dictionary=buffs[id]
 		for field in ["empower","shield"]:
 			if b.has(field): b[field]=maxf(0,float(b[field])-delta)
-		if float(b.get("regen",0))>0 and session.world.active_resident.resident_id==id and session.vitals.ensure(id).life>0:
+		if float(b.get("regen",0))>0 and _life_of(id)>0 and (session.world.active_resident.resident_id==id or is_instance_valid(_npc(id))):
 			b.regen_tick=float(b.get("regen_tick",0))+minf(delta,float(b.regen))
 			b.regen=maxf(0,float(b.regen)-delta)
 			while b.regen_tick>=3:
 				b.regen_tick-=3
-				session.vitals.heal(id,1)
+				_heal_actor(id,1)
 	for key: String in marks.keys():
 		var m: Dictionary=marks[key]
 		var enemy: Variant=session.combat.enemies.get(m.enemy)
@@ -247,6 +343,25 @@ func _step(delta: float) -> void:
 				if m.kind=="fire": session.combat.apply_skill_damage(enemy,1,str(m.actor))
 				else: enemy.thirst=maxf(0,enemy.thirst-2); enemy.queue_redraw()
 		if m.remaining<=0 and (m.kind!="wood" or not m.drain): marks.erase(key)
+	for key: String in hostile_marks.keys():
+		var hm: Dictionary=hostile_marks[key]
+		var hostile_caster := _npc(str(hm.actor))
+		if not is_instance_valid(hostile_caster) or hostile_caster.hp<=0 or hostile_caster.friendly: hostile_marks.erase(key); continue
+		var victim: CharacterBody2D=_caster(str(hm.player))
+		if not is_instance_valid(victim) or _life_of(str(hm.player))<=0: hostile_marks.erase(key); continue
+		var hm_span := minf(delta,float(hm.remaining))
+		hm.remaining=maxf(0,float(hm.remaining)-hm_span)
+		hm.tick=float(hm.tick)+hm_span
+		var hm_interval := 3.0 if hm.kind=="fire" else 5.0
+		if hm.kind in ["fire","water"]:
+			while float(hm.tick)>=hm_interval:
+				hm.tick-=hm_interval
+				if hm.kind=="fire": _npc_damage(str(hm.actor),victim,1.0,"fire")
+				else:
+					var stats: Dictionary=session.vitals.ensure(str(hm.player))
+					stats.thirst=maxf(0,float(stats.thirst)-2)
+					victim.queue_redraw()
+		if hm.remaining<=0 and (hm.kind!="wood" or not hm.drain): hostile_marks.erase(key)
 	for id: String in huts.keys():
 		huts[id].remaining=maxf(0,float(huts[id].remaining)-delta)
 		if huts[id].remaining<=0: _remove_hut(id)
@@ -255,14 +370,19 @@ func _step(delta: float) -> void:
 func _advance_projectiles(delta: float) -> void:
 	for i in range(projectiles.size()-1,-1,-1):
 		var p: Dictionary=projectiles[i]
+		var caster: CharacterBody2D=_caster(str(p.actor))
+		var npc_caster: bool=_is_npc(caster)
+		if npc_caster and (caster.hp<=0 or caster.friendly): projectiles.remove_at(i); continue
 		var start := Vector2(p.at[0],p.at[1])
 		var direction := Vector2(p.direction[0],p.direction[1])
 		var span := minf(float(p.remaining),180*delta)
 		var end := start+direction*span
-		var query := PhysicsRayQueryParameters2D.create(start,end,1|8|4)
+		# 玩家火球只打敌对目标；村长火球按层2命中玩家阵营。
+		var query := PhysicsRayQueryParameters2D.create(start,end,1|2|4 if npc_caster else 1|8|4)
 		var hit: Dictionary=session.world.get_world_2d().direct_space_state.intersect_ray(query)
 		if not hit.is_empty():
 			if hit.collider.is_in_group("hostile_targets") or hit.collider.is_in_group("creature_targets"): session.combat.apply_skill_damage(hit.collider,5,str(p.actor))
+			elif npc_caster and "resident_id" in hit.collider: _npc_damage(str(p.actor),hit.collider,5.0,"fire")
 			projectiles.remove_at(i)
 		else:
 			p.at=[end.x,end.y]
@@ -325,7 +445,7 @@ func _make_room(id: String) -> Node2D:
 	return room
 func _remove_hut(id: String) -> void:
 	var key := "skill_hut:"+id
-	var actor: CharacterBody2D=magic._actor(id)
+	var actor: CharacterBody2D=_caster(id)
 	if is_instance_valid(actor) and actor.room_id==key:
 		var at: Vector2=session.world.safe_return_position(session.interiors.outdoor_position(actor),key)
 		session.interiors.leave(actor,session.world.objects,at)
@@ -344,27 +464,32 @@ func _remove_hut(id: String) -> void:
 func snapshot(id: String) -> Dictionary:
 	return {"buffs":buffs.get(id,{}).duplicate(true),"hut_remaining":huts.get(id,{}).get("remaining",0),"max_life":max_life(id)}
 func export_state() -> Dictionary:
-	return {"buffs":buffs.duplicate(true),"marks":marks.duplicate(true),"huts":huts.duplicate(true),"projectiles":projectiles.duplicate(true)}
+	return {"buffs":buffs.duplicate(true),"marks":marks.duplicate(true),"hostile_marks":hostile_marks.duplicate(true),"huts":huts.duplicate(true),"projectiles":projectiles.duplicate(true)}
 func restore(data: Dictionary) -> void:
 	for id: String in huts.keys(): _remove_hut(id)
 	buffs.clear()
 	marks.clear()
+	hostile_marks.clear()
 	projectiles.clear()
 	for id: String in data.get("buffs",{}):
-		if not is_instance_valid(magic._actor(id)): continue
+		if not is_instance_valid(_caster(str(id))): continue
 		var source: Dictionary=data.buffs[id]
 		buffs[id]={"empower":clampf(float(source.get("empower",0)),0,120),"shield":clampf(float(source.get("shield",0)),0,30),"regen":clampf(float(source.get("regen",0)),0,30),"regen_tick":clampf(float(source.get("regen_tick",0)),0,2.999999)}
 	for key: String in data.get("marks",{}):
 		var m: Dictionary=data.marks[key]
-		if not session.combat.enemies.has(m.get("enemy","")) or not is_instance_valid(magic._actor(str(m.get("actor","")))) or m.get("kind","") not in ["wood","water","fire"]: continue
+		if not session.combat.enemies.has(m.get("enemy","")) or not is_instance_valid(_caster(str(m.get("actor","")))) or m.get("kind","") not in ["wood","water","fire"]: continue
 		marks[key]={"enemy":m.enemy,"actor":m.actor,"kind":m.kind,"remaining":clampf(float(m.get("remaining",0)),0,15),"root":clampf(float(m.get("root",0)),0,1),"tick":clampf(float(m.get("tick",0)),0,4.999999),"drain":bool(m.get("drain",false)) and m.kind=="wood"}
+	for key: String in data.get("hostile_marks",{}):
+		var hm: Dictionary=data.hostile_marks[key]
+		if not is_instance_valid(_caster(str(hm.get("player","")))) or not is_instance_valid(_caster(str(hm.get("actor","")))) or hm.get("kind","") not in ["wood","water","fire"]: continue
+		hostile_marks[key]={"player":hm.player,"actor":hm.actor,"kind":hm.kind,"remaining":clampf(float(hm.get("remaining",0)),0,15),"tick":clampf(float(hm.get("tick",0)),0,4.999999),"drain":bool(hm.get("drain",false)) and hm.kind=="wood"}
 	for id: String in data.get("huts",{}):
 		var h: Dictionary=data.huts[id]
-		if not is_instance_valid(magic._actor(id)) or not h.get("at") is Array or h.at.size()!=2 or float(h.get("remaining",0))<=0: continue
+		if not is_instance_valid(_caster(str(id))) or not h.get("at") is Array or h.at.size()!=2 or float(h.get("remaining",0))<=0: continue
 		huts[id]={"at":h.at.duplicate(),"remaining":clampf(float(h.remaining),0,20)}
 		_attach_hut(id)
 	for p: Dictionary in data.get("projectiles",[]):
-		if not is_instance_valid(magic._actor(str(p.get("actor","")))) or not p.get("at") is Array or p.at.size()!=2 or not p.get("direction") is Array or p.direction.size()!=2: continue
+		if not is_instance_valid(_caster(str(p.get("actor","")))) or not p.get("at") is Array or p.at.size()!=2 or not p.get("direction") is Array or p.direction.size()!=2: continue
 		projectiles.append({"actor":p.actor,"at":p.at.duplicate(),"direction":p.direction.duplicate(),"remaining":clampf(float(p.get("remaining",0)),0,200)})
 	_refresh_targets()
 	_refresh_projectiles()

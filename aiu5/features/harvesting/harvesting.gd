@@ -2,6 +2,7 @@
 extends Node
 
 signal message(text: String)
+const Density := preload("res://features/world_resources/density.gd")
 const Gear := preload("res://features/combat/weapon_catalog.gd")
 var equipment: Node
 const DeadTree := preload("res://features/harvesting/dead_tree.gd")
@@ -24,6 +25,7 @@ func start(village: Node2D, belongings: Node) -> void:
 	inventory = belongings
 	for i in range(TREES.size()):
 		var data: Dictionary = TREES[i]
+		if not Density.retained(world.resource_seed,str(data.id),Density.DEADWOOD_PERCENT): continue
 		var tree := DeadTree.new()
 		tree.resource_id = data["id"]
 		tree.name = data["id"]

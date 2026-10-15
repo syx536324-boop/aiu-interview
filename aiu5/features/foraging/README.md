@@ -7,3 +7,7 @@
 ## 0.9.1在线计时修复
 
 Production及Foraging由统一Simulation时钟驱动；start显式启用领域的process标志。这两个节点无需自己的_process回调，避免重复计算时间。tests/crafting_clock_probe.tscn以真实帧检查菜单中的进度、冶炼、资源补充、暂停及读档，不直接调用elapse。
+
+## 0.10.0 新存档补充上限
+
+新建starter_v2存档的每处开局木石拾取点只有初始及120在线秒后的补充，共两份；采完第二份永久消失。`batch_limit` 与 `taken` 保存在自动及祭台快照；已有存档缺字段保留无限补充，不改变其历史资源。其他树木、矿脉、草药和种子规则不受影响。`gathered(item,actor_id)` 在拾取事务中供新手指引订阅，满包或保存失败不推进目标或消耗份额。

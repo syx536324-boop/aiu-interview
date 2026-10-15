@@ -2,6 +2,8 @@
 extends Node
 
 signal message(text: String)
+signal deposit_mined(ore_id: String, item: String, actor_id: String)
+const Density := preload("res://features/world_resources/density.gd")
 const Gear := preload("res://features/combat/weapon_catalog.gd")
 var equipment: Node
 const Cave := preload("res://features/mining/cave_catalog.gd")
@@ -93,6 +95,7 @@ func start(village: Node2D, rooms: Node2D, items: Node) -> void:
 	world.points.mine = {"position": DOOR, "radius": 25.0, "label": "东山矿洞", "action": "进入地下", "description": "带镐子下矿，可采石头、煤矿与铁矿。"}
 	world._label("东山矿洞", DOOR + Vector2(-27, -55))
 	for record: Dictionary in SURFACE:
+		if not Density.retained(world.resource_seed,str(record.id),Density.WILD_PERCENT): continue
 		var ore := create_ore(record)
 		world.objects.add_child(ore)
 		surface[record.id] = ore
@@ -161,6 +164,8 @@ func strike(actor: CharacterBody2D, ore: Node2D) -> bool:
 	progress[ore.resource_id] = next_hit
 	ore.flash = 0.18
 	ore.refresh()
+	# Only an exhausted deposit that delivered materials completes this objective.
+	if next_hit == ore.strikes and reward > 0: deposit_mined.emit(ore.resource_id,ore.kind,actor.resident_id)
 	if not equipment.session.production.commit(before,"采矿 %d/%d。" % [next_hit,ore.strikes]): return false
 	cooldown = 0.35
 	if surface.has(ore.resource_id) or procedural.has(ore.resource_id):

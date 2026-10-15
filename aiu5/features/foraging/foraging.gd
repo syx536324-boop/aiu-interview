@@ -1,9 +1,13 @@
 # Provides loose starter materials and fixed public crafting benches without granting tools.
 extends Node
+signal gathered(item: String, actor_id: String)
 const REGROW := 120.0
 var session: Node
 var online := 0.0
 var collected: Dictionary = {}
+# Zero preserves historical unlimited replenishment; new starter saves allow two batches.
+var batch_limit := 0
+var taken: Dictionary = {}
 var nodes: Dictionary = {}
 class Pickup extends Node2D:
 	var item := "wood"
@@ -19,6 +23,7 @@ class Pickup extends Node2D:
 			draw_colored_polygon(PackedVector2Array([Vector2(-5,1),Vector2(-4,-4),Vector2(1,-6),Vector2(5,-2),Vector2(4,2)]),Color("999d8d"))
 func start(controller: Node) -> void:
 	session = controller
+	batch_limit = 2 if session.inventory.saved_session.is_empty() and session.world.settlement == "starter_v2" else 0
 	# Simulation owns elapsed time and checks this domain enable flag.
 	set_process(true)
 	_build()
@@ -40,13 +45,13 @@ func _build() -> void:
 			_update(id)
 func _update(id: String) -> void:
 	var node: Node2D = nodes[id]
-	node.available = online>=float(collected.get(id,0))
+	node.available = (batch_limit == 0 or int(taken.get(id,0)) < batch_limit) and online>=float(collected.get(id,0))
 	node.queue_redraw()
 	var key := "forage:"+id
 	if not node.available:
 		session.world.points.erase(key)
 	else:
-		session.world.points[key]={"position":node.position,"radius":10.0,"label":"散落树枝" if node.item=="wood" else "散落石头","action":"空手拾取","description":"E拾取1份；2分钟在线时间后补充。","source":node}
+		session.world.points[key]={"position":node.position,"radius":10.0,"label":"散落树枝" if node.item=="wood" else "散落石头","action":"空手拾取","description":("E拾取1份；120在线秒后仅补充一次。" if int(taken.get(id,0)) == 0 else "E拾取最后1份；此处不再补充。") if batch_limit == 2 else "E拾取1份；2分钟在线时间后补充。","source":node}
 func gather(id: String) -> bool:
 	var actor: CharacterBody2D = session.world.active_resident
 	if not session.production.allowed(actor) or actor.room_id!="" or not nodes.has(id): return false
@@ -57,15 +62,21 @@ func gather(id: String) -> bool:
 		session.production.message.emit("背包已满，材料留在地上。")
 		return false
 	collected[id]=online+REGROW
+	taken[id]=int(taken.get(id,0))+1
 	_update(id)
+	# The subscriber is saved in the same transaction and restored if commit fails.
+	gathered.emit(node.item,actor.resident_id)
 	return session.production.commit(before,"拾取"+str(session.inventory.Catalog.ITEMS[node.item].name)+"×1。")
 func elapse(delta: float) -> void:
 	online+=maxf(0,delta)
 	for id: String in nodes:
-		if not nodes[id].available and online>=float(collected.get(id,0)): _update(id)
+		if not nodes[id].available and (batch_limit == 0 or int(taken.get(id,0)) < batch_limit) and online>=float(collected.get(id,0)): _update(id)
 func export_state() -> Dictionary:
-	return {"online":online,"collected":collected.duplicate(true)}
+	return {"online":online,"collected":collected.duplicate(true),"batch_limit":batch_limit,"taken":taken.duplicate(true)}
 func restore(data: Dictionary) -> void:
+	# Missing fields identify an existing save; never limit its historical resources.
+	batch_limit = 2 if int(data.get("batch_limit",0)) == 2 else 0
+	taken=data.get("taken",{}).duplicate(true)
 	online=maxf(0,float(data.get("online",0)))
 	collected=data.get("collected",{}).duplicate(true)
 	_build()

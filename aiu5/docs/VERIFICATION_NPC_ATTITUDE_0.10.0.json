@@ -1,0 +1,157 @@
+{
+  "version": "0.10.0",
+  "kind": "npc-attitude-skills-isolated-verification",
+  "date": "2026-10-15T01:13:00+08:00",
+  "engine": "D:\\Godot\\Godot_v4.7.2-stable_win64_console.exe",
+  "project": "D:\\aiu5",
+  "real_player_data_used": false,
+  "isolation": {
+    "mechanism": "AIU5_PROBE_DIRECTORY per run; AIU5_STATE_PATH/AIU5_PROFILE_PATH point inside it; world profile starter_v2",
+    "player_save": "%APPDATA%\\Godot\\app_userdata\\AIU5 · 赤沙村 never opened by this probe",
+    "note": "The 0.10.0 probe also deletes only its own isolated state.json/.altar before each scenario reset."
+  },
+  "acceptance_probe": {
+    "scene": "res://tests/npc_attitude_probe.tscn",
+    "script": "res://tests/npc_attitude_probe.gd",
+    "command": "$env:AIU5_PROBE_DIRECTORY='D:\\aiu5\\.runtime\\npc-verify-clean-final'; D:\\Godot\\Godot_v4.7.2-stable_win64_console.exe --headless --path D:\\aiu5 res://tests/npc_attitude_probe.tscn",
+    "exit_code": 0,
+    "result": "NPC_ATTITUDE_PROBE_OK checks=120",
+    "checks": 120,
+    "seconds": 13.9,
+    "script_errors": 0,
+    "isolated_directory": "D:\\aiu5\\.runtime\\npc-verify-clean-final",
+    "final_lead_run": {
+      "command": "$env:AIU5_PROBE_DIRECTORY='D:\\aiu5\\.runtime\\lead-final-verify\\npc_attitude'; D:\\Godot\\Godot_v4.7.2-stable_win64_console.exe --headless --path D:\\aiu5 res://tests/npc_attitude_probe.tscn",
+      "exit_code": 0,
+      "result": "NPC_ATTITUDE_PROBE_OK checks=125",
+      "checks": 125,
+      "seconds": 13.8,
+      "script_errors": 0,
+      "added_by_lead": [
+        "wood chief regeneration heals one point per three online seconds",
+        "wood chief regeneration re-arms its tick after healing",
+        "wood chief regeneration keeps ticking while the effect lasts",
+        "wood chief regeneration keeps decaying towards expiry",
+        "parry reduces real incoming damage by thirty percent"
+      ],
+      "isolated_directory": "D:\\aiu5\\.runtime\\lead-final-verify"
+    },
+    "gpu_screenshots": {
+      "directory": "docs/screenshots-0.10.0",
+      "renderer": "NVIDIA GeForce RTX 5070 Laptop GPU, OpenGL 3.3 compatibility",
+      "command": "$env:AIU5_CAPTURE_DIRECTORY='D:\\aiu5\\.runtime\\npc-attitude-shots'; D:\\Godot\\Godot_v4.7.2-stable_win64.exe --path D:\\aiu5 res://.runtime/lead_capture.tscn",
+      "files": ["npc-01-forest-patrol.png", "npc-02-relic-warning.png", "npc-03-barbarian-hostile.png", "npc-04-forest-answer.png", "npc-05-chief-cast.png"],
+      "note": "Captured from the real game window with all 0.10.0 modules active; 640x400 viewport."
+    },
+    "reconfirmation_after_guards_walkable_change": {
+      "command": "$env:AIU5_PROBE_DIRECTORY='D:\\aiu5\\.runtime\\npc-verify-confirm2'; D:\\Godot\\Godot_v4.7.2-stable_win64_console.exe --headless --path D:\\aiu5 res://tests/npc_attitude_probe.tscn",
+      "exit_code": 0,
+      "result": "NPC_ATTITUDE_PROBE_OK checks=120",
+      "seconds": 13.8,
+      "script_errors": 0,
+      "isolated_directory": "D:\\aiu5\\.runtime\\npc-verify-confirm2"
+    },
+    "isolation_evidence": "ISOLATION enemies=62 home=2 forest=20 barbarian=20 yunye=20 members=62 residents=3 settlement=starter_v2",
+    "section_runs": {
+      "relations_only": "AIU5_PROBE_ONLY=relations -> NPC_ATTITUDE_PROBE_OK checks=50 (D:\\aiu5\\.runtime\\npc-verify-rel2)",
+      "persistence_only": "AIU5_PROBE_ONLY=persistence -> NPC_ATTITUDE_PROBE_OK checks=29 (D:\\aiu5\\.runtime\\npc-verify-pers3)",
+      "skills_only": "AIU5_PROBE_ONLY=skills -> NPC_ATTITUDE_PROBE_OK checks=30 (D:\\aiu5\\.runtime\\npc-verify-skills)",
+      "clock_only": "AIU5_PROBE_ONLY=clock -> NPC_ATTITUDE_PROBE_OK checks=12 (D:\\aiu5\\.runtime\\npc-verify-clock)"
+    },
+    "coverage": [
+      "隔离：状态路径、starter_v2 世界、三部落人口、圣品归属",
+      "中立森林NPC巡逻、正常接近不无故攻击",
+      "闯入祭坛禁区先警告、5 秒宽限后驱赶、离开解除、信任玩家放行",
+      "1级玩家攻击：受害者即时反击/呼救 + 同伴支援",
+      "敌对部落NPC在有效射程与视线成立时攻击；墙后视线阻断不攻击",
+      "丢失视线只搜索最后看见的位置、不隔墙追踪；追击超时/超界返回岗位",
+      "导航过桥、拒走水面、桥口可通行；低血平民脱离战斗",
+      "送面包：个人好感 +5、部落声望 +1、同游戏日上限 +5、跨游戏日恢复额度",
+      "攻击 -20 每次冲突去重（60 在线秒）、额外命中不重复扣、新冲突再次结算",
+      "死亡 -35 只结算一次；记忆/严重记忆/亲属 -40/目击 -10；提示 10 秒节流",
+      "攻击圣品直接 -100；跨阈值后裁决采用新态度（信任/友好/中立/警戒/敌对）",
+      "战士冲刺距离与落点合法性、弓箭手消耗自己箭支且无箭停止射击",
+      "村长只消耗自己魔力、缺魔力不施法、cast_for 不误扣玩家魔力",
+      "导出/恢复保留声望、记忆、每日额度与冷却",
+      "旧档缺字段迁移：森林0、野蛮/云野-50、记忆为空，且不补血、不复活、不补箭",
+      "保存失败整体回滚（声望、额度、面包）",
+      "暂停冻结统一下载时钟、继续游戏不一次性补算"
+    ]
+  },
+  "regression": {
+    "runner": "tests/run_npc_attitude_regression.ps1",
+    "isolated_root": "D:\\aiu5\\.runtime\\npc-attitude-reg-final",
+    "when": "2026-10-15T01:10:00+08:00",
+    "results": [
+      { "name": "tribes_final", "target": "res://tests/tribes_final_probe.tscn", "exit_code": 0, "result": "TRIBES_FINAL_OK checks=30", "seconds": 2.8 },
+      { "name": "romance", "target": "res://tests/romance_probe.tscn", "exit_code": 0, "result": "ROMANCE_OK checks=30", "seconds": 3.8 },
+      { "name": "branches", "target": "res://tests/branches_smoke.tscn", "exit_code": 0, "result": "BRANCHES_SMOKE_OK checks=305", "seconds": 3.6 },
+      { "name": "weapon", "target": "res://tests/weapon_smoke.gd", "exit_code": 0, "result": "WEAPON_SMOKE_OK", "seconds": 1.9 },
+      { "name": "skills_visual", "target": "res://tests/skills_visual.gd", "exit_code": 0, "result": "SKILLS_VISUAL_OK (headless rendering unavailable: save_png on null texture; needs GPU)", "seconds": 1.9 },
+      { "name": "village", "target": "res://tests/village_smoke.gd", "exit_code": 2, "result": "VILLAGE_TIMEOUT plus stale assertions", "seconds": 61.1, "triage": "not introduced by 0.10.0" },
+      { "name": "magic", "target": "res://tests/magic_smoke.gd", "exit_code": 1, "result": "MAGIC_FAILURES 6 items (altar/gift/skill-tree/checkpoint)", "seconds": 4.7, "triage": "pre-existing: identical 6 failures on unmodified HEAD (see head_baseline)" },
+      { "name": "livestock", "target": "res://tests/livestock_smoke.gd", "exit_code": 2, "result": "LIVESTOCK_TIMEOUT plus stale interaction assertions", "seconds": 46.1, "triage": "not introduced by 0.10.0" }
+    ],
+    "head_baseline": {
+      "method": "git stash push -u (all 0.10.0 changes) then run the three failing probes at unmodified HEAD, then git stash pop; working tree verified restored afterwards",
+      "magic": "FAIL, exit 1, identical six assertions (altar ritual choices, four-element choice, element alone does not awaken, five skills/tree entrances, restart keeps progression, checkpoint rollback) -> pre-existing stale test, not a 0.10.0 regression",
+      "village": "FAIL/timeout at HEAD as well -> pre-existing stale expanded-world assertions",
+      "livestock": "FAIL/timeout at HEAD as well -> pre-existing stale interaction positions",
+      "conclusion": "The three failures are baseline test drift, not introduced by this version."
+    },
+    "stale_test_evidence": {
+      "village": "Current expanded world measured residents=13 controllable=3 houses=38 homes=14 npcs=10 SIZE=(4800,4800); village_smoke asserts residents==16 / houses==14 / SIZE==(4800,1600). features/village/world.gd and layout.gd are untouched by 0.10.0.",
+      "livestock": "Depends on the same stale expanded-world interaction positions.",
+      "first_baseline_run": "D:\\aiu5\\.runtime\\npc-attitude-20261015-003431 (concurrent with other agents' Godot runs; village/livestock/magic also failed then)"
+    }
+  },
+  "lead_final_check": {
+    "when": "2026-10-15T01:14:00+08:00",
+    "serial_run_after_stash_restore": [
+      { "name": "tribes_final", "result": "TRIBES_FINAL_OK checks=30", "exit_code": 0, "seconds": 3.1 },
+      { "name": "npc_attitude", "result": "NPC_ATTITUDE_PROBE_OK checks=120", "exit_code": 0, "seconds": 13.8 },
+      { "name": "romance", "result": "ROMANCE_OK checks=30", "exit_code": 0, "seconds": 3.8 },
+      { "name": "branches", "result": "BRANCHES_SMOKE_OK checks=305", "exit_code": 0, "seconds": 3.7 }
+    ],
+    "live_scene_smoke": "res://scenes/main.tscn + 240 frames with all 0.10.0 modules active: LIVE moved=59 of 60 non-friendly NPCs, states={\"life\":36,\"patrol\":24}, forest standing=0/neutral, enemies=62, zero script errors",
+    "skill_wiring_gap_fixed_by_lead": {
+      "when": "2026-10-15T01:30:00+08:00",
+      "issue": "npc_skills.damage_modifier() and consume_attack_bonus() were implemented but never called from any damage path, so parry (30% for 2s) and dash slash (+2 next melee hit) had no effect",
+      "fix": "combat.gd now routes hostile damage through _final_hostile_damage() (consumes an NPC attacker's dash bonus and applies the target's parry/shield rate); enemy.gd order_attack() consumes the attacker's own dash bonus; npc_skills.damage_modifier() now returns only the parry/shield buff rate so equipment/general reduction is not double-applied",
+      "measured": "raw 3.0 -> base 3.0; with parry 2.1 (70%); dash bonus 2.0 -> NPC strike costs the player 3.0 life and the bonus is consumed",
+      "serial_rerun_after_fix": ["TRIBES_FINAL_OK checks=30", "NPC_ATTITUDE_PROBE_OK checks=125", "ROMANCE_OK checks=30", "BRANCHES_SMOKE_OK checks=305", "WEAPON_SMOKE_OK"]
+    },
+    "chief_heal_gap_fixed_by_lead": {
+      "when": "2026-10-15T01:35:00+08:00",
+      "issue": "the wood chief's recovery spell only set the branch regen buff on the caster id; enemy tribe members are not vital actors, so the chief never actually regained health while still paying 10 mana and a 20s cooldown",
+      "fix": "npc_skills now runs its own regeneration state per enemy (1 hp every 3 online seconds for 30 seconds), persisted in export_state/restore, applied in _step()",
+      "measured": "hp 12 -> 13 after the first tick, tick re-arms at 3.0, effect decays from 30s; verified through _step() and asserted in the acceptance probe"
+    },
+    "performance_comparison": {
+      "when": "2026-10-15T01:40:00+08:00",
+      "method": "same scene, same 62 enemies / 62 population members / same player position; 60 timed calls of session.tribes.advance(0.5) with the 0.10.0 domains active, then the same 60 calls with the guards and npc_skills domains removed from the advance loop; headless CPU measurement",
+      "full_0_10_0": { "median_ms": 2.443, "mean_ms": 2.533, "p95_ms": 3.209, "max_ms": 6.142, "samples": 60 },
+      "legacy_0_9_1_loop": { "median_ms": 1.301, "mean_ms": 1.387, "p95_ms": 1.944, "max_ms": 3.281, "samples": 60 },
+      "delta": "+1.14 ms median per 0.5s tick (+88%) with the player far from all tribes; worst measured tick 6.14 ms stays well inside a 16.7 ms 60 FPS budget",
+      "caveat": "CPU-side advance cost only; no claim of a constant 60 FPS in every scene."
+    },
+    "isolated_roots": ["D:\\aiu5\\.runtime\\lead-final-check", "D:\\aiu5\\.runtime\\lead-final2", "D:\\aiu5\\.runtime\\lead-live"]
+  },
+  "defects_found_and_fixed": [
+    { "file": "features/combat/enemy.gd:121", "issue": "RefCounted (tribes.workers) assigned to a Node-typed local -> every patrol/life move errored, 54MB of log spam", "fixed_by": "lead/npc-behavior" },
+    { "file": "features/tribes/guards.gd:538 (now 551)", "issue": "var nav: Node = session.world.navigation, but Navigation is RefCounted; _walkable errored and treated all points as walkable", "fixed_by": "npc-behavior" },
+    { "file": "features/tribes/tribes.gd gift_bread", "issue": "session.romance.shift_liking -> Session has no romance property; gift applied standing/quota then aborted without commit", "fixed_by": "lead" },
+    { "file": "features/combat/combat.gd _note_hostile_damage", "issue": "aid_event +10 fired for attacking a neutral villager because war.provoke() set anger before the check", "fixed_by": "lead" },
+    { "file": "features/tribes/relation_memory.gd", "issue": "killed_kin used VICTIM(-30) instead of KIN_RELATIVE(-40); attacked used WITNESS(-10) instead of VICTIM(-30)", "fixed_by": "lead" },
+    { "file": "features/tribes/relation_memory.gd", "issue": "gift_bread memory event also granted AIDED(+10), stacking on the +5 affinity gift", "fixed_by": "lead" },
+    { "file": "features/romance/romance.gd", "issue": "liking() clamped to a floor of 50 so negative affinity events were invisible; relation_memory now keeps 0-100 overrides", "fixed_by": "lead" },
+    { "file": "features/tribes/tribes.gd", "issue": "daily gift quota never reset on a new game day (gift_day written but never read)", "fixed_by": "lead (sync_gift_day/current_day)" },
+    { "file": "features/magic/progression.gd _actor", "issue": "_actor(\"\") fell through to a chief_id comparison and returned an arbitrary enemy; population.count inflated every tribe by one, breaking tribes_final", "fixed_by": "lead/npc-skills" },
+    { "file": "features/magic/progression.gd:52", "issue": "candidate.get(\"chief_id\", \"\") used Dictionary.get on a CharacterBody2D, erroring on unknown actor and chief_id lookups", "fixed_by": "lead" }
+  ],
+  "notes": [
+    "The probe uses real business entries: tribes performance path for gifts, combat.hit_enemy/apply_skill_damage/hit_structure for damage and relic attacks, persistence.save_now for disk saves, and the unified Simulation clock for pause/resume.",
+    "features/ was never modified by this verification module; every fix above was made by the owning agent.",
+    "Regression must run serially: village_smoke and livestock_smoke share res://.runtime paths, so concurrent Godot runs corrupt each other's state."
+  ]
+}

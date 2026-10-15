@@ -1,0 +1,344 @@
+{
+  "version": "0.10.0",
+  "verified_at": "2026-10-15T08:27:39.106424+08:00",
+  "project": "D:\\aiu5",
+  "player_data_used_for_probes": false,
+  "scope": "NPC attitude and skills plus approved cliff, river, animals, onboarding and resource changes",
+  "source_validation": {
+    "npc_attitude": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "NPC_ATTITUDE_PROBE_OK checks=125",
+      "log": "docs/verification-0.10.0/npc_attitude.txt"
+    },
+    "npc_completion": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "NPC_COMPLETION_OK checks=29",
+      "log": "docs/verification-0.10.0/npc_completion.txt"
+    },
+    "main_scene_rivers": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "WORLD_COMPLETION_OK checks=28",
+      "log": "docs/verification-0.10.0/main_scene_rivers.txt"
+    },
+    "onboarding": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "ONBOARDING_PROBE_OK checks=65",
+      "log": "docs/verification-0.10.0/onboarding.txt"
+    },
+    "animals": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "ANIMALS_WEAPON_PROBE_OK checks=162",
+      "log": "docs/verification-0.10.0/animals.txt"
+    },
+    "tribes": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "TRIBES_FINAL_OK checks=30",
+      "log": "docs/verification-0.10.0/tribes.txt"
+    },
+    "romance": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "ROMANCE_OK checks=30",
+      "log": "docs/verification-0.10.0/romance.txt"
+    },
+    "branches": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "BRANCHES_SMOKE_OK checks=305",
+      "log": "docs/verification-0.10.0/branches.txt"
+    },
+    "weapons": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "WEAPON_SMOKE_OK",
+      "log": "docs/verification-0.10.0/weapons.txt"
+    },
+    "craft_clock": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "CRAFTING_CLOCK_PROBE_OK checks=62",
+      "log": "docs/verification-0.10.0/craft_clock.txt"
+    },
+    "magic_ui": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "MAGIC_SMOKE_OK",
+      "log": "docs/verification-0.10.0/magic_ui.txt"
+    },
+    "livestock_legacy": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "LIVESTOCK_SMOKE_OK",
+      "log": "docs/verification-0.10.0/livestock_legacy.txt"
+    },
+    "village_legacy": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "VILLAGE_SMOKE_OK: 8 reachable houses, seven atlas styles and a kitchen chimney, 13 residents / 3 controllable / 10 NPCs, chief ceremony, dynamic roster, panel, dialogue, movement, collisions, farming, pigs, expanded boundaries and NPC navigation",
+      "log": "docs/verification-0.10.0/village_legacy.txt"
+    },
+    "cliff_gpu": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "CLIFF_VISUAL_PROBE_OK checks=19",
+      "log": "docs/verification-0.10.0/cliff_gpu.txt"
+    },
+    "performance_gpu": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "OPTIMIZED_PERFORMANCE_PROBE_OK",
+      "log": "docs/verification-0.10.0/performance_gpu.txt"
+    }
+  },
+  "performance": {
+    "gpu": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "renderer": "OpenGL compatibility",
+    "scenes": [
+      {
+        "draw_calls_median": 192.0,
+        "forest_nodes": 0,
+        "frame_interval_max_ms": 17.026,
+        "frame_interval_median_ms": 16.664,
+        "frame_interval_p95_ms": 16.854,
+        "frame_interval_p99_ms": 16.982,
+        "mode": "normal",
+        "process_median_ms": 12.944,
+        "render_objects_median": 4399.0,
+        "resource_chunks": 20,
+        "resource_nodes": 5,
+        "terrain_chunks": 25
+      },
+      {
+        "draw_calls_median": 60.0,
+        "forest_nodes": 0,
+        "frame_interval_max_ms": 16.923,
+        "frame_interval_median_ms": 16.666,
+        "frame_interval_p95_ms": 16.69,
+        "frame_interval_p99_ms": 16.791,
+        "mode": "overview",
+        "process_median_ms": 2.776,
+        "render_objects_median": 1121.0,
+        "resource_chunks": 20,
+        "resource_nodes": 5,
+        "terrain_chunks": 25
+      },
+      {
+        "draw_calls_median": 65.0,
+        "forest_nodes": 0,
+        "frame_interval_max_ms": 17.027,
+        "frame_interval_median_ms": 16.665,
+        "frame_interval_p95_ms": 16.732,
+        "frame_interval_p99_ms": 16.841,
+        "mode": "interior",
+        "process_median_ms": 10.964,
+        "render_objects_median": 889.0,
+        "resource_chunks": 12,
+        "resource_nodes": 5,
+        "terrain_chunks": 25
+      },
+      {
+        "draw_calls_median": 181.0,
+        "forest_nodes": 0,
+        "frame_interval_max_ms": 16.906,
+        "frame_interval_median_ms": 16.666,
+        "frame_interval_p95_ms": 16.829,
+        "frame_interval_p99_ms": 16.892,
+        "mode": "east",
+        "process_median_ms": 16.193,
+        "render_objects_median": 2542.0,
+        "resource_chunks": 25,
+        "resource_nodes": 33,
+        "terrain_chunks": 28
+      },
+      {
+        "draw_calls_median": 253.0,
+        "forest_nodes": 41,
+        "frame_interval_max_ms": 17.013,
+        "frame_interval_median_ms": 16.67,
+        "frame_interval_p95_ms": 16.83,
+        "frame_interval_p99_ms": 16.929,
+        "mode": "forest",
+        "process_median_ms": 11.902,
+        "render_objects_median": 2811.0,
+        "resource_chunks": 25,
+        "resource_nodes": 0,
+        "terrain_chunks": 25
+      },
+      {
+        "draw_calls_median": 273.0,
+        "forest_nodes": 137,
+        "frame_interval_max_ms": 17.094,
+        "frame_interval_median_ms": 16.671,
+        "frame_interval_p95_ms": 16.89,
+        "frame_interval_p99_ms": 16.985,
+        "mode": "north_forest",
+        "process_median_ms": 12.868,
+        "render_objects_median": 1181.0,
+        "resource_chunks": 0,
+        "resource_nodes": 0,
+        "terrain_chunks": 25
+      },
+      {
+        "draw_calls_median": 92.0,
+        "forest_nodes": 0,
+        "frame_interval_max_ms": 17.017,
+        "frame_interval_median_ms": 16.662,
+        "frame_interval_p95_ms": 16.813,
+        "frame_interval_p99_ms": 16.901,
+        "mode": "plateau",
+        "process_median_ms": 16.698,
+        "render_objects_median": 8645.0,
+        "resource_chunks": 0,
+        "resource_nodes": 0,
+        "terrain_chunks": 25
+      },
+      {
+        "draw_calls_median": 269.0,
+        "forest_nodes": 0,
+        "frame_interval_max_ms": 22.29,
+        "frame_interval_median_ms": 16.661,
+        "frame_interval_p95_ms": 16.831,
+        "frame_interval_p99_ms": 16.904,
+        "mode": "mountains",
+        "process_median_ms": 15.088,
+        "render_objects_median": 5687.0,
+        "resource_chunks": 0,
+        "resource_nodes": 0,
+        "terrain_chunks": 25
+      },
+      {
+        "draw_calls_median": 218.0,
+        "forest_nodes": 103,
+        "frame_interval_max_ms": 16.904,
+        "frame_interval_median_ms": 16.672,
+        "frame_interval_p95_ms": 16.855,
+        "frame_interval_p99_ms": 16.9,
+        "mode": "southern_forest",
+        "process_median_ms": 16.202,
+        "render_objects_median": 1175.0,
+        "resource_chunks": 25,
+        "resource_nodes": 0,
+        "terrain_chunks": 25
+      },
+      {
+        "forest_nodes": 99,
+        "max_ms": 22.558,
+        "mode": "forest_cross_chunk_sweep",
+        "p95_ms": 16.912,
+        "p99_ms": 17.261
+      },
+      {
+        "max_ms": 17.1,
+        "mode": "cross_chunk_sweep",
+        "p95_ms": 16.884,
+        "p99_ms": 17.058
+      }
+    ],
+    "claim": "Nine fixed scenes plus two cross-chunk sweeps. Measured results only; not a guarantee of constant 60 FPS."
+  },
+  "screenshots": [
+    {
+      "path": "docs/screenshots-0.10.0/chief-preparation.png",
+      "sha256": "08ce975aa726f8c94acd2fede403ec793ea40df383f20b89f0bac79932fe915f"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/cliff-01-before-ascent.png",
+      "sha256": "9c3673c87a236478ac60c87a634490e056784bc938950590ed5d30df05fc28ee"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/cliff-02-after-ascent.png",
+      "sha256": "c67c05e71e6de3f59875e85a85248843c9464f6ef351c01428cf2af28179bfec"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/cliff-03-cloud-ladder-pass.png",
+      "sha256": "5afd7dd86fecd539f9532e5c9b8cae56ed7fea436396fc117521e8abd36e2863"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/cliff-04-eastern-ridge.png",
+      "sha256": "3bf4bc099c7a6e562372b9b1f45a5189ea44e535c0bd6fc47f68e34f7061682a"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/cliff-05-forest-escarpment.png",
+      "sha256": "7f38039f9bee07355c8b6389c9e70d9fb922aeaa76e5c23aac847fdfd85b4609"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/forest-bridge.png",
+      "sha256": "6ade824f64ab6f14d79a1e0ca223f24b1b91cc9d4b2f14ef3095f6de0dead980"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/npc-01-forest-patrol.png",
+      "sha256": "830be94f18de44add7ad85de6d86532931dcd47b7bcd0c3d5aa8f584b2da93fd"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/npc-02-relic-warning.png",
+      "sha256": "8f0ba31e232b4019e8a486be68fc8254c1876b95a0610218d891849453574b08"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/npc-03-barbarian-hostile.png",
+      "sha256": "52bcf73de9a7f07913e03ffd975d9928df7a8fdda176ee7412f9be688d1c9717"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/npc-04-forest-answer.png",
+      "sha256": "ab94a5d5bc2187d82a66cb00fdb3725d35892dcb96f49078c44e7eef03a596b8"
+    },
+    {
+      "path": "docs/screenshots-0.10.0/npc-05-chief-cast.png",
+      "sha256": "7ea3fa4e5e968e0f512106f038268f98676e8c7c3fae9ab43b0b375d17b2ea2b"
+    }
+  ],
+  "visual_review": "Reviewed the original five NPC screenshots and added actual main-scene bridge, chief preparation and five cliff captures. Surface layering and visible rock face verified.",
+  "historical_npc_evidence": "docs/VERIFICATION_NPC_ATTITUDE_0.10.0.json",
+  "export": {
+    "status": "verified",
+    "version": "0.10.0",
+    "npc_attitude_checks": 125,
+    "npc_completion_checks": 29,
+    "actual_gpu_program": true,
+    "pe_version": "0.10.0",
+    "installer": {
+      "name": "AIU5-Setup-0.10.0-win64.exe",
+      "bytes": 330807431,
+      "sha256": "4e0b86134143ec69ed03378fd6426c7d727d0d762cb83fda57572f5367779ce9"
+    },
+    "exe_sha256": "192b66caabfa19957651ccb9103c630f7d20028c21e98b76f27db24cc6b4a041",
+    "pck_sha256": "42adff3fa767418d970d8b015259aaccfe7ca72a7a2439c180b49768c000d4d2",
+    "checksum_file": {
+      "name": "SHA256SUMS-0.10.0.txt",
+      "bytes": 95,
+      "sha256": "58467b8ba888f915de4d7210c742e733715deb3f6b5d2ef991f5f2a657663b87"
+    }
+  },
+  "installation": {
+    "isolated": {
+      "actual_gpu": true,
+      "npc_attitude": 125,
+      "directory": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\release-0100\\isolated-install",
+      "installer_exit_code": 0,
+      "isolated_player_data": true,
+      "npc_completion": 29,
+      "version": "0.10.0"
+    },
+    "local": {
+      "player_sha256_unchanged": true,
+      "version": "0.10.0",
+      "backup": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\release-0100\\player-before-install-20261015-082621",
+      "player_files": 15,
+      "override_removed": true,
+      "isolated_restart_passed": true,
+      "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+      "npc_attitude_probe_passed": true,
+      "tested_scene": "res://tests/npc_attitude_probe.tscn"
+    }
+  },
+  "publication": {
+    "status": "ready_to_publish",
+    "repository": "syx536324-boop/aiu-interview",
+    "tag": "v0.10.0"
+  }
+}

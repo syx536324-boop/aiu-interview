@@ -81,6 +81,7 @@ func _configure_chief(id: String, element: String) -> void:
 	state.pending_points = 0
 	state.skill_points = 0
 	state.unlocked = ["trunk_1", "trunk_2", "trunk_3", "trunk_4"]
+	session.magic.Catalog.reserve_crystals(state)
 
 func tribe_members(name: String) -> Array:
 	var result: Array = []
@@ -141,9 +142,11 @@ func attack_clicked(at: Vector2) -> bool:
 	if weapon not in Gear.WEAPONS or not session.magic.weapon_usable(actor.resident_id): return false
 	if actor.room_id!="" and not session.world.home_data(actor.room_id).get("tower",false): return false
 	var clicked: CharacterBody2D
-	# Hit-test the visible body sprite, rather than selecting a different enemy near the pointer.
-	for enemy: CharacterBody2D in enemies.values():
-		if not enemy.friendly and enemy.hp>0 and enemy.get_parent()!=null and Rect2(enemy.global_position+Vector2(-8,-16),Vector2(16,20)).has_point(at):
+	# Both NPCs and livestock are selected by their visible body, never by a nearby substitute.
+	for enemy: CharacterBody2D in enemies.values()+session.livestock.animals:
+		if not is_instance_valid(enemy) or ("friendly" in enemy and enemy.friendly) or enemy.hp<=0 or enemy.get_parent()==null: continue
+		var bounds: Rect2=enemy.attack_bounds() if enemy.has_method("attack_bounds") else Rect2(enemy.global_position+Vector2(-8,-16),Vector2(16,20))
+		if bounds.has_point(at):
 			clicked=enemy
 			break
 	if not is_instance_valid(clicked): return _attack_structure(at,weapon)
@@ -171,6 +174,7 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 			candidate = enemy
 			nearest = gap
 	if is_instance_valid(candidate):
+		var raiding := _is_raiding(candidate)
 		var query := PhysicsRayQueryParameters2D.create(actor.global_position,candidate.global_position,1|8|4|16)
 		var hit: Dictionary = actor.get_world_2d().direct_space_state.intersect_ray(query)
 		if hit.get("collider") == candidate:
@@ -186,11 +190,12 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 				if not session.production.commit(before,outcome.text): return false
 				_spawn_swing(actor,direction,weapon)
 				return true
-			var dealt: float= session.magic.attack_damage(actor.resident_id)+session.magic.skills.drain_on_hit(candidate,actor.resident_id)
+			var dealt: float= _final_hostile_damage(actor.resident_id,candidate,session.magic.attack_damage(actor.resident_id)+session.magic.skills.drain_on_hit(candidate,actor.resident_id),{"kind":"melee"})
 			session.magic.branches.observe_hit(candidate.enemy_id,dealt)
 			var hp_before: float=candidate.hp
 			if is_instance_valid(session.tribes): session.tribes.war.provoke(candidate.tribe)
 			candidate.hp=maxf(0,float(candidate.hp)-dealt)
+			_note_hostile_damage(candidate,actor.resident_id,dealt,hp_before,raiding)
 			session.magic.enchants.on_hit(actor.resident_id,candidate,session.magic.ensure(actor.resident_id).weapon_wear,hp_before-float(candidate.hp))
 			if candidate.hp<=0: session.magic.credit_points(actor.resident_id,25)
 			candidate.pursuit = 6.0
@@ -208,6 +213,7 @@ func _spawn_swing(actor: CharacterBody2D, direction: Vector2, weapon: String) ->
 	swing.global_position = actor.global_position+Vector2(0,-8)
 	cooldown = Gear.interval(weapon)
 func hit_animal(animal: CharacterBody2D, raw: float, actor_id := "", record: Dictionary={}) -> bool:
+	if not is_instance_valid(animal) or animal.hp<=0 or raw<=0: return false
 	var attacker: String = session.world.active_resident.resident_id if actor_id=="" else actor_id
 	if not is_instance_valid(session.magic._actor(attacker)): return false
 	var before: Dictionary = session.inventory.export_data()
@@ -227,11 +233,15 @@ func hit_enemy(enemy: CharacterBody2D, raw: float, actor_id := "", record: Dicti
 	if not is_instance_valid(session.magic._actor(attacker)): return false
 	var before: Dictionary = session.inventory.export_data()
 	var dealt: float= raw+session.magic.skills.drain_on_hit(enemy,attacker)
+	dealt = _final_hostile_damage(attacker,enemy,dealt,{"kind":"ranged"})
 	session.magic.branches.note_combat(attacker)
 	session.magic.branches.observe_hit(enemy.enemy_id,dealt)
 	var hp_before: float=enemy.hp
+	# 必须在 provoke 之前读取：provoke 会在本次命中里把森林部落转成敌对。
+	var raiding := _is_raiding(enemy)
 	if is_instance_valid(session.tribes): session.tribes.war.provoke(enemy.tribe)
 	enemy.hp=maxf(0,float(enemy.hp)-dealt)
+	_note_hostile_damage(enemy,attacker,dealt,hp_before,raiding)
 	session.magic.enchants.on_hit(attacker,enemy,record,hp_before-float(enemy.hp))
 	enemy.pursuit = 6.0
 	enemy.refresh()
@@ -246,12 +256,68 @@ func apply_skill_damage(target: CharacterBody2D, raw: float, actor_id: String) -
 		if not result.ok: return false
 		if result.killed: session.magic.credit_points(actor_id,25)
 	else:
-		session.magic.branches.observe_hit(target.enemy_id,raw)
-		target.hp=maxf(0,target.hp-raw)
+		if is_instance_valid(session.tribes): session.tribes.war.provoke(target.tribe)
+		var dealt := _final_hostile_damage(actor_id,target,raw,{"kind":"magic"})
+		session.magic.branches.observe_hit(target.enemy_id,dealt)
+		var hp_before: float=target.hp
+		target.hp=maxf(0,target.hp-dealt)
+		_note_hostile_damage(target,actor_id,dealt,hp_before)
 		target.pursuit=6.0
 		target.refresh()
 		if target.hp<=0: session.magic.credit_points(actor_id,25)
 	return true
+
+# 玩家对未归附部落成员造成实际伤害时的声誉与记忆结算；
+# 多段伤害、持续灼烧、未命中都经由本入口，因此不会逐帧重复扣分。
+func _note_hostile_damage(target: Node, attacker: String, dealt: float, hp_before: float, raiding := false) -> void:
+	if not is_instance_valid(session.tribes) or dealt <= 0.0: return
+	if not ("tribe" in target) or str(target.tribe) in ["raider", "home"]: return
+	var tribe := str(target.tribe)
+	if session.tribes.relics.owner(tribe) == "player": return
+	var npc_id := str(target.enemy_id)
+	if session.tribes.note_conflict(tribe, npc_id):
+		# 直接受害者本人－30；目击者由 register_death 单独结算。
+		session.tribes.relation.remember(npc_id, "attacked", attacker, 2)
+	# 帮助抵御进攻：只对"已经在进攻本部落的来犯者"奖励一次＋10，
+	# 被玩家本次攻击挑衅转身的NPC不算，避免攻击扣分被援助奖励抵消。
+	if raiding:
+		session.tribes.aid_event(tribe)
+	if hp_before > 0.0 and target.hp <= 0.0:
+		session.tribes.register_death(tribe, npc_id, attacker)
+
+# 来犯者判定：NPC自己的追击标记（guards 写入 raiding）优先，其次命中前的 pursuit。
+func _is_raiding(target: Node) -> bool:
+	if target.has_meta("raiding") and bool(target.get_meta("raiding")): return true
+	return "pursuit" in target and float(target.pursuit) > 0.0
+
+# 玩家伤害部落单位前的职业招式结算：冲刺斩的＋2只在此处消耗（未命中不会走这里），
+# 目标的招架/水盾等减伤复用分支既有来源，按现有叠加规则作用。
+func _final_hostile_damage(_attacker: String, target: Node, raw: float, context: Dictionary = {}) -> float:
+	if raw <= 0.0 or not is_instance_valid(target): return 0.0
+	var id := str(target.chief_id) if str(target.chief_id) != "" else str(target.enemy_id)
+	# All incoming damage shares armor, trunk shield and distinct-source branch reductions,
+	# with the ordinary 50% cap and the stone array applied exactly once.
+	return raw * session.magic.damage_rate(id,context)
+
+# NPC 对玩家村落成员造成伤害的唯一入口：先做声誉裁决，再落到生命值。
+func apply_npc_damage(enemy: Node, target_id: String, raw: float, context: Dictionary = {}) -> bool:
+	if not is_instance_valid(enemy) or raw <= 0.0: return false
+	var stats: Dictionary = session.vitals.ensure(target_id)
+	if float(stats.life) <= 0.0: return false
+	var tribe := str(enemy.tribe)
+	var reaction := false
+	if is_instance_valid(session.tribes) and tribe in ["forest", "barbarian", "yunye"]:
+		# 中立或警戒部落的主动攻击会先降声誉；敌对部落本就敌对，不再重复扣分。
+		reaction = session.tribes.hostile(tribe) or session.tribes.alert(tribe)
+		if not session.tribes.hostile(tribe):
+			session.tribes.note_conflict(tribe, str(enemy.enemy_id))
+	var payload := context.duplicate()
+	payload["kind"] = str(payload.get("kind", "melee"))
+	payload["enemy"] = str(enemy.enemy_id)
+	payload["tribe"] = tribe
+	session.vitals.hurt(target_id, raw, payload)
+	return reaction
+
 func demolish() -> void:
 	if demolition_cooldown > 0 or not ready_for_action(): return
 	if session.construction.demolish(session.world.active_resident): demolition_cooldown=0.6
@@ -318,6 +384,8 @@ func _attack_structure(at: Vector2, weapon: String) -> bool:
 func _structure_damage(body: Node, raw: float, actor: String) -> bool:
 	if body.is_in_group("relic_targets"):
 		var tribe := str(body.get_meta("tribe")); session.tribes.war.provoke(tribe)
+		# 攻击部落圣品直接把该部落声誉设为-100。
+		session.tribes.relic_attack_event(tribe)
 		return session.tribes.relics.hit(tribe,raw,actor)
 	if body.has_meta("barrier_fixture"):
 		var fixture: Node=body.get_meta("barrier_fixture")

@@ -15,3 +15,7 @@ view.render_region由streaming按活动区域更新，远处山、河和广场�
 绘制森林中部青木祭台铺地，protected(bounds) 保护该祭台广场，避免玩家部署或开垦遮挡设施。
 
 0.9.0：地图7200×6400。frontier.gd拥有森林支流、可通行桥隙及9棵原生巨树；protected供资源/建筑排除，nearest_water供NPC补水。几何按视窗裁剪。
+
+## 0.10.0断崖视觉
+
+cliff_visual.gd.start(world, view)负责岩唇、竖面、岩层及低地投影，只读取原CLIFF/PLATEAU_WALL/RIDGE和云梯开口；碰撞与登山规则归world。渲染位于地面之后、人物之前，按view.render_region局部绘制，开口不再绘制实墙。

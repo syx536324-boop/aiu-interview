@@ -28,6 +28,7 @@ func _generate(cell: Vector2i) -> void:
    at=area.position+Vector2(rng.randf()*area.size.x,rng.randf()*area.size.y)
   if not safe(at): continue
   var id := "wild:"+key+":"+str(i)
+  if session.livestock.dead_ids.has(id): continue
   var kind: String=["cow","pig","sheep"][rng.randi_range(0,2)]
   session.livestock._spawn(id,kind,"male" if rng.randf()<0.5 else "female",300,at,area)
  session.livestock._refresh_points()
@@ -88,7 +89,12 @@ func _release(animal: Node) -> void:
 func export_state() -> Dictionary: return {"generated":generated.duplicate(),"tethers":tethers.duplicate()}
 func restore(data: Dictionary) -> void:
  generated=data.get("generated",{}).duplicate(); tethers=data.get("tethers",{}).duplicate()
- for animal: Node in session.livestock.animals: animal.remove_meta("tether_target")
+ # Old herd records establish first-generation cells even when the wildlife section was absent.
+ var known_ids: Array=session.livestock.dead_ids.keys()
+ for animal: Node in session.livestock.animals:
+  known_ids.append(animal.animal_id); animal.remove_meta("tether_target")
+ for id: String in known_ids:
+  if id.begins_with("wild:"): generated[id.get_slice(":",1)+":"+id.get_slice(":",2)]=true
  advance(0)
 func _draw() -> void:
  if not is_instance_valid(session) or not session.world.visible: return

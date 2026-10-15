@@ -13,10 +13,9 @@ func start(village: Node2D) -> void:
 	world = village
 	view = LandscapeView.new()
 	world.add_child(view)
-	world.move_child(view, 2)
-	for span in [Vector2(8, 300), Vector2(320, 540), Vector2(560, 600), Vector2(600, 890), Vector2(910, 1290), Vector2(1310, 1592)]:
-		var width := 24.0 if span.x < 600 else 88.0
-		world._body(view, Vector2(12 + width / 2, (span.x + span.y) / 2), Vector2(width, span.y - span.x))
+	world.move_child(view, world.objects.get_index())
+	for water: Rect2 in Layout.main_river_obstacles():
+		world._body(view, water.get_center(), water.size)
 	world._body(view, MOUNTAINS.get_center(), MOUNTAINS.size)
 	for y in [100, 700, 1050, 1400]: world._body(view, Vector2(2110, y), Vector2(80, 100))
 	for x in [490, 606]: world._body(view, Vector2(x, 285), Vector2(12, 18))
@@ -26,6 +25,11 @@ func start(village: Node2D) -> void:
 	world._label("南部荒野", Vector2(1060, 1160))
 	var frontier := preload("res://features/landscape/frontier.gd").new()
 	world.add_child(frontier); frontier.start(world)
+	var cliffs := preload("res://features/landscape/cliff_visual.gd").new()
+	cliffs.name = "CliffVisual"
+	world.add_child(cliffs)
+	world.move_child(cliffs, world.objects.get_index())
+	cliffs.start(world, view)
 	world.refresh_obstacles()
 
 func water_target(at: Vector2) -> void:
