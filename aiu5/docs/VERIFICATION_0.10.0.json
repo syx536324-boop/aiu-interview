@@ -337,8 +337,46 @@
     }
   },
   "publication": {
-    "status": "ready_to_publish",
+    "status": "published",
     "repository": "syx536324-boop/aiu-interview",
-    "tag": "v0.10.0"
-  }
+    "tag": "v0.10.0",
+    "url": "https://github.com/syx536324-boop/aiu-interview/releases/tag/v0.10.0",
+    "release_id": 413300379,
+    "latest_verified": true,
+    "published_at": "2026-10-15T00:43:45Z",
+    "release_source_commit": "d0c1da5e6cef2c11ffdf67222731692b03ce93cc",
+    "local_code_commit": "af024002015696b074431fb084e89be18b393a72",
+    "assets": [
+      {
+        "name": "AIU5-Setup-0.10.0-win64.exe",
+        "bytes": 330807431,
+        "sha256": "sha256:4e0b86134143ec69ed03378fd6426c7d727d0d762cb83fda57572f5367779ce9",
+        "url": "https://github.com/syx536324-boop/aiu-interview/releases/download/v0.10.0/AIU5-Setup-0.10.0-win64.exe"
+      },
+      {
+        "name": "SHA256SUMS-0.10.0.txt",
+        "bytes": 95,
+        "sha256": "sha256:58467b8ba888f915de4d7210c742e733715deb3f6b5d2ef991f5f2a657663b87",
+        "url": "https://github.com/syx536324-boop/aiu-interview/releases/download/v0.10.0/SHA256SUMS-0.10.0.txt"
+      }
+    ],
+    "server_asset_size_and_sha256_match": true,
+    "post_release_documentation_update": "The release tag identifies the validated gameplay source; main also includes this final publication receipt."
+  },
+  "mirror": {
+    "before_publication": {
+      "source": "D:\\aiu5",
+      "target": "C:\\Users\\shao\\Desktop\\aiu面试题\\aiu5",
+      "files": 65133,
+      "directories": 5633,
+      "bytes": 8461053449,
+      "file_mismatches": [],
+      "directory_mismatches": [],
+      "identical": true,
+      "verification": "Every relative path, byte length and SHA-256; includes .git, .godot, .runtime, runtime and exports"
+    },
+    "final_manifest_report": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\release-0100\\directory-equality.json",
+    "scope": "All files and directories, including .git, .godot, .runtime, runtime, exports and installers; final documentation is mirrored again after committing."
+  },
+  "completed_at": "2026-10-15T08:45:20.664115+08:00"
 }

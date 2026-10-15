@@ -24,3 +24,7 @@
 可复现入口：tests/run_npc_attitude_regression.ps1。全部验证与交付详情见[VERIFICATION_0.10.0.json](VERIFICATION_0.10.0.json)。旧阶段记录保留在VERIFICATION_NPC_ATTITUDE_0.10.0.json。
 
 首版范围外仍为完整交易经济、任务生成系统、法师职业及友好交易折扣；按原方案不实施。
+
+## 最终交付
+
+0.10.0已升级本机，15个真实玩家数据文件SHA256保持不变。正式发布并设为最新Release：https://github.com/syx536324-boop/aiu-interview/releases/tag/v0.10.0。源码只推送aiu-interview；安装包和完整源码同步到该项目中的aiu5。全部发布资产的大小和服务器SHA256已核对。最后一次完整目录对比报告位于C:\Users\shao\Desktop\aiu\.setup\release-0100\directory-equality.json。
