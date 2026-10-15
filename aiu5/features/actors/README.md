@@ -22,3 +22,8 @@ animal.gd统一猪牛移动、像素动画、公母颜色和幼崽缩放/成长�
 ## 魔法分支接入（0.8.0）
 
 magic_branches由magic.start注入；自身受到禁锢或施放大地之拥时停止移动，技能状态与时间由魔法模块管理。
+
+
+# 角色物理与动画
+
+resident.gd的configure／set_controlled接受外部装配与控制状态，在物理帧处理输入、碰撞和四向动画；魔法减速同时作用于正常走路和跑步。跟随中的角色执行tribes.workers.movement的已授权移动意图，经营与战斗时间仍由Simulation推进。animal.gd保留动物自己的移动与动画，出生、掉落和牵引由相应领域配置。main只装配模块。

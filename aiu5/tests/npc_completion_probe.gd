@@ -52,10 +52,13 @@ func theft() -> void:
 	s.interact()
 	check(s.inventory.container_id==storage_id,"E opens the actual tribal cabinet")
 	s.inventory.ensure_container(storage_id)[0]={"item":"wood","count":3}
+	unit("forest:0").position=home.door+Vector2(15,8)
+	unit("forest:16").position=home.door+Vector2(25,8)
 	var standing_before: int=t.standing("forest")
 	s.inventory.slot_clicked("storage",0,true)
 	check(t.standing("forest")==standing_before-10,"successful quick withdrawal charges one theft event")
 	check(s.inventory.has_item(actor_id(),"wood"),"stolen items are in the operator's bag")
+	check(float(t.guards.npc("forest:16").get("theft_left",0))>0,"a witnessed real theft notifies a nearby guard to investigate")
 	standing_before=t.standing("forest")
 	s.inventory.slot_clicked("storage",0,true)
 	check(t.standing("forest")==standing_before,"empty/no-op withdrawal never charges theft")

@@ -1,0 +1,5 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 591.91 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 5070 Laptop GPU
+
+FRIENDLY_LIVE_OK checks=2 motion={"home:initial_female":27.5735034942627,"home:initial_male":34.0}
+NPC_ATTITUDE_PROBE_OK checks=2

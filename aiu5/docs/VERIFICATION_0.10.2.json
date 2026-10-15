@@ -1,0 +1,84 @@
+{
+  "version": "0.10.2",
+  "scope": "local NPC physical movement and walk animation fix",
+  "date": "2026-10-15T23:11:01.610329+08:00",
+  "real_player_data_used": false,
+  "installed": true,
+  "published": false,
+  "source_validation": {
+    "baseline": {
+      "result": "NPC_MOTION_BASELINE_OK {\"home:initial_female\":{\"animation_rows\":[0],\"distance\":96.0073067843914,\"max_step\":8.2663745880127,\"moving_ratio\":0.032258064516129,\"transit_frames\":403},\"home:initial_male\":{\"animation_rows\":[0],\"distance\":112.507979154587,\"max_step\":8.266357421875,\"moving_ratio\":0.032258064516129,\"transit_frames\":434}}",
+      "script_errors": 0,
+      "exit_code": 0
+    },
+    "motion-gpu": {
+      "result": "NPC_MOTION_OK checks=12 motion={\"home:initial_female\":{\"animation_rows\":[1,0,3],\"distance\":83.3955074325204,\"max_step\":0.273502737283707,\"moving_ratio\":0.990033222591362,\"transit_frames\":301},\"home:initial_male\":{\"animation_rows\":[1,0,3],\"distance\":96.498313549906,\"max_step\":0.266696363687515,\"moving_ratio\":0.994301994301994,\"transit_frames\":351}}",
+      "script_errors": 0,
+      "exit_code": 0
+    },
+    "npc-regression": {
+      "result": "NPC_ATTITUDE_PROBE_OK checks=125",
+      "script_errors": 0,
+      "exit_code": 0
+    },
+    "romance-regression": {
+      "result": "ROMANCE_OK checks=30",
+      "script_errors": 0,
+      "exit_code": 0
+    },
+    "tribes-regression": {
+      "result": "TRIBES_FINAL_OK checks=30",
+      "script_errors": 0,
+      "exit_code": 0
+    },
+    "friendly-regression": {
+      "result": "FRIENDLY_ROUTINE_OK checks=18 motion={\"home:initial_female\":35.8667488098145,\"home:initial_male\":38.4911193847656}",
+      "script_errors": 0,
+      "exit_code": 0
+    },
+    "export-motion": {
+      "result": "NPC_MOTION_OK checks=12 motion={\"home:initial_female\":{\"animation_rows\":[1,0,3],\"distance\":83.1288382187486,\"max_step\":0.273502737283707,\"moving_ratio\":0.99,\"transit_frames\":300},\"home:initial_male\":{\"animation_rows\":[1,0,3],\"distance\":96.498313549906,\"max_step\":0.266696363687515,\"moving_ratio\":0.994301994301994,\"transit_frames\":351}}",
+      "actual_windows_program": true,
+      "script_errors": 0,
+      "exit_code": 0
+    },
+    "export-friendly": {
+      "result": "FRIENDLY_ROUTINE_OK checks=18 motion={\"home:initial_female\":35.8667488098145,\"home:initial_male\":38.4911193847656}",
+      "actual_windows_program": true,
+      "script_errors": 0,
+      "exit_code": 0
+    },
+    "installed-motion": {
+      "result": "NPC_MOTION_OK checks=12 motion={\"home:initial_female\":{\"animation_rows\":[1,0,3],\"distance\":83.1288382187486,\"max_step\":0.273502737283707,\"moving_ratio\":0.99,\"transit_frames\":300},\"home:initial_male\":{\"animation_rows\":[1,0,3],\"distance\":96.498313549906,\"max_step\":0.266696363687515,\"moving_ratio\":0.994301994301994,\"transit_frames\":351}}",
+      "actual_windows_program": true,
+      "script_errors": 0,
+      "exit_code": 0
+    }
+  },
+  "package": {
+    "name": "AIU5-Setup-0.10.2-win64.exe",
+    "bytes": 330840672,
+    "sha256": "900dafc7f048400cec25e37fb93e100817eb02c3839126b653ded936607bd3a1",
+    "pe_version": "0.10.2"
+  },
+  "windows_program": {
+    "exe_sha256": "307e5bee70af2bc0901897202126697df4ec38ca3e8a7cf462f94e06bf89a97f",
+    "pck_sha256": "0ea28250c87bd706a9e5c467c3423d0271c5fcbfa621fce668bfe4f0c0b4d8b0"
+  },
+  "installation": {
+    "player_files": 15,
+    "player_sha256_unchanged": true,
+    "installed_files_verified": true,
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+    "npc_motion_probe_passed": true,
+    "override_removed": true,
+    "backup": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\npc-smooth\\player-before-install-20261015-231639",
+    "version": "0.10.2"
+  },
+  "updated_at": "2026-10-15T23:18:24.004020+08:00",
+  "synchronization": {
+    "target": "C:/Users/shao/Desktop/aiu面试题/aiu5",
+    "manifest_report": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\npc-smooth\\directory-equality.json",
+    "scope": "Complete local source, metadata, runtime and installer mirror; no GitHub publication"
+  }
+}

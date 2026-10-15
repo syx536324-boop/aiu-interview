@@ -34,8 +34,10 @@ var destination_set := false
 var prepare_kind := ""
 var prepare_left := 0.0
 var home_anchor := Vector2.INF     # 岗位锚点，首次被守卫接管时记录出生/存档位置
-var guards_managed := false        # 行为模块接管时置真：_physics_process 只做动画/朝向
+var guards_managed := false        # 行为模块接管时置真：_physics_process 执行移动意图与动画/朝向
 var _seen_at := Vector2.INF
+var _walk_distance := 0.0
+var _walk_facing := 0
 const ROLE_NAMES := {"farmer":"农民","miner":"矿工","civilian": "平民", "archer": "弓箭手", "charger": "战士", "chief": "村长"}
 const TRIBE_NAMES := {"raider": "外部落", "forest": "森林部落", "barbarian": "野蛮部落", "yunye": "云野部落"}
 
@@ -102,6 +104,7 @@ func set_destination(at: Vector2) -> void:
 	navigation = PackedVector2Array()
 
 func stop_moving() -> void:
+	if has_meta("tribal_movement"): get_meta("tribal_movement").stop(self)
 	velocity = Vector2.ZERO
 	destination_set = false
 	navigation = PackedVector2Array()
@@ -122,7 +125,7 @@ func move_toward_destination(delta: float, speed: float) -> bool:
 	if not is_instance_valid(session) or not is_instance_valid(session.tribes): return true
 	var api = session.tribes.workers
 	if api == null: return true
-	return api.move(self, destination, delta, speed)
+	return api.move(self, destination, delta, speed,"guard")
 
 # 内部仍走既有 cooldown/伤害规则；建筑目标带 constructed_home 元数据。
 func order_attack(target: Node) -> void:
@@ -144,11 +147,11 @@ func hit_points() -> float: return hp
 func is_alive() -> bool: return hp > 0 and not dead
 
 func _physics_process(delta: float) -> void:
-	if guards_managed:
-		# 行为模块已接管移动与冷却，这里只做朝向与动画，避免重复位移。
+	if guards_managed or is_instance_valid(npc_runtime):
+		# Decisions own the intent; only this physical frame moves the actual collision body.
+		if has_meta("tribal_movement"): get_meta("tribal_movement").advance_actor(self,delta)
 		_visual_tick()
 		return
-	if is_instance_valid(npc_runtime): return
 	cooldown = maxf(0,cooldown-delta)
 	pursuit = maxf(0,pursuit-delta)
 	shot_cooldown = maxf(0,shot_cooldown-delta)
@@ -195,15 +198,37 @@ func _visual_tick() -> void:
 	if not _seen_at.is_finite(): _seen_at = global_position
 	var step := global_position - _seen_at
 	_seen_at = global_position
-	if step.length() > 0.05:
-		facing = 1 if step.x >= 0.0 else -1
-		sprite.flip_h = step.x < 0.0
-		sprite.frame = int(Time.get_ticks_msec()/180)%mini(2,sprite.hframes)
+	var row := 0
+	if step.length() > 0.001 and step.length()<4.0:
+		face_toward(global_position+step)
+		_walk_distance+=step.length()
+		row=[mini(1,sprite.vframes-1),0,mini(3,sprite.vframes-1),0][int(_walk_distance/2.0)%4]
+	else: _walk_distance=0.0
+	sprite.flip_h=false
+	sprite.frame=row*sprite.hframes+mini(_walk_facing,sprite.hframes-1)
+
+func face_toward(at: Vector2) -> void:
+	var direction: Vector2=at-global_position
+	if direction.length_squared()<0.000001: return
+	facing=1 if direction.x>=0 else -1
+	_walk_facing=(3 if direction.x>0 else 2) if absf(direction.x)>absf(direction.y) else (0 if direction.y>0 else 1)
+	if is_instance_valid(sprite):
+		sprite.flip_h=false
+		sprite.frame=mini(_walk_facing,sprite.hframes-1)
 
 func _draw() -> void:
 	if is_instance_valid(npc_runtime): draw_rect(Rect2(-2,-34,4,2),Color("dc9aab") if gender=="female" else Color("81b9d3"))
-	draw_colored_polygon(PackedVector2Array([Vector2(-3,-28),Vector2(3,-28),Vector2(0,-25)]),Color("90d9ae") if friendly else Color("e37657"))
+	draw_colored_polygon(PackedVector2Array([Vector2(-3,-28),Vector2(3,-28),Vector2(0,-25)]),relationship_color())
 	draw_rect(Rect2(-10,-22,20,3),Color("392d27"))
 	draw_rect(Rect2(-10,-22,20*hp/max_hp,3),Color("bf7060"))
 
 	if thirst<10: draw_rect(Rect2(-10,-18,20*thirst/10.0,2),Color("72b8ce"))
+
+func relationship_color() -> Color:
+	if friendly: return Color("90d9ae")
+	if is_instance_valid(npc_runtime):
+		match npc_runtime.attitude(tribe):
+			"trust","friendly": return Color("92c6b2")
+			"neutral": return Color("d8c27c")
+			"alert": return Color("d99666")
+	return Color("e37657")

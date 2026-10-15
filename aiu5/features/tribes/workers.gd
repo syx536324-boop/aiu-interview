@@ -1,5 +1,7 @@
 # Resolves NPC movement and online farm/mining steps with finite deposits and nine-slot bags.
 extends RefCounted
+const Movement := preload("res://features/tribes/movement.gd")
+var movement := Movement.new()
 const Careers := preload("res://features/tribes/profession_catalog.gd")
 const Land := preload("res://features/homestead/land.gd")
 const Frontier := preload("res://features/landscape/frontier.gd")
@@ -13,8 +15,19 @@ func assign(id: String, kind: String) -> bool:
  var s: Node=runtime.session; var before: Dictionary=s.inventory.export_data()
  jobs[id]={"kind":kind,"left":0.0,"status":"前往已标记矿洞","retry":0.0}
  return s.production.commit(before,"矿工任务已分配。")
-func move(actor: Node, at: Vector2, delta: float, speed := 42.0) -> bool:
- if actor.position.distance_to(at)<=14: actor.velocity=Vector2.ZERO; return true
+func move(actor: Node, at: Vector2, delta: float, speed := 42.0, purpose := "work") -> bool:
+ if purpose in ["work","routine"]:
+  var id: String=str(actor.enemy_id) if "enemy_id" in actor else str(actor.resident_id)
+  speed*=runtime.session.magic.branches.speed_rate(id)
+ if actor.position.distance_to(at)<=14:
+  movement.stop(actor); return true
+ # Active bodies execute in physics frames; parked/manual simulation retains its synchronous contract.
+ if actor.is_inside_tree() and actor.is_physics_processing():
+  movement.submit(actor,at,speed,purpose); return false
+ return move_step(actor,at,delta,speed)
+func move_step(actor: Node, at: Vector2, delta: float, speed: float, smooth := false) -> bool:
+ var gap: float=actor.position.distance_to(at)
+ if gap<=14: actor.velocity=Vector2.ZERO; return true
  var nav=runtime.session.world.navigation
  if actor.room_id!="" and runtime.session.interiors.rooms.has(actor.room_id): nav=runtime.session.interiors.rooms[actor.room_id].navigation
  var previous: Vector2=actor.get_meta("work_destination",at)
@@ -29,15 +42,25 @@ func move(actor: Node, at: Vector2, delta: float, speed := 42.0) -> bool:
  while not actor.navigation.is_empty() and actor.position.distance_to(actor.navigation[0])<5: actor.navigation.remove_at(0)
  if actor.navigation.is_empty(): return false
  var old_at: Vector2=actor.position
- var next: Vector2=actor.position.move_toward(actor.navigation[0],speed*delta)
- if actor.is_inside_tree(): actor.move_and_collide(next-actor.position)
+ var direction: Vector2=actor.position.direction_to(actor.navigation[0])
+ var travel_speed := speed
+ if smooth: travel_speed=minf(speed,sqrt(2.0*speed*8.0*maxf(0.0,gap-14.0)))
+ var wanted: Vector2=direction*travel_speed
+ actor.velocity=actor.velocity.move_toward(wanted,speed*8.0*delta) if smooth else wanted
+ var motion: Vector2=actor.velocity*delta
+ if motion.length()>actor.position.distance_to(actor.navigation[0]): motion=actor.navigation[0]-actor.position
+ var next: Vector2=actor.position+motion
+ if actor.is_inside_tree():
+  var collision: KinematicCollision2D=actor.move_and_collide(motion)
+  if collision!=null and smooth:
+   actor.move_and_collide(collision.get_remainder().slide(collision.get_normal()))
  else: actor.position=next
  if actor.position.distance_to(old_at)<speed*delta*0.1:
   var stalled: float=float(actor.get_meta("work_stall",0))+delta
   actor.set_meta("work_stall",stalled)
   if stalled>=1.0: actor.navigation=PackedVector2Array(); actor.set_meta("work_retry",2.0); actor.set_meta("work_stall",0.0)
  else: actor.set_meta("work_stall",0.0)
- if is_instance_valid(actor.sprite):
+ if not smooth and is_instance_valid(actor.sprite):
   actor.sprite.flip_h=next.x<old_at.x
   actor.sprite.frame=int(Time.get_ticks_msec()/180)%mini(2,actor.sprite.hframes)
  return actor.position.distance_to(at)<=14
@@ -46,7 +69,7 @@ func advance(delta: float) -> void:
  for id: String in runtime.population.members:
   var r: Dictionary=runtime.population.members[id]; var actor: Node=runtime.population.node(id)
   if not is_instance_valid(actor) or actor.hp<=0 or not runtime.population.friendly(id) or float(r.child_left)>0: continue
-  if runtime.romance.busy(actor.resident_id): continue
+  if runtime.romance.busy(actor.resident_id) or runtime.encounters.in_combat(actor): continue
   var task := job(id); task.left=maxf(0,float(task.left)-delta)
   if float(task.left)>0.000001: continue
   if r.career=="farmer": _farmer(id,actor,task,delta)
@@ -109,4 +132,5 @@ func _miner(id: String, actor: Node, task: Dictionary, delta: float) -> void:
   task.left=Careers.work_interval("miner",int(runtime.population.members[id].level),str(task.kind)); task.status="开采中"
  else: task.status="背包已满，等待取出"; task.left=1.0
 func export_state() -> Dictionary: return jobs.duplicate(true)
-func restore(data: Dictionary) -> void: jobs=data.duplicate(true)
+func restore(data: Dictionary) -> void:
+ movement.begin_step(); jobs=data.duplicate(true)

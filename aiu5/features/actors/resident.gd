@@ -55,7 +55,10 @@ func _physics_process(delta: float) -> void:
 	elapsed += delta
 	var direction := Vector2.ZERO
 	var speed := SPEED
-	if not controlled and has_meta("tribal_escort"): return
+	if not controlled and has_meta("tribal_escort"):
+		if has_meta("tribal_movement"): get_meta("tribal_movement").advance_actor(self,delta)
+		_animate(velocity)
+		return
 	if controlled:
 		if input_enabled:
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -79,6 +82,7 @@ func _physics_process(delta: float) -> void:
 				else:
 					direction = position.direction_to(navigation[0])
 					speed = patrol_speed
+	if is_instance_valid(magic_branches): speed*=magic_branches.speed_rate(resident_id)
 	velocity = direction * speed
 	var previous := position
 	move_and_slide()
@@ -89,6 +93,10 @@ func _physics_process(delta: float) -> void:
 			navigation = PackedVector2Array()
 			idle_time = 1.0
 			blocked_time = 0.0
+	_animate(direction)
+	if controlled: queue_redraw()
+
+func _animate(direction: Vector2) -> void:
 	if direction.length_squared() > 0.01:
 		if absf(direction.x) > absf(direction.y):
 			facing = 3 if direction.x > 0.0 else 2
@@ -98,7 +106,6 @@ func _physics_process(delta: float) -> void:
 		sprite.frame = walking_row * sprite.hframes + mini(facing, sprite.hframes - 1)
 	else:
 		sprite.frame = mini(facing, sprite.hframes - 1)
-	if controlled: queue_redraw()
 
 func set_controlled(value: bool) -> void:
 	controlled = value and can_control

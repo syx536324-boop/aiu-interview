@@ -264,6 +264,10 @@ func speed_rate(enemy_id: String) -> float:
 		if state.enemy==enemy_id and float(state.elapsed)>=float(state.get("slow_after",0)):
 			var source: String=str(state.kind)
 			sources[source]=maxf(float(sources.get(source,0)),float(state.get("slow",0)))
+	for key: String in buffs.get(enemy_id,{}):
+		var buff: Dictionary=buffs[enemy_id][key]
+		var source: String="suppress" if key=="slowed" else str(buff.get("source",key))
+		sources[source]=maxf(float(sources.get(source,0)),float(buff.get("slow",0.2 if key=="slowed" else 0.0)))
 	var enemy: Node=session.combat.enemies.get(enemy_id)
 	if is_instance_valid(enemy):
 		for area: Dictionary in areas.values():

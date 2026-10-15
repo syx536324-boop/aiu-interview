@@ -51,3 +51,11 @@ weapon_catalog定义石刀2、铁刀4；magic_scissors攻击3、范围80、inter
 
 
 0.10.0：NPC的所有入站伤害统一使用magic.damage_rate，技能、灼烧与武器均只结算一次招架／水盾并遵守50%／55%上限；普通守卫攻击复用war.strike的真实箭、职业伤害和冷却。
+
+
+0.10.2：population/guards接管的enemy在物理帧执行tribes.workers.movement意图，再由实际位移更新四向行走姿势；未接管来袭者沿用原物理循环。guard的face接口仍由同一actor绘制，停止回到待机帧。
+
+
+## 0.10.3计划复核
+
+普通攻击、职业招式和村长效果使用实际目标与生命池；NPC对NPC命中不再写入无关vitals生命。起手锁定目标，合法遮挡和范围复核后落地。压制箭复用tribes/projectile.gd的正常逐帧扫掠箭，在命中后登记同来源20%减速；飞箭随正常读档清理。NPC技能公共间隔1秒，各招保留8／10／12／20秒独立限制；友方战士与弓箭手通过war接入同一职业招式。

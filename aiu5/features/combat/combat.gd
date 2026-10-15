@@ -270,20 +270,8 @@ func apply_skill_damage(target: CharacterBody2D, raw: float, actor_id: String) -
 # 玩家对未归附部落成员造成实际伤害时的声誉与记忆结算；
 # 多段伤害、持续灼烧、未命中都经由本入口，因此不会逐帧重复扣分。
 func _note_hostile_damage(target: Node, attacker: String, dealt: float, hp_before: float, raiding := false) -> void:
-	if not is_instance_valid(session.tribes) or dealt <= 0.0: return
-	if not ("tribe" in target) or str(target.tribe) in ["raider", "home"]: return
-	var tribe := str(target.tribe)
-	if session.tribes.relics.owner(tribe) == "player": return
-	var npc_id := str(target.enemy_id)
-	if session.tribes.note_conflict(tribe, npc_id):
-		# 直接受害者本人－30；目击者由 register_death 单独结算。
-		session.tribes.relation.remember(npc_id, "attacked", attacker, 2)
-	# 帮助抵御进攻：只对"已经在进攻本部落的来犯者"奖励一次＋10，
-	# 被玩家本次攻击挑衅转身的NPC不算，避免攻击扣分被援助奖励抵消。
-	if raiding:
-		session.tribes.aid_event(tribe)
-	if hp_before > 0.0 and target.hp <= 0.0:
-		session.tribes.register_death(tribe, npc_id, attacker)
+	if is_instance_valid(session.tribes) and dealt>0:
+		session.tribes.encounters.observe_damage(target,attacker,dealt,hp_before)
 
 # 来犯者判定：NPC自己的追击标记（guards 写入 raiding）优先，其次命中前的 pursuit。
 func _is_raiding(target: Node) -> bool:
@@ -302,21 +290,27 @@ func _final_hostile_damage(_attacker: String, target: Node, raw: float, context:
 # NPC 对玩家村落成员造成伤害的唯一入口：先做声誉裁决，再落到生命值。
 func apply_npc_damage(enemy: Node, target_id: String, raw: float, context: Dictionary = {}) -> bool:
 	if not is_instance_valid(enemy) or raw <= 0.0: return false
+	var npc: Node=session.magic.skills._npc(target_id)
+	if is_instance_valid(npc):
+		if npc.hp<=0 or session.tribes.relics.owner(npc.tribe)==session.tribes.relics.owner(enemy.tribe): return false
+		var before_npc: float=npc.hp
+		var dealt: float=_final_hostile_damage(enemy.enemy_id,npc,raw,context)
+		npc.hp=maxf(0,npc.hp-dealt)
+		_note_hostile_damage(npc,enemy.enemy_id,dealt,before_npc)
+		npc.pursuit=6; npc.refresh()
+		return npc.hp<before_npc
 	var stats: Dictionary = session.vitals.ensure(target_id)
 	if float(stats.life) <= 0.0: return false
 	var tribe := str(enemy.tribe)
-	var reaction := false
-	if is_instance_valid(session.tribes) and tribe in ["forest", "barbarian", "yunye"]:
-		# 中立或警戒部落的主动攻击会先降声誉；敌对部落本就敌对，不再重复扣分。
-		reaction = session.tribes.hostile(tribe) or session.tribes.alert(tribe)
-		if not session.tribes.hostile(tribe):
-			session.tribes.note_conflict(tribe, str(enemy.enemy_id))
+	var before: float=stats.life
 	var payload := context.duplicate()
 	payload["kind"] = str(payload.get("kind", "melee"))
 	payload["enemy"] = str(enemy.enemy_id)
 	payload["tribe"] = tribe
 	session.vitals.hurt(target_id, raw, payload)
-	return reaction
+	var actual: float=before-float(stats.life)
+	if is_instance_valid(session.tribes): session.tribes.encounters.record_hit(session.magic._actor(target_id),enemy,actual)
+	return actual>0
 
 func demolish() -> void:
 	if demolition_cooldown > 0 or not ready_for_action(): return

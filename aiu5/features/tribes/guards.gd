@@ -28,7 +28,7 @@ const STUCK_LIMIT := 1.5           # 卡住判定（在线秒）
 const STUCK_GIVE_UP := 3           # 连续重寻路失败次数，超过则返回岗位
 const LIFE_RADIUS := 56.0          # 平民日常活动半径
 const PREPARE_TIME := 0.4          # 出手前的蓄力
-const SKILL_INTERVAL := 6.0        # 本模块对招式的额外节流
+const SKILL_INTERVAL := 1.0        # 与技能域的公共间隔一致，不额外添加六秒限制
 const TRIBE_ROLES := ["forest", "barbarian", "yunye"]
 const MELEE_STATES := ["engage", "prepare", "attack", "search", "warn", "retreat"]
 
@@ -75,7 +75,7 @@ func export_state() -> Dictionary:
 			"skill_cd": float(rec.skill_cd), "target_id": str(rec.target_id),
 			"grace": float(rec.grace), "search": float(rec.search), "chase": float(rec.chase),
 			"seen": bool(rec.seen), "observe": float(rec.observe),
-			"home": [float(rec.home.x), float(rec.home.y)], "slot": str(rec.slot)}
+			"home": [float(rec.home.x), float(rec.home.y)], "slot": str(rec.slot),"combat_left":float(rec.get("combat_left",0)),"reason":str(rec.get("reason","")),"theft_left":float(rec.get("theft_left",0)),"theft_point":_points_to_arrays([rec.get("theft_point",Vector2.ZERO)])[0]}
 	return {"units": saved}
 
 func restore(data: Dictionary) -> void:
@@ -102,6 +102,12 @@ func restore(data: Dictionary) -> void:
 		rec.observe = float(s.get("observe", 0.0))
 		rec.home = _vector_of(s.get("home", [0.0, 0.0]), Vector2.ZERO)
 		rec.slot = str(s.get("slot", "melee"))
+		rec.combat_left=clampf(float(s.get("combat_left",0)),0,10)
+		rec.reason=str(s.get("reason",""))
+		rec.theft_left=clampf(float(s.get("theft_left",0)),0,5)
+		rec.theft_point=_vector_of(s.get("theft_point",[0,0]),Vector2.ZERO)
+		if rec.target_id!="" and rec.target_id!="player" and not rec.target_id.begins_with("home:") and not is_instance_valid(runtime.encounters.actor(rec.target_id)):
+			rec.target_id=""; rec.state="return"; rec.combat_left=0.0
 
 # —— 接管判定 ——
 
@@ -129,6 +135,7 @@ func _release(enemy: Node) -> void:
 func _manage(enemy: Node, delta: float, ctx: Dictionary) -> void:
 	var id := str(enemy.enemy_id)
 	var rec := _record(id)
+	ctx=runtime.encounters.context_for(enemy,ctx)
 	_ensure_owned(enemy, rec)
 	_tick(enemy, rec, delta)
 	if _immobile(id):
@@ -156,6 +163,8 @@ func _tick(enemy: Node, rec: Dictionary, delta: float) -> void:
 	# pursuit 由外部命中写入（combat.gd 设 6 秒），这里用统一在线时钟衰减。
 	enemy.pursuit = maxf(0.0, enemy.pursuit - delta)
 	rec.pursuit = enemy.pursuit
+	rec.combat_left=maxf(0,float(rec.get("combat_left",0))-delta)
+	rec.theft_left=maxf(0,float(rec.get("theft_left",0))-delta)
 	rec.skill_cd = maxf(0.0, float(rec.skill_cd) - delta)
 	rec.grace = maxf(0.0, float(rec.grace) - delta)
 	rec.search = float(rec.search) - delta
@@ -178,13 +187,13 @@ func _player_context(player: Node) -> Dictionary:
 		return {"valid": false, "at": Vector2.INF, "home": "", "indoors": false}
 	if occupied:
 		return {"valid": true, "at": Vector2(home.get("door", player.global_position)), "home": room_id, "indoors": true}
-	return {"valid": true, "at": player.global_position, "home": "", "indoors": false}
+	return {"valid": true, "at": player.global_position, "home": "", "indoors": false,"actor":player,"target_id":"player"}
 
 func _sight_range(tribe: String) -> float:
 	return SIGHT_FOREST if tribe == "forest" else SIGHT_NORMAL
 
 # 掩码与冻结约定一致：1(地形)|2(居民)|4(牲畜)|8(部落单位)|16(圣品)，排除自身。
-func _sees(enemy: Node, at: Vector2) -> bool:
+func _sees(enemy: Node, at: Vector2, target: Node=null) -> bool:
 	if not at.is_finite() or not enemy.is_inside_tree(): return false
 	var from: Vector2 = enemy.global_position + Vector2(0, -6)
 	var query := PhysicsRayQueryParameters2D.create(from, at, 1|2|4|8|16, [enemy.get_rid()])
@@ -192,7 +201,7 @@ func _sees(enemy: Node, at: Vector2) -> bool:
 	if hit.is_empty(): return true
 	var collider: Variant = hit.get("collider")
 	# 命中玩家本体才算看见；被墙、水、栅栏或同伴挡住就是看不见。
-	return is_instance_valid(collider) and collider == session.world.active_resident
+	return is_instance_valid(collider) and collider == (target if is_instance_valid(target) else session.world.active_resident)
 
 func _relic_at(tribe: String) -> Vector2:
 	if not is_instance_valid(runtime.relics): return Vector2.INF
@@ -213,7 +222,7 @@ func _decide(enemy: Node, rec: Dictionary, ctx: Dictionary) -> void:
 			# 玩家躲进建成的房屋：门的位置属于公开信息，不用射线（门口落在建筑轮廓上）。
 			seen = gap <= _sight_range(tribe)
 		else:
-			seen = gap <= _sight_range(tribe) and _sees(enemy, at)
+			seen = gap <= _sight_range(tribe) and _sees(enemy, at,ctx.get("actor",null))
 		if seen:
 			rec.last_seen = at
 			rec.seen = true
@@ -223,12 +232,17 @@ func _decide(enemy: Node, rec: Dictionary, ctx: Dictionary) -> void:
 		# 离开禁区即解除本次驱赶。
 		rec.warned = false
 		rec.grace = 0.0
+	# A retreat or return must run to completion; a fresh hit may still interrupt a return.
+	if str(rec.state)=="return" and float(enemy.pursuit)<=0.0: return
+	if float(rec.get("theft_left",0))>0 and not seen and str(rec.state) not in ["engage","prepare","attack","retreat"]:
+		_change(enemy,rec,"search"); rec.search=maxf(float(rec.search),float(rec.theft_left))
+		return
 	# 低血：平民/农民/矿工优先逃向本方安全位置，普通战士拖后，弓箭手拉开距离，村长坚持。
 	if _health_ratio(enemy) < LOW_HP and role != "chief":
 		if str(rec.state) != "retreat": _change(enemy, rec, "retreat")
 		return
 	# 圣品禁区：仅本方与信任玩家可进；中立/警戒部落闯入先警告，宽限 5 在线秒后驱赶。
-	if in_zone and not _trusted(tribe) and not _hostile(tribe):
+	if in_zone and seen and not bool(ctx.get("forced_hostile",false)) and not _trusted(tribe) and not _hostile(tribe) and float(enemy.pursuit)<=0.0:
 		if not bool(rec.warned):
 			rec.warned = true
 			rec.grace = WARN_GRACE
@@ -237,19 +251,29 @@ func _decide(enemy: Node, rec: Dictionary, ctx: Dictionary) -> void:
 			if str(rec.state) != "warn": _change(enemy, rec, "warn")
 			return
 		rec.target_id = "player"
-		if str(rec.state) != "engage": _change(enemy, rec, "engage")
+		rec.reason="trespass"
+		if str(rec.state) not in ["engage", "prepare", "attack"]: _change(enemy, rec, "engage")
 		return
 	if seen:
 		# 敌对部落见人就打；中立队列里刚被玩家攻击（pursuit>0）或同伴有战事的成员会立刻支援。
-		if _hostile(tribe) or float(enemy.pursuit) > 0.0 or _ally_engaged(tribe, enemy):
-			rec.target_id = ("home:" + str(ctx.home)) if bool(ctx.indoors) else "player"
+		var responding: bool=bool(ctx.get("forced_hostile",false)) or float(enemy.pursuit)>0.0 or _ally_engaged(tribe,enemy)
+		if _hostile(tribe): rec.combat_left=10.0; rec.reason="hostile"
+		elif responding: rec.combat_left=maxf(float(rec.get("combat_left",0)),float(enemy.pursuit)); rec.reason="react"
+		if _hostile(tribe) or responding or float(rec.get("combat_left",0))>0.0:
+			rec.target_id = ("home:" + str(ctx.home)) if bool(ctx.indoors) else str(ctx.get("target_id","player"))
+			if role in ["civilian","farmer","miner"]:
+				if str(rec.state)!="retreat": _change(enemy,rec,"retreat")
+				return
 			if str(rec.state) not in ["engage", "prepare", "attack"]: _change(enemy, rec, "engage")
 			return
+		if runtime.attitude(tribe)=="trust" and gap<=48 and not bool(rec.get("greeted",false)):
+			rec.greeted=true; runtime.relation._feedback(enemy.enemy_id,"greeting")
 		# 中立/警戒部落不因看见就开战：先观察，靠近或挑衅后才接敌。
 		if str(rec.state) != "observe": _change(enemy, rec, "observe")
 		return
-	if str(rec.state) == "search": return
-	if float(enemy.pursuit) > 0.0 and bool(rec.seen):
+	rec.greeted=false
+	if str(rec.state) in ["search", "return"]: return
+	if bool(rec.seen) and str(rec.state) in ["engage", "prepare", "attack"]:
 		if str(rec.state) != "search": _change(enemy, rec, "search")
 		return
 	if str(rec.state) in ["engage", "prepare", "attack", "observe", "warn"]:
@@ -285,6 +309,7 @@ func _change(enemy: Node, rec: Dictionary, next: String) -> void:
 			rec.search = SEARCH_TIME
 		"return":
 			rec.chase = 0.0
+			rec.combat_left=0.0; rec.reason=""
 			enemy.pursuit = 0.0
 			rec.pursuit = 0.0
 		"life":
@@ -377,7 +402,7 @@ func _act_engage(enemy: Node, rec: Dictionary, delta: float, speed: float, ctx: 
 		dest = _chase_point(enemy, dest)
 		_move(enemy, rec, dest, delta, speed)
 		return
-	if not _sees(enemy, at):
+	if not _sees(enemy, at,ctx.get("actor",null)):
 		rec.last_seen = at
 		rec.seen = true
 		_change(enemy, rec, "search")
@@ -399,6 +424,7 @@ func _act_prepare(enemy: Node, rec: Dictionary, delta: float, ctx: Dictionary) -
 	_change(enemy, rec, "attack")
 
 func _act_attack(enemy: Node, rec: Dictionary, delta: float, ctx: Dictionary) -> void:
+	if str(rec.get("reason",""))!="trespass": rec.combat_left=10.0
 	var target_id := str(rec.target_id)
 	if target_id.begins_with("home:"):
 		var room_id := target_id.trim_prefix("home:")
@@ -418,6 +444,7 @@ func _act_search(enemy: Node, rec: Dictionary, delta: float, speed: float) -> vo
 		return
 	# 只记住最后看见的位置，不穿墙追踪。
 	var at: Vector2 = rec.last_seen if rec.last_seen.is_finite() else enemy.home_point()
+	if float(rec.get("theft_left",0))>0: at=rec.get("theft_point",at)
 	_move(enemy, rec, at, delta, speed)
 
 func _act_retreat(enemy: Node, rec: Dictionary, delta: float, speed: float, ctx: Dictionary) -> void:
@@ -425,7 +452,7 @@ func _act_retreat(enemy: Node, rec: Dictionary, delta: float, speed: float, ctx:
 	if not bool(ctx.valid):
 		_change(enemy, rec, "return")
 		return
-	if _health_ratio(enemy) >= LOW_HP * 1.5:
+	if role not in ["civilian","farmer","miner"] and _health_ratio(enemy) >= LOW_HP * 1.5:
 		_change(enemy, rec, "return")
 		return
 	var at: Vector2 = ctx.at
@@ -443,7 +470,16 @@ func _act_retreat(enemy: Node, rec: Dictionary, delta: float, speed: float, ctx:
 			_move(enemy, rec, _back_off_point(enemy, at, 130.0), delta, speed * 0.6)
 		_:
 			# 平民/农民/矿工优先逃向本方安全位置。
-			_move(enemy, rec, _safe_point(enemy, at), delta, speed * 1.15)
+			if enemy.global_position.distance_to(at)>_sight_range(str(enemy.tribe))*1.25:
+				enemy.stop_moving()
+				if float(enemy.pursuit)<=0.0: _change(enemy,rec,"return")
+				return
+			var escape: Vector2=_safe_point(enemy,at)
+			var trapped: bool=escape.distance_to(enemy.global_position)<1.0
+			_move(enemy, rec, escape, delta, speed * 1.15)
+			if (trapped or float(rec.stuck)>=1.0) and enemy.global_position.distance_to(at)<=enemy.attack_reach() and _sees(enemy,at,ctx.get("actor",null)):
+				var target: Node=_target_node(enemy,rec,ctx)
+				if is_instance_valid(target): enemy.order_attack(target)
 
 func _act_return(enemy: Node, rec: Dictionary, delta: float, speed: float) -> void:
 	var home: Vector2 = enemy.home_point()
@@ -463,7 +499,7 @@ func _move(enemy: Node, rec: Dictionary, at: Vector2, delta: float, speed: float
 		rec.stuck = 0.0
 		rec.stuck_tries = 0
 		return true
-	var step: float = enemy.global_position.distance_to(before)
+	var step: float = float(enemy.get_meta("motion_last_distance",0.0)) if enemy.is_inside_tree() and enemy.is_physics_processing() else enemy.global_position.distance_to(before)
 	if step < speed * delta * 0.1:
 		rec.stuck = float(rec.stuck) + delta
 	else:
@@ -557,7 +593,8 @@ func _walkable(at: Vector2) -> bool:
 
 func _target_node(enemy: Node, rec: Dictionary, ctx: Dictionary) -> Node:
 	var player: Node = session.world.active_resident
-	return player if is_instance_valid(player) and not bool(player.dead) else null
+	var target: Node=ctx.get("actor",player)
+	return target if is_instance_valid(target) and not bool(target.get("dead")) else null
 
 func _home_body(room_id: String) -> Node:
 	if room_id == "" or not session.construction.nodes.has(room_id): return null
@@ -614,14 +651,17 @@ func _back_off_point(enemy: Node, player_at: Vector2, distance: float) -> Vector
 	return player_at + dir * distance
 
 func _safe_point(enemy: Node, player_at: Vector2) -> Vector2:
-	var center: Variant = runtime.centers.get(str(enemy.tribe), enemy.home_point())
-	return Vector2(center) if center is Vector2 else enemy.home_point()
+	var away: Vector2=player_at.direction_to(enemy.global_position)
+	if away==Vector2.ZERO: away=Vector2.DOWN
+	for angle: float in [0.0,0.5,-0.5,1.0,-1.0]:
+		var at: Vector2=_chase_point(enemy,enemy.global_position+away.rotated(angle)*80.0)
+		var route: PackedVector2Array=session.world.navigation.find_path(enemy.position,at)
+		if not route.is_empty() and route[-1].distance_to(at)<9.0: return route[-1]
+	return enemy.global_position
 
 func _face(enemy: Node, at: Vector2) -> void:
 	if not at.is_finite(): return
-	var dx: float = at.x - enemy.global_position.x
-	enemy.facing = 1 if dx >= 0.0 else -1
-	if is_instance_valid(enemy.sprite): enemy.sprite.flip_h = dx < 0.0
+	enemy.face_toward(at)
 
 func _health_ratio(enemy: Node) -> float:
 	return clampf(float(enemy.hp) / maxf(1.0, float(enemy.max_hp)), 0.0, 1.0)
@@ -645,11 +685,11 @@ func _hostile(tribe: String) -> bool:
 
 # 同伴支援：同部落已有成员被玩家击中（pursuit>0）或正在与本方目标交战。
 func _ally_engaged(tribe: String, enemy: Node) -> bool:
-	for id: String in units:
-		var other: Node = session.combat.enemies.get(id)
-		if not is_instance_valid(other) or other == enemy or str(other.tribe) != tribe: continue
-		if float(other.pursuit) > 0.0: return true
-		if str(other.state) in ["engage", "prepare", "attack"] and str(units[id].target_id) != "": return true
+	for contact: Dictionary in runtime.encounters.contacts.values():
+		if contact.tribe!=tribe: continue
+		var victim: Node=runtime.encounters.actor(contact.victim)
+		var attacker: Node=runtime.encounters.actor(contact.attacker)
+		if is_instance_valid(victim) and attacker==session.world.active_resident and victim.global_position.distance_to(enemy.global_position)<=160 and runtime.encounters._support_slot(enemy,victim): return true
 	return false
 
 func _trusted(tribe: String) -> bool:
@@ -690,3 +730,21 @@ func _record(enemy_id: String) -> Dictionary:
 			"stuck": 0.0, "stuck_tries": 0, "seen": false, "observe": 0.0, "prep": false,
 			"target": Vector2.ZERO, "has_target": false, "slot": "melee"}
 	return units[enemy_id]
+
+# A witnessed theft shares only the fixed incident location with at most three nearby guards.
+func report_theft(tribe: String, witness_id: String) -> void:
+	var witness: Node=runtime.population.node(witness_id)
+	if not is_instance_valid(witness): return
+	var point: Vector2=witness.global_position
+	if witness.room_id!="": point=session.world.home_data(witness.room_id).get("door",point)
+	var candidates: Array=[]
+	for id: String in runtime.population.members:
+		var guard: Node=runtime.population.node(id)
+		if not is_instance_valid(guard) or guard.hp<=0 or guard.tribe!=tribe or guard.role not in ["charger","archer","chief"]: continue
+		if guard.global_position.distance_to(point)<=160: candidates.append(guard)
+	candidates.sort_custom(func(a: Node,b: Node)->bool:return a.global_position.distance_squared_to(point)<b.global_position.distance_squared_to(point))
+	for guard: Node in candidates.slice(0,3):
+		var record: Dictionary=_record(guard.enemy_id)
+		record.theft_left=5.0; record.theft_point=point
+		if str(record.state) not in ["engage","prepare","attack","retreat"]:
+			_change(guard,record,"search"); record.search=5.0

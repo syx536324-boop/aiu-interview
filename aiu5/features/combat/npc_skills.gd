@@ -7,7 +7,7 @@ const Careers := preload("res://features/tribes/profession_catalog.gd")
 # Chief mana recovers one point per online minute, matching survival MANA_INTERVAL.
 const MANA_INTERVAL := 60.0
 const COMMON_GAP := 1.0
-const ARROW_SPEED := 360.0
+const Arrow := preload("res://features/tribes/projectile.gd")
 const DASH_DISTANCE := 40.0
 const DASH_SPEED := 420.0
 const BONUS_WINDOW := 6.0
@@ -37,7 +37,6 @@ var runtime: Node
 var guards: Node
 var session: Node
 var states: Dictionary = {}
-var arrows: Array = []
 var prepare_marks: Dictionary = {}
 
 func start(owner: Node, guards_node: Node) -> void:
@@ -79,7 +78,7 @@ func _step(delta: float) -> void:
 		if float(state.bonus_left) > 0.0:
 			state.bonus_left = maxf(0.0,float(state.bonus_left) - delta)
 			if float(state.bonus_left) <= 0.0: state.dash_bonus = 0.0
-		if str(state.prepare.skill) != "" and (session.magic.skills.rooted(enemy_id) or session.magic.branches.immobile(enemy_id) or bool(enemy.friendly)):
+		if str(state.prepare.skill) != "" and (session.magic.skills.rooted(enemy_id) or session.magic.branches.immobile(enemy_id) or bool(enemy.friendly)!=bool(state.prepare.get("friendly",enemy.friendly))):
 			_cancel(enemy_id,enemy,state)
 		if float(state.prepare.left) > 0.0:
 			state.prepare.left = maxf(0.0,float(state.prepare.left) - delta)
@@ -87,8 +86,6 @@ func _step(delta: float) -> void:
 			if float(state.prepare.left) <= 0.0: _finish(enemy_id,enemy,state)
 		if bool(state.dash.active): _dash_step(enemy,state,delta)
 		_recover_mana(enemy,state,delta)
-	_advance_arrows(delta)
-	_apply_slows()
 
 # --- 冻结接口 ---
 
@@ -122,7 +119,8 @@ func use(enemy: Node, skill: String) -> bool:
 	if not _spend(enemy,skill,rule): return false
 	state.cd[skill] = float(rule.cooldown)
 	state.gap = COMMON_GAP
-	state.prepare = {"skill":skill,"left":float(rule.prepare),"total":float(rule.prepare)}
+	var intended: Node=_hostile(enemy,240.0)
+	state.prepare = {"skill":skill,"left":float(rule.prepare),"total":float(rule.prepare),"target":runtime.encounters.key(intended),"friendly":bool(enemy.friendly)}
 	_show_prepare(str(enemy.enemy_id),enemy,state)
 	if enemy.has_method("begin_prepare"): enemy.begin_prepare(skill,float(rule.prepare))
 	return true
@@ -148,7 +146,8 @@ func consume_attack_bonus(enemy_id: String) -> float:
 	# 木藤的汲取挂在同一次命中钩子：只治疗施法者本体的 enemy.hp。
 	if is_instance_valid(enemy):
 		var target: Node = _hostile(enemy,240.0)
-		if is_instance_valid(target): session.magic.skills.consume_hostile_drain(target,_magic_id(enemy))
+		if is_instance_valid(target):
+			bonus+=session.magic.skills.drain_on_hit(target,_magic_id(enemy)) if "enemy_id" in target else session.magic.skills.consume_hostile_drain(target,_magic_id(enemy))
 	return bonus
 
 func options_for(enemy: Node) -> Array:
@@ -172,10 +171,8 @@ func export_state() -> Dictionary:
 	return {"cooldowns":records,"mana":mana}
 
 func restore(data: Dictionary) -> void:
-	for a: Dictionary in arrows:
-		var node: Variant = a.get("node")
-		if is_instance_valid(node): node.queue_free()
-	arrows.clear()
+	for arrow: Node in session.get_tree().get_nodes_in_group("tribal_arrows"):
+		arrow.queue_free()
 	for enemy_id: String in prepare_marks.keys():
 		var mark: Variant = prepare_marks[enemy_id]
 		if is_instance_valid(mark): mark.queue_free()
@@ -246,8 +243,13 @@ func _valid_target(enemy: Node, skill: String, rule: Dictionary) -> bool:
 		"chief_wood_heal":
 			return float(enemy.hp) < float(enemy.max_hp)
 		"chief_earth_hut":
-			return not session.magic.skills.huts.has(_magic_id(enemy))
-		"chief_wood_vine","chief_water_bubble","chief_fire_burn","chief_earth_blink":
+			var holy: Node=runtime.relics.visuals.get(enemy.tribe)
+			var guarding: bool=is_instance_valid(holy) and enemy.global_position.distance_to(holy.global_position)<=90
+			return (enemy.hp<enemy.max_hp*0.7 or guarding) and not session.magic.skills.huts.has(_magic_id(enemy))
+		"chief_earth_blink":
+			var target: Node=_hostile(enemy,200.0)
+			return is_instance_valid(target) and (enemy.hp<enemy.max_hp*0.3 or _surrounded(enemy)) and _escape_point(enemy,target).is_finite()
+		"chief_wood_vine","chief_water_bubble","chief_fire_burn":
 			return is_instance_valid(_hostile(enemy,200.0))
 		"chief_fire_ball":
 			var target: Node = _hostile(enemy,200.0)
@@ -256,6 +258,12 @@ func _valid_target(enemy: Node, skill: String, rule: Dictionary) -> bool:
 
 func _hostile(enemy: Node, radius: float) -> Node:
 	if not is_instance_valid(enemy): return null
+	var intent: String=str(enemy.get_meta("npc_cast_target",_state(enemy.enemy_id).prepare.get("target","")))
+	if intent=="": intent=str(guards.npc(enemy.enemy_id).get("target_id","")) if is_instance_valid(guards) else ""
+	if intent!="" and not intent.begins_with("home:"):
+		var intended: Node=session.world.active_resident if intent=="player" else runtime.encounters.actor(intent)
+		if is_instance_valid(intended) and enemy.global_position.distance_to(intended.global_position)<=radius and _can_see(enemy,intended): return intended
+		return null
 	if bool(enemy.friendly):
 		var best: Node
 		var best_gap := radius
@@ -274,26 +282,16 @@ func _hostile(enemy: Node, radius: float) -> Node:
 
 func _can_see(actor: Node, target: Node) -> bool:
 	if not is_instance_valid(actor) or not is_instance_valid(target): return false
-	# NPC 常站在祭台等静态地形里；只豁免紧贴本体（24像素内）的地形重叠，真实墙体仍会挡住视线。
-	var origin: Vector2 = actor.global_position
-	var to: Vector2 = target.global_position
-	var from: Vector2 = origin
-	for i in range(8):
-		var gap := from.distance_to(to)
-		if gap <= 6.0: return true
-		var query := PhysicsRayQueryParameters2D.create(from,to,1|4,[actor.get_rid()])
-		var hit: Dictionary = actor.get_world_2d().direct_space_state.intersect_ray(query)
-		if hit.is_empty(): return true
-		# 命中点就在射线起点说明仍嵌在自身所站地形里；否则只有超出本体24像素的遮挡才算墙。
-		if hit.position.distance_to(from) > 1.0 and origin.distance_to(hit.position) > 24.0: return false
-		from = hit.position + (to - hit.position)/maxf(0.001,hit.position.distance_to(to)) * 6.0
-	return false
+	if not actor.is_inside_tree() or not target.is_inside_tree(): return false
+	if "room_id" in actor and "room_id" in target and actor.room_id!=target.room_id: return false
+	var query := PhysicsRayQueryParameters2D.create(actor.global_position,target.global_position,1|4,[actor.get_rid()])
+	return actor.get_world_2d().direct_space_state.intersect_ray(query).is_empty()
 
 func _direction(enemy: Node, target: Node) -> Vector2:
 	if is_instance_valid(target):
 		var heading: Vector2 = enemy.global_position.direction_to(target.global_position)
 		if heading != Vector2.ZERO: return heading
-	return [Vector2.DOWN,Vector2.UP,Vector2.LEFT,Vector2.RIGHT][int(enemy.facing)]
+	return Vector2.LEFT if int(enemy.facing)<0 else Vector2.RIGHT
 
 # 起手即结算资源：缺魔力/箭支时 can_use 已拦下，因此这里失败绝不会误扣玩家资源。
 func _spend(enemy: Node, skill: String, rule: Dictionary) -> bool:
@@ -352,13 +350,16 @@ func _finish(enemy_id: String, enemy: Node, state: Dictionary) -> void:
 		if skill=="suppress_shot": session.inventory.exchange("npc:"+enemy_id,{},{"arrow":1})
 		_cancel(enemy_id,enemy,state)
 		return
+	var cast_target: String=str(state.prepare.get("target",""))
 	state.prepare = {"skill":"","left":0.0,"total":0.0}
 	_clear_prepare(enemy_id,enemy)
+	enemy.set_meta("npc_cast_target",cast_target)
 	match skill:
 		"dash_slash": _dash(enemy)
 		"parry": _parry(enemy)
 		"suppress_shot": _suppress(enemy)
 		_: _chief(enemy,skill,rule)
+	enemy.remove_meta("npc_cast_target")
 
 func _dash(enemy: Node) -> void:
 	var state: Dictionary = _state(str(enemy.enemy_id))
@@ -382,7 +383,7 @@ func _dash_step(enemy: Node, state: Dictionary, delta: float) -> void:
 		return
 	dash.left = float(dash.left) - budget
 	if is_instance_valid(session.tribes):
-		session.tribes.workers.move(enemy,dash.target,budget,DASH_SPEED)
+		session.tribes.workers.move(enemy,dash.target,budget,DASH_SPEED,"skill")
 	else:
 		enemy.move_and_collide(enemy.global_position.move_toward(dash.target,DASH_SPEED*budget) - enemy.global_position)
 	if enemy.global_position.distance_to(start) >= DASH_DISTANCE or float(dash.left) <= 0.0: dash.active = false
@@ -398,73 +399,13 @@ func _suppress(enemy: Node) -> void:
 		session.inventory.exchange("npc:"+str(enemy.enemy_id),{},{"arrow":1})
 		return
 	var origin: Vector2 = enemy.global_position+Vector2(0,-8)
-	var heading: Vector2 = enemy.global_position.direction_to(target.global_position)
-	var damage := float(Careers.damage("archer",int(enemy.npc_level)))
-	var node := Node2D.new()
-	node.z_index = 6
-	node.draw.connect(func() -> void:
-		node.draw_line(-heading*7,heading*3,Color("e1c795"),1)
-		node.draw_line(heading*3,heading.rotated(2.5)*3,Color("dbe0d1"),1)
-		node.draw_line(heading*3,heading.rotated(-2.5)*3,Color("dbe0d1"),1)
-	)
-	session.world.objects.add_child(node)
-	node.global_position = origin
-	arrows.append({"actor":str(enemy.enemy_id),"node":node,"at":[origin.x,origin.y],"dir":[heading.x,heading.y],
-		"left":enemy.attack_reach(),"damage":damage,
-		"rid":enemy.get_rid(),"friendly":bool(enemy.friendly)})
-
-func _advance_arrows(delta: float) -> void:
-	for i in range(arrows.size()-1,-1,-1):
-		var a: Dictionary = arrows[i]
-		var node: Variant = a.node
-		if not is_instance_valid(node):
-			arrows.remove_at(i)
-			continue
-		var from := Vector2(a.at[0],a.at[1])
-		var heading := Vector2(a.dir[0],a.dir[1])
-		var step := minf(float(a.left),ARROW_SPEED*delta)
-		var to := from+heading*step
-		if session.magic.branches.barrier_blocks(from,to):
-			node.queue_free(); arrows.remove_at(i); continue
-		var query := PhysicsRayQueryParameters2D.create(from,to,1|2|4|8|16,[a.rid])
-		var hit: Dictionary = session.world.get_world_2d().direct_space_state.intersect_ray(query)
-		if not hit.is_empty():
-			_hit_arrow(a,hit.collider)
-			node.queue_free(); arrows.remove_at(i); continue
-		a.at = [to.x,to.y]
-		a.left = float(a.left) - step
-		node.global_position = to
-		if float(a.left) <= 0.0:
-			node.queue_free(); arrows.remove_at(i)
-
-func _hit_arrow(a: Dictionary, collider: Node) -> void:
-	if not is_instance_valid(collider): return
-	var caster: Node = session.combat.enemies.get(str(a.actor))
-	if not is_instance_valid(caster): return
-	if "enemy_id" in collider:
-		# 友方弓箭手压制敌对部落成员：沿用既有减速状态登记。
-		if bool(caster.friendly):
-			var dealt: float=session.combat._final_hostile_damage(str(a.actor),collider,float(a.damage),{"kind":"ranged"})
-			collider.hp = maxf(0.0,float(collider.hp) - dealt)
-			collider.pursuit = 6.0
-			collider.refresh()
-			session.magic.branches._status(collider,str(a.actor),"suppress",2.0,{"slow":0.2})
-		return
-	if not ("resident_id" in collider) or bool(caster.friendly): return
-	# 命中才减速：伤害统一走 combat.apply_npc_damage，减速登记进分支状态。
-	session.combat.apply_npc_damage(caster,str(collider.resident_id),float(a.damage),{"kind":"ranged","tribe":str(caster.tribe)})
-	session.magic.branches.player_status(str(collider.resident_id),"slowed",2.0)
-
-func _apply_slows() -> void:
-	# 现有减速只作用于部落敌人；玩家侧用同一状态记录驱动移动倍率。
-	# vitals 每次推进都会重算基础倍率，这里只做取小值的幂等下调，不会逐帧叠乘。
-	for resident: Node in session.world.controllable:
-		if not is_instance_valid(resident) or resident.dead: continue
-		var resident_id := str(resident.resident_id)
-		if session.magic.branches._buff(resident_id,"slowed").is_empty(): continue
-		var stats: Dictionary = session.vitals.ensure(resident_id)
-		var base := (0.7 if bool(stats.ill) else 1.0) * float(session.magic.skills.run_rate(resident_id))
-		resident.run_multiplier = minf(float(resident.run_multiplier),base * 0.8)
+	var aim: Vector2=target.global_position+(Vector2.ZERO if "enemy_id" in target else Vector2(0,-3))
+	var heading: Vector2 = origin.direction_to(aim)
+	var arrow := Arrow.new()
+	arrow.runtime=runtime; arrow.attacker=enemy.enemy_id; arrow.tribe=enemy.tribe
+	arrow.damage=float(Careers.damage("archer",int(enemy.npc_level))); arrow.slow=0.2
+	arrow.position=origin; arrow.direction=heading; arrow.left=enemy.attack_reach(); arrow.excluded=[enemy.get_rid()]
+	session.world.objects.add_child(arrow)
 
 func _chief(enemy: Node, skill: String, rule: Dictionary) -> void:
 	var actor_id := _magic_id(enemy)
@@ -507,7 +448,7 @@ func _chief_cast(enemy: Node, skill: String, rank: int) -> bool:
 			return session.magic.skills.cast_for(actor_id,rank,enemy.global_position)
 		"chief_earth_blink":
 			var target: Node = _hostile(enemy,200.0)
-			return session.magic.skills.cast_for(actor_id,rank,enemy.global_position+_direction(enemy,target)*80.0)
+			return session.magic.skills.cast_for(actor_id,rank,_escape_point(enemy,target))
 		"chief_earth_hut":
 			for offset: Vector2 in [Vector2(28,0),Vector2(-28,0),Vector2(0,28),Vector2(0,-28),Vector2(20,20),Vector2(-20,20),Vector2(20,-20),Vector2(-20,-20)]:
 				if session.magic.skills.cast_for(actor_id,rank,enemy.global_position+offset): return true
@@ -529,3 +470,16 @@ func _recover_mana(enemy: Node, state: Dictionary, delta: float) -> void:
 			stats.mana = minf(limit,float(stats.mana) + 1.0)
 			state.mana_clock = maxf(0.0,float(state.mana_clock) - MANA_INTERVAL)
 	enemy.mana = int(clampf(float(stats.mana),0.0,limit))
+
+func _surrounded(enemy: Node) -> bool:
+	var nearby := 0
+	for player: Node in session.world.controllable:
+		if is_instance_valid(player) and not player.dead and player.room_id==enemy.room_id and player.global_position.distance_to(enemy.global_position)<50: nearby+=1
+	return nearby>=2
+
+func _escape_point(enemy: Node, target: Node) -> Vector2:
+	var away: Vector2=-_direction(enemy,target)
+	for angle: float in [0.0,0.5,-0.5,1.0,-1.0]:
+		var point: Vector2=enemy.global_position+away.rotated(angle)*80.0
+		if session.magic.skills._landing(enemy,point) and session.magic.skills._line_clear(enemy,point): return point
+	return Vector2.INF

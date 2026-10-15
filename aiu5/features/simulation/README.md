@@ -15,3 +15,6 @@
 ## 0.9.1在线计时修复
 
 Production及Foraging由统一Simulation时钟驱动；start显式启用领域的process标志。这两个节点无需自己的_process回调，避免重复计算时间。tests/crafting_clock_probe.tscn以真实帧检查菜单中的进度、冶炼、资源补充、暂停及读档，不直接调用elapse。
+
+
+0.10.2：0.5秒在线领域计时不变。部落决策只发布移动意图，由actor物理帧执行连续碰撞位移与动画，不在物理循环重跑领域计时，避免重复扣血、恢复、生产或推进婚恋。

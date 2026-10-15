@@ -10,6 +10,7 @@ const PROMPT_INTERVAL := 10.0
 
 # 事件类型 -> 对应的中文短句；severity>=2 的事件进入严重记忆。
 const LINES := {
+	"greeting": "欢迎回来，有危险我们会帮你。",
 	"gift_bread": "谢谢你送的面包。",
 	"attacked": "你上次动手打了我，我记得。",
 	"attacked_kin": "你伤害了我的家人，这笔账我记着。",
@@ -49,7 +50,7 @@ func _key(npc_id: String) -> String:
 	return npc_id.trim_prefix("npc:")
 
 # 记录一个事件并按规则结算受影响角色的好感；同一事件只扣一次。
-func remember(npc_id: String, event: String, actor_id: String, severity := 1, detail := "") -> void:
+func remember(npc_id: String, event: String, actor_id: String, severity := 1, detail := "", change_liking := true) -> void:
 	if npc_id == "" or actor_id == "": return
 	var entry: Dictionary = record(npc_id)
 	var at := now()
@@ -75,17 +76,16 @@ func remember(npc_id: String, event: String, actor_id: String, severity := 1, de
 		"witness_attack", "saw_theft", "trespass":
 			affected.append([npc_id, WITNESS])
 	for entry_pair: Array in affected:
+		if not change_liking: continue
 		_liking(actor_id, str(entry_pair[0]), int(entry_pair[1]))
 	if severity >= 2:
-		if entry.severe.is_empty() or float(entry.severe.get("severity", 0)) <= float(severity):
-			entry.severe = {"event": event, "actor": actor_id, "at": at, "severity": severity, "detail": detail}
+		entry.severe = {"event": event, "actor": actor_id, "at": at, "severity": severity, "detail": detail}
 	if not _silent:
 		_feedback(npc_id, event)
 
 func mark_severe(npc_id: String, event: String, actor_id: String, detail := "") -> void:
 	var entry: Dictionary = record(npc_id)
-	if entry.severe.is_empty() or float(entry.severe.get("severity", 0)) <= 2.0:
-		entry.severe = {"event": event, "actor": actor_id, "at": now(), "severity": 2, "detail": detail}
+	entry.severe = {"event": event, "actor": actor_id, "at": now(), "severity": 2, "detail": detail}
 
 func memory_of(npc_id: String) -> Array:
 	return record(npc_id).events.duplicate(true)
@@ -120,9 +120,7 @@ func line_for(npc_id: String) -> String:
 
 func _prune_severe(entry: Dictionary, at: float) -> Dictionary:
 	if entry.severe.is_empty(): return entry.severe
-	# 严重记忆长期保留，只在同一事件已过1000在线秒且没有新事件时淡化为普通记忆。
-	if at - float(entry.severe.get("at", at)) > 1000.0:
-		return {}
+	# Serious events persist independently of the ten ordinary entries and elapsed time.
 	return entry.severe
 
 func _liking(actor_id: String, npc_id: String, delta: int) -> void:
@@ -148,7 +146,9 @@ func set_liking(actor_id: String, npc_id: String, value: int) -> void:
 # 统一成 "npc:<成员id>" 形式，供 romance 的成对好感使用。
 func team_id(npc_id: String) -> String:
 	var id := _key(npc_id)
-	return id if id.begins_with("npc:") else "npc:" + id
+	for resident: Node in runtime.session.world.controllable:
+		if resident.resident_id==id: return id
+	return "npc:" + id
 
 func export_state() -> Dictionary:
 	return {"records": records.duplicate(true), "overrides": overrides.duplicate(true), "clock": clock, "day": day}

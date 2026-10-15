@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 591.91 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 5070 Laptop GPU
+
+NPC_BEHAVIOR_TRACE {"civilian":{"gap":13.9905338287354,"lost_life":0.0,"motion":10.1721839904785,"sees":true,"states":{"engage":331,"life":29},"weapon_cooldown":0.0},"hostile":{"gap":5.77998495101929,"lost_life":6.0,"motion":27.4525508880615,"sees":true,"states":{"engage":125,"life":30,"prepare":155},"weapon_cooldown":1.0},"neutral":{"gap":37.4759788513184,"lost_life":0.0,"motion":48.2568054199219,"sees":true,"states":{"observe":186,"patrol":123,"return":51},"weapon_cooldown":0.0},"provoked":{"gap":5.77998495101929,"lost_life":6.0,"motion":27.4525508880615,"sees":true,"states":{"engage":125,"life":29,"prepare":155},"weapon_cooldown":1.0},"search":{"last_seen_unchanged":true,"state_after_losing_sight":"return"},"trespass":{"gap":24.0,"lost_life":0.0,"motion":0.0,"sees":true,"states":{"life":29,"prepare":381,"warn":310},"weapon_cooldown":0.0}}
+NPC_BEHAVIOR_BASELINE_OK
+NPC_ATTITUDE_PROBE_OK checks=0

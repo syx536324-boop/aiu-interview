@@ -35,24 +35,12 @@ func _reject(text: String) -> bool:
 func _outdoors(actor: CharacterBody2D) -> bool:
 	return actor.room_id==""
 func _visible(actor: CharacterBody2D, at: Vector2, radius: float) -> bool:
-	return actor.global_position.distance_to(at)<=radius and Rect2(Vector2.ZERO,Vector2(640,400)).has_point(actor.get_canvas_transform()*at)
+	return actor.global_position.distance_to(at)<=radius and (_is_npc(actor) or Rect2(Vector2.ZERO,Vector2(640,400)).has_point(actor.get_canvas_transform()*at))
 func _line_clear(actor: CharacterBody2D, at: Vector2) -> bool:
 	var query := PhysicsRayQueryParameters2D.create(actor.global_position,at,1|4,[actor.get_rid()])
 	return actor.get_world_2d().direct_space_state.intersect_ray(query).is_empty()
 func _npc_line_clear(actor: CharacterBody2D, at: Vector2) -> bool:
-	# NPC 常站在祭台等静态地形里；只豁免紧贴本体（24像素内）的地形重叠，真实墙体仍会挡住视线。
-	var origin: Vector2=actor.global_position
-	var from: Vector2=origin
-	for i in range(8):
-		var gap := from.distance_to(at)
-		if gap<=6.0: return true
-		var query := PhysicsRayQueryParameters2D.create(from,at,1|4,[actor.get_rid()])
-		var hit: Dictionary=actor.get_world_2d().direct_space_state.intersect_ray(query)
-		if hit.is_empty(): return true
-		# 命中点就在射线起点说明仍嵌在自身所站地形里；否则只有超出本体24像素的遮挡才算墙。
-		if hit.position.distance_to(from)>1.0 and origin.distance_to(hit.position)>24.0: return false
-		from=hit.position+(at-hit.position)/maxf(0.001,hit.position.distance_to(at))*6.0
-	return false
+	return actor.is_inside_tree() and _line_clear(actor,at)
 func _npc(id: String) -> CharacterBody2D:
 	# Magic ids resolve to tribe members and chiefs as well as controlled residents.
 	if id=="" or not is_instance_valid(session.combat): return null
@@ -97,7 +85,12 @@ func _reject_npc(npc: bool, text: String) -> bool:
 func _enemy(actor: CharacterBody2D, at: Vector2) -> CharacterBody2D:
 	if not _outdoors(actor): return null
 	if _is_npc(actor):
-		# NPC 施法者以玩家阵营为敌对目标（相对于施法者判定）。
+		var target_id: String=str(actor.get_meta("npc_cast_target",session.tribes.guards.npc(actor.enemy_id).get("target_id","")))
+		if target_id!="" and not target_id.begins_with("home:"):
+			var intended: CharacterBody2D=session.world.active_resident if target_id=="player" else session.tribes.encounters.actor(target_id)
+			if is_instance_valid(intended) and intended.global_position.distance_to(at)<22 and _visible(actor,intended.global_position,200) and _npc_line_clear(actor,intended.global_position): return intended
+			return null
+		# Standalone casts retain the player-side target selection when no encounter has been assigned.
 		var target: CharacterBody2D
 		var reach := 22.0
 		for resident: CharacterBody2D in session.world.controllable:
@@ -308,7 +301,7 @@ func drain_on_hit(enemy: CharacterBody2D, actor_id: String) -> float:
 	if not marks.has(key) or not marks[key].drain: return 0
 	marks[key].drain=false
 	var amount := minf(2,enemy.hp)
-	session.vitals.heal(actor_id,amount)
+	_heal_actor(actor_id,amount)
 	return amount
 func advance(delta: float) -> void:
 	var left := maxf(0,delta)
@@ -378,11 +371,12 @@ func _advance_projectiles(delta: float) -> void:
 		var span := minf(float(p.remaining),180*delta)
 		var end := start+direction*span
 		# 玩家火球只打敌对目标；村长火球按层2命中玩家阵营。
-		var query := PhysicsRayQueryParameters2D.create(start,end,1|2|4 if npc_caster else 1|8|4)
+		var query := PhysicsRayQueryParameters2D.create(start,end,1|2|4|8 if npc_caster else 1|8|4,[caster.get_rid()] if npc_caster else [])
 		var hit: Dictionary=session.world.get_world_2d().direct_space_state.intersect_ray(query)
 		if not hit.is_empty():
-			if hit.collider.is_in_group("hostile_targets") or hit.collider.is_in_group("creature_targets"): session.combat.apply_skill_damage(hit.collider,5,str(p.actor))
-			elif npc_caster and "resident_id" in hit.collider: _npc_damage(str(p.actor),hit.collider,5.0,"fire")
+			var same_side: bool=npc_caster and "tribe" in hit.collider and session.tribes.relics.owner(hit.collider.tribe)==session.tribes.relics.owner(caster.tribe)
+			if not same_side and (hit.collider.is_in_group("hostile_targets") or hit.collider.is_in_group("creature_targets")): session.combat.apply_skill_damage(hit.collider,5,str(p.actor))
+			elif npc_caster and not same_side and "resident_id" in hit.collider: _npc_damage(str(p.actor),hit.collider,5.0,"fire")
 			projectiles.remove_at(i)
 		else:
 			p.at=[end.x,end.y]

@@ -1,0 +1,26 @@
+{
+  "active_npcs": 20,
+  "display": "Windows",
+  "frame_ms": {
+    "max": 18.441,
+    "mean": 16.66622,
+    "p50": 16.666,
+    "p95": 17.043
+  },
+  "physics_ms": {
+    "max": 2.998,
+    "mean": 1.64026000000001,
+    "p50": 1.493,
+    "p95": 2.998
+  },
+  "process_ms": {
+    "max": 17.4,
+    "mean": 14.3713799999999,
+    "p50": 14.024,
+    "p95": 17.4
+  },
+  "registered_npcs": 62,
+  "samples": 600,
+  "scene": "forest yard (-1000,990)",
+  "version": "0.10.3"
+}

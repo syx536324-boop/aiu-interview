@@ -19,3 +19,8 @@ export_state／restore包含角色、主干effects和分支branches。恢复仅�
 ## 0.8.1接口与规则
 
 铁装备防御3／2／2／1、满套40%。progression.attack_damage(id)组合基础攻击、固定赐予等级加成和主干赋能；weapon_enchants拥有四系命中、角色共享冷却及持久化。rune_art统一四属性颜色和符号；branches管理施法、持续与被动视觉并随室内外场景挂接。export_state／restore新增enchants；减速由branches.speed_rate合并附魔与技能来源。
+
+
+## 0.10.3计划复核
+
+speed_rate同时合并状态与玩家增减益中的减速，不同来源相乘、同来源取强，速度最低40%。resident正常走路和跑步、工作人员及日常移动均读取此倍率，已计算倍率的守卫／出征不重复相乘。NPC施法复用cast_for，锁定实际目标、自己的魔力和真实生命池；移除近24像素的穿墙豁免，土系紧急瞬移朝安全方向。

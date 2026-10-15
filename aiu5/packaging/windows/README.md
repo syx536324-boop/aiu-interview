@@ -16,9 +16,18 @@ Windows 10/11 x64，安装包 `AIU5-Setup-0.10.0-win64.exe`。双击安装，默
 pwsh -File packaging/windows/build.ps1 -Godot 'C:\tools\Godot.exe' -ISCC 'C:\tools\Inno Setup\ISCC.exe'
 ```
 
-输出exports/windows，安装包exports/AIU5-Setup-0.10.0-win64.exe。脚本核对模型哈希、runtime和原生库存在，导出游戏，复制物理服务与模型，再生成安装器。应用通过本地HTTP随机会话令牌与Python服务通信，运行时路径均相对安装目录。
+输出exports/windows，安装包exports/AIU5-Setup-0.10.3-win64.exe。脚本核对模型哈希、runtime和原生库存在，导出游戏，复制物理服务与模型，再生成安装器。应用通过本地HTTP随机会话令牌与Python服务通信，运行时路径均相对安装目录。
 
 0.7.2采用已确认的透明像素沙盘图标，统一游戏窗口、Windows程序文件、安装器和开始菜单；图标原图及七尺寸ICO见assets/branding。
 
 
 0.10.0合并NPC态度与技能、地形河桥、新手指引、动物与资源密度改动。安装包需先安装至隔离目录，运行npc_attitude_probe与npc_completion_probe；正式安装前备份并核对玩家存档SHA256。交付证据位于docs/VERIFICATION_0.10.0.json。
+
+
+0.10.1本地修复：开局阿林与小满等友方成年NPC在无任务时会在村内走动并停留；对话、工作、婚恋和战斗优先。旧档兼容，不补人、回血或复活。修复及验证详见docs/FRIENDLY_NPC_FIX_0.10.1.md。本次尚未上传或发布。
+
+
+0.10.2本地修复：NPC逐物理帧连续移动，起步与停步平滑过渡，按实际步行距离切换四向行走姿势；日常、工作、婚恋及出征共用物理移动。保持在线经营计时、速度、碰撞及暂停规则。详见docs/NPC_MOTION_0.10.2.md。本次未上传或发布。
+
+
+0.10.3本地复核：保留森林初始中立；修复祭坛禁区超过5秒后近战准备反复重置而没有伤害。补齐受击逃跑／被堵反击、搜索返回、实际目击与亲属记忆、玩家指挥归属、援助、偷窃通知、正常走路减速、压制箭命中及土系安全撤离。NPC标记按真实态度区分。逐项证据见docs/NPC_PLAN_AUDIT_0.10.3.md。本次未上传或发布GitHub。

@@ -1,0 +1,4 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ISOLATION enemies=62 home=2 forest=20 barbarian=20 yunye=20 members=62 residents=3 settlement=starter_v2
+NPC_ATTITUDE_PROBE_OK checks=125

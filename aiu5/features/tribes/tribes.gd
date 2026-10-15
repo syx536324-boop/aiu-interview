@@ -1,7 +1,9 @@
 # Composes tribal domains and exposes interaction snapshots/actions to the existing presentation layer.
 extends Node
+const Encounters := preload("res://features/tribes/encounters.gd")
 const Population := preload("res://features/tribes/population.gd")
 const Workers := preload("res://features/tribes/workers.gd")
+const Routine := preload("res://features/tribes/friendly_routine.gd")
 const War := preload("res://features/tribes/war.gd")
 const Relics := preload("res://features/tribes/relics.gd")
 const Settlements := preload("res://features/tribes/settlements.gd")
@@ -9,8 +11,10 @@ const Romance := preload("res://features/romance/romance.gd")
 const Careers := preload("res://features/tribes/profession_catalog.gd")
 const RelationMemory := preload("res://features/tribes/relation_memory.gd")
 var session: Node
+var encounters := Encounters.new()
 var population := Population.new()
 var workers := Workers.new()
+var routine := Routine.new()
 var war := War.new()
 var relics := Relics.new()
 var settlements := Settlements.new()
@@ -51,6 +55,7 @@ const elements := {"home":"earth","forest":"wood","barbarian":"fire","yunye":"ea
 var defeat_panel: CanvasLayer
 func start(controller: Node) -> void:
  session=controller; workers.runtime=self; war.runtime=self; population.runtime=self; settlements.runtime=self; romance.runtime=self; romance.weddings.romance=romance
+ routine.runtime=self; workers.movement.runtime=self; encounters.runtime=self
  session.inventory.transfer_commit=complete_storage_transfer
  relation.start(self)
  reset_standing()
@@ -62,8 +67,9 @@ func start(controller: Node) -> void:
 func advance(delta: float) -> void:
  if relics.failed: return
  clock += maxf(0.0, delta)
- relation.advance(delta)
+ relation.advance(delta); encounters.advance(delta)
  if session.world.active_resident.room_id=="mine": mine_visited=true
+ workers.movement.begin_step()
  population.advance(delta); relics.advance(delta); romance.advance(delta); workers.advance(delta); war.advance(delta)
  if is_instance_valid(guards): guards.advance(delta)
  if is_instance_valid(npc_skills): npc_skills.advance(delta)
@@ -222,7 +228,9 @@ func complete_storage_transfer(before: Dictionary, container: String, removed: b
 func theft_event(tribe: String, witness_id := "") -> bool:
  if not standing_points.has(tribe): return false
  add_standing(tribe, THEFT_STANDING)
- if witness_id != "": relation.remember(witness_id, "saw_theft", session.world.active_resident.resident_id)
+ if witness_id != "":
+  relation.remember(witness_id, "saw_theft", session.world.active_resident.resident_id)
+  guards.report_theft(tribe,witness_id)
  return true
 
 func relic_attack_event(tribe: String) -> void:
@@ -239,20 +247,28 @@ func note_conflict(tribe: String, npc_id: String) -> bool:
  return true
 
 # 杀死村民：按死亡事件额外结算一次；受害者亲属与目击者的好感在记忆中处理。
-func register_death(tribe: String, npc_id: String, actor_id: String, witnesses: Array = []) -> bool:
+func register_death(tribe: String, npc_id: String, actor_id: String, witnesses: Array = [], already_hurt := false) -> bool:
  var key := tribe + ":" + npc_id
  if death_settled.has(key): return false
  death_settled[key] = true
  if standing_points.has(tribe): add_standing(tribe, KILL_STANDING)
- relation.remember(npc_id, "killed_villager", actor_id, 2)
- for kin: String in kin_of(npc_id): relation.remember(kin, "killed_kin", actor_id, 2)
+ relation.remember(npc_id, "killed_villager", actor_id, 2,"",not already_hurt)
+ for kin: String in kin_of(npc_id):
+  if kin!=actor_id and kin!="npc:"+population_id(actor_id): relation.remember(kin, "killed_kin", actor_id, 2)
  for witness: String in witnesses:
-  if witness != npc_id: relation.remember(witness, "witness_attack", actor_id, 1)
+  if witness != npc_id and "npc:"+str(witness) not in kin_of(npc_id): relation.remember(witness,"witness_attack",actor_id,1,"",not already_hurt)
  return true
 
 # 只读取既有的婚恋数据，不临时为无关系NPC编造亲属。
 func kin_of(npc_id: String) -> Array:
- return romance.partners("npc:" + population_id(npc_id))
+ var id := population_id(npc_id)
+ var result: Array=romance.partners("npc:"+id)
+ for parent: String in population.members.get(id,{}).get("parents",[]):
+  if is_instance_valid(romance.actor(parent)) and parent not in result: result.append(parent)
+ for child: String in population.members:
+  if float(population.members[child].child_left)>0: continue
+  if "npc:"+id in population.members[child].get("parents",[]) and "npc:"+child not in result: result.append("npc:"+child)
+ return result
 
 func clear_conflict(tribe: String, npc_id: String) -> void:
  conflict_time.erase(tribe + ":" + npc_id)
@@ -262,6 +278,8 @@ func refresh_points() -> void:
   if not is_instance_valid(actor) or actor.hp<=0: session.world.points.erase("npcunit:"+id); continue
   var r: Dictionary=population.members[id]
   var text := "幼童" if float(r.child_left)>0 else str(Careers.LABELS[r.career])
+  if not population.friendly(id): text+=" · "+display_attitude(str(r.tribe))
+  if actor.is_inside_tree(): actor.queue_redraw()
   session.world.points["npcunit:"+id]={"position":actor.position,"radius":20.0,"label":str(r.name)+" · "+text,"action":"交谈 / 升级 / 背包" if population.friendly(id) else "其他部落成员","source":actor}
 func interact() -> bool:
  var actor: Node=session.world.active_resident
@@ -406,12 +424,14 @@ func perform(id: String) -> bool:
   if not session.livestock.feed_animal(session.world.active_resident,dialog_id,id.trim_prefix("feed:")): return false
   return session.production.commit(before,"已喂食。")
  return false
-func export_state() -> Dictionary: return {"romance":romance.export_state(),"population":population.export_state(),"workers":workers.export_state(),"war":war.export_state(),"relics":relics.export_state(),"settlements":settlements.export_state(),"mine_visited":mine_visited,"mine_marked":mine_marked,
+func export_state() -> Dictionary: return {"encounters":encounters.export_state(),"routine":routine.export_state(),"romance":romance.export_state(),"population":population.export_state(),"workers":workers.export_state(),"war":war.export_state(),"relics":relics.export_state(),"settlements":settlements.export_state(),"mine_visited":mine_visited,"mine_marked":mine_marked,
  "relation":{"standing":standing_points.duplicate(),"gift":gift_standing.duplicate(),"gift_day":gift_day.duplicate(),"aid":aid_cooldown.duplicate(),"conflict":conflict_time.duplicate(true),"death":death_settled.duplicate(true),"clock":clock,"migrated":migrated,"memory":relation.export_state()},
  "guards":guards.export_state() if is_instance_valid(guards) else {},
  "npc_skills":npc_skills.export_state() if is_instance_valid(npc_skills) else {}}
 func restore(data: Dictionary) -> void:
  relics.restore(data.get("relics",{})); population.restore(data.get("population",{})); workers.restore(data.get("workers",{})); war.restore(data.get("war",{})); settlements.restore(data.get("settlements",{}))
+ encounters.restore(data.get("encounters",{}))
+ routine.restore(data.get("routine",{}))
  romance.restore(data.get("romance",{}))
  var relation_data: Dictionary = data.get("relation", {}) if data.get("relation", {}) is Dictionary else {}
  standing_points = relation_data.get("standing", {}).duplicate() if relation_data.get("standing", {}) is Dictionary else {}

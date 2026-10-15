@@ -7,6 +7,7 @@ var raid_left := 300.0
 var raid_index := 0
 var raid_tribe := ""
 var orders: Dictionary={}
+var commanders: Dictionary={}
 var anger := {"forest":false}
 var cooldowns: Dictionary={}
 func hostile(tribe: String) -> bool:
@@ -27,7 +28,8 @@ func order(target: String) -> bool:
  var before: Dictionary=s.inventory.export_data()
  for tribe: String in ["home","forest","barbarian","yunye"]:
   if runtime.relics.owner(tribe)=="player":
-   for id: String in fighters(tribe): orders[id]=target
+   for id: String in fighters(tribe):
+    orders[id]=target; commanders[id]=leader.resident_id
  return s.production.commit(before,"已命令本方弓箭手和战士进攻"+str(runtime.names[target])+"。")
 func recall(tribe := "") -> void:
  for id: String in orders.keys():
@@ -82,17 +84,25 @@ func _act(id: String, actor: Node, delta: float) -> void:
      if body.has_meta("constructed_home"): target=body; break
    else: target=player
  if ally:
-  var nearest := 160.0
+  target=runtime.encounters.direct_threat(actor)
+  var nearest: float=actor.position.distance_to(target.position) if is_instance_valid(target) else 160.0
   for other_id: String in runtime.population.members:
    if runtime.population.friendly(other_id): continue
    var other: Node=runtime.population.node(other_id)
-   if other.hp>0 and other.room_id=="" and (hostile(str(other.tribe)) or str(other.tribe)==attacked_village) and actor.position.distance_to(other.position)<nearest:
+   if other.hp>0 and other.room_id=="" and (hostile(str(other.tribe)) or str(other.tribe)==attacked_village) and actor.position.distance_to(other.position)<nearest and runtime.encounters.visible(actor,other):
     target=other; nearest=actor.position.distance_to(other.position)
  if is_instance_valid(target): destination=target.global_position
  elif attacked_village!="" and runtime.relics.states[attacked_village].hp>0:
   target=runtime.relics.visuals[attacked_village].body; destination=runtime.relics.visuals[attacked_village].position
  elif attacked_village!="": orders.erase(id); return
- else: return
+ else:
+  if ally: runtime.routine.advance_actor(id,actor,delta)
+  return
+ if ally and r.career in ["civilian","farmer","miner"]:
+  var record: Dictionary=runtime.guards.npc(id)
+  runtime.guards._change(actor,record,"retreat")
+  runtime.guards._act_retreat(actor,record,delta,32.0*s.magic.branches.speed_rate(id),{"valid":true,"at":target.global_position,"home":"","indoors":false,"actor":target})
+  return
  var weapon := Careers.weapon(str(r.career),int(r.level))
  var ranged: bool= weapon=="bow" or r.career=="chief"
  var reach: float= s.combat.Gear.attack_range("bow") if weapon=="bow" else (200.0 if r.career=="chief" else 0.0)
@@ -105,8 +115,13 @@ func _act(id: String, actor: Node, delta: float) -> void:
   if actor.position.x>2400 and destination.x<2400 and s.world.ridge_open.is_empty(): return
   if ally and r.career not in ["archer","charger","chief"]: return
   var speed: float= 32.0*(1.15 if r.career=="charger" and r.level==5 else 1.0)*s.magic.branches.speed_rate(id)
-  runtime.workers.move(actor,destination,delta,speed); return
+  runtime.workers.move(actor,destination,delta,speed,"war"); return
  if cooldowns[id]>0: return
+ if ally and r.career in ["archer","charger"] and ("enemy_id" in target or "resident_id" in target):
+  var record: Dictionary=runtime.guards.npc(id)
+  record.target_id=runtime.encounters.key(target)
+  record.skill_cd=maxf(0,float(record.skill_cd)-delta)
+  if runtime.guards._try_skill(actor,record,{"indoors":false}): return
  strike(id,actor,target)
 
 # All NPC weapon attacks use the same reach, one-second interval, ammunition and
@@ -159,15 +174,21 @@ func damage_target(target: Node, raw: float, tribe: String, attacker: String) ->
  if target.is_in_group("relic_targets"):
   var name := str(target.get_meta("tribe"))
   if runtime.relics.owner(name)==runtime.relics.owner(tribe): return
+  var source: Node=runtime.encounters.actor(attacker)
+  if runtime.encounters.player_source(attacker)!="": runtime.relic_attack_event(name)
+  runtime.encounters.record_hit(target,source,raw)
   runtime.relics.hit(name,raw,attacker,runtime.relics.owner(name)=="player"); return
  if "enemy_id" in target:
   if runtime.relics.owner(target.tribe)==runtime.relics.owner(tribe) or target.hp<=0: return
   provoke(str(target.tribe))
   var dealt: float=runtime.session.combat._final_hostile_damage(attacker,target,raw)
-  target.hp=maxf(0,target.hp-dealt); target.pursuit=6; target.refresh(); return
+  var before: float=target.hp
+  target.hp=maxf(0,target.hp-dealt)
+  runtime.session.combat._note_hostile_damage(target,attacker,dealt,before)
+  target.pursuit=6; target.refresh(); return
  if "resident_id" in target and runtime.relics.owner(tribe)!="player":
   var caster: Node=runtime.population.node(attacker)
   runtime.session.combat.apply_npc_damage(caster,target.resident_id,raw,{"kind":"ranged" if runtime.population.members.get(attacker,{}).get("career","")=="archer" else "melee"})
-func export_state() -> Dictionary: return {"raid_left":raid_left,"raid_index":raid_index,"raid_tribe":raid_tribe,"orders":orders.duplicate(),"anger":anger.duplicate(),"cooldowns":cooldowns.duplicate()}
+func export_state() -> Dictionary: return {"raid_left":raid_left,"raid_index":raid_index,"raid_tribe":raid_tribe,"orders":orders.duplicate(),"commanders":commanders.duplicate(),"anger":anger.duplicate(),"cooldowns":cooldowns.duplicate()}
 func restore(data: Dictionary) -> void:
- raid_left=clampf(float(data.get("raid_left",300)),0,300); raid_index=maxi(0,int(data.get("raid_index",0))); raid_tribe=str(data.get("raid_tribe","")); orders=data.get("orders",{}).duplicate(); anger=data.get("anger",{"forest":false}).duplicate(); cooldowns=data.get("cooldowns",{}).duplicate()
+ raid_left=clampf(float(data.get("raid_left",300)),0,300); raid_index=maxi(0,int(data.get("raid_index",0))); raid_tribe=str(data.get("raid_tribe","")); orders=data.get("orders",{}).duplicate(); commanders=data.get("commanders",{}).duplicate(); anger=data.get("anger",{"forest":false}).duplicate(); cooldowns=data.get("cooldowns",{}).duplicate()

@@ -1,0 +1,349 @@
+{
+  "version": "0.10.3",
+  "date": "2026-10-16T01:04:26.243904+08:00",
+  "scope": "Original NPC plan audit and end-to-end combat repair",
+  "real_player_data_used_for_probes": false,
+  "installed": true,
+  "published": false,
+  "original_plan": {
+    "path": "docs/plans/NPC态度与技能行为-实施方案-2026-10-14.md",
+    "sha256": "b4ee8a7a8d9bdaae8813d6df35179803149ede20f8eb8eb757f92b726e0d3bd8"
+  },
+  "source_validation": {
+    "live-baseline": {
+      "result": "NPC_BEHAVIOR_BASELINE_OK",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/live-baseline.txt"
+    },
+    "final-npc-complete": {
+      "result": "NPC_ATTITUDE_PROBE_OK checks=125",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-npc-complete.txt"
+    },
+    "final-theft-notify-2": {
+      "result": "NPC_COMPLETION_OK checks=30",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-theft-notify-2.txt"
+    },
+    "final-events-complete": {
+      "result": "NPC_EVENTS_AUDIT_OK checks=27",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-events-complete.txt"
+    },
+    "final-live-complete": {
+      "result": "NPC_BEHAVIOR_LIVE_OK checks=8",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-live-complete.txt"
+    },
+    "final-skill-arrow-2": {
+      "result": "NPC_SKILL_AUDIT_OK checks=17",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-skill-arrow-2.txt"
+    },
+    "final-motion": {
+      "result": "NPC_MOTION_OK checks=12 motion={\"home:initial_female\":{\"animation_rows\":[1,0,3],\"distance\":83.1288382187486,\"max_step\":0.273502737283707,\"moving_ratio\":0.99,\"transit_frames\":300},\"home:initial_male\":{\"animation_rows\":[1,0,3],\"distance\":96.498313549906,\"max_step\":0.266696363687515,\"moving_ratio\":0.994301994301994,\"transit_frames\":351}}",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-motion.txt"
+    },
+    "final-magic-complete": {
+      "result": "ELEMENTAL_SKILLS_OK",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-magic-complete.txt"
+    },
+    "final-branches": {
+      "result": "BRANCHES_SMOKE_OK checks=305",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-branches.txt"
+    },
+    "final-weapons": {
+      "result": "WEAPONS_PLAN_OK checks=161",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-weapons.txt"
+    },
+    "final-tribes": {
+      "result": "TRIBES_FINAL_OK checks=30",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-tribes.txt"
+    },
+    "final-romance": {
+      "result": "ROMANCE_OK checks=30",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-romance.txt"
+    },
+    "final-friendly-complete": {
+      "result": "FRIENDLY_ROUTINE_OK checks=18 motion={\"home:initial_female\":35.8667488098145,\"home:initial_male\":38.4911193847656}",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.3/final-friendly-complete.txt"
+    },
+    "export-combat": {
+      "result": "NPC_BEHAVIOR_LIVE_OK checks=8",
+      "actual_windows_program": true,
+      "exit_code": 0,
+      "script_errors": 0
+    },
+    "export-skills": {
+      "result": "NPC_SKILL_AUDIT_OK checks=17",
+      "actual_windows_program": true,
+      "exit_code": 0,
+      "script_errors": 0
+    },
+    "export-events": {
+      "result": "NPC_EVENTS_AUDIT_OK checks=27",
+      "actual_windows_program": true,
+      "exit_code": 0,
+      "script_errors": 0
+    },
+    "installed-combat": {
+      "result": "NPC_BEHAVIOR_LIVE_OK checks=8",
+      "actual_windows_program": true,
+      "exit_code": 0,
+      "script_errors": 0
+    },
+    "installed-skills": {
+      "result": "NPC_SKILL_AUDIT_OK checks=17",
+      "actual_windows_program": true,
+      "exit_code": 0,
+      "script_errors": 0
+    }
+  },
+  "code_hashes": {
+    "features/achievements/achievements.gd": "517a738056bb244a8b02cfc93d021afc40300173bf3504ff8b4a127091f9579c",
+    "features/achievements/catalog.gd": "60db8f49dba86d7386dd490c29ea588ce76ac2b35b228f3e2e352af7c5e4efd1",
+    "features/actors/animal.gd": "b38d6f67fece61cc13146e784f137995a3e3139987227ebcb4e7cadf8bfb9c8c",
+    "features/actors/pig.gd": "af234c199f0ec2851f982a5ef7827853aabb1f2297922756f32d8ccd5d41d802",
+    "features/actors/resident.gd": "b625da88efb79ae9552778ca4ca4fd5c3df09865d8181aa689444540e1a5013f",
+    "features/altar_display/display.gd": "853e8e3a3df1eec8c49da0cf04cbbc9a3c92c66f2289a2232b403482e4437a80",
+    "features/altar_display/offerings.gd": "1ea3273f05c325abe646aceeb52b62ea3e42ae7a499ef0b8365592d04244a32d",
+    "features/combat/arrow.gd": "1a67a08f191c7dce01a63e263385a502560701629a08d2fa0877581fd3c2026e",
+    "features/combat/combat.gd": "9636058fecb59b0c7fd732005a2c3ab8a852073ef89e58c6110e118511df7928",
+    "features/combat/durability.gd": "6b6d76a604ba84992dab6bff472b50bdaa9e99dd741ebc8110da422bbfb6c957",
+    "features/combat/enemy.gd": "320a9453dbb162bccdb4ac22e7faff84db1f4926e3019cbb750244387155e60d",
+    "features/combat/npc_skills.gd": "90f4bb9ec752928a0749e091486508bc27d6d2acddeab7d324f257a7a436ff76",
+    "features/combat/scissors_flight.gd": "26abe2046aa3bdd9d2f867eeb61c8bf4af8b7117c57fca418d58fa7878900b2b",
+    "features/combat/scissor_visual.gd": "262eea4123790d3811dd40b6a4324475a28a22e5fd11de9fd7a26dbcb1f2bca1",
+    "features/combat/swing.gd": "09ca7b8ff9b0894df889d1825e7423ca82c38d012beaaecceb31410f4113d642",
+    "features/combat/weapon_catalog.gd": "24d59fce2a67d50cd7d5ea9ab60565cef3ca509db9197e089a61545c4f7dbff8",
+    "features/construction/building.gd": "f92710db8f666779ee10837b12122d5a40fdb95e1905eba6bc457d1b1cbcf9e7",
+    "features/construction/catalog.gd": "2014b7fea5d18cca1056e316f03aef80f151fabbb966dd221d8df1e1008c906e",
+    "features/construction/construction.gd": "0b27b6903d174b5e08facf73c48fa800af48ac7fd971b74932662bbb84745e30",
+    "features/construction/house_rules.gd": "7176737d3f7e02f5e057fbb5cf8d4d55861574fc7cfbe1d6d4ed628d3f35465f",
+    "features/construction/ladder.gd": "cc5054d1d729a9d8d431764e2c8e1a3d8b80cfd2a10b2c120e2c015c78495003",
+    "features/construction/roof.gd": "ddaf83436bd8729a35acfdd3ff2f097062f9b35ac4121159d2e912f2047279ec",
+    "features/day_night/cycle.gd": "6fa39cb5f1d1f3dd40f77b7a620100b477ec6d15a432c30ece6473905adea34c",
+    "features/foraging/foraging.gd": "cca19d4ec5ee0fff5b43734cf2165458191c2ad0b23a5f79edd9339b8dc8270b",
+    "features/forest/catalog.gd": "2447f4a5c5e23fcf4629b3d65fc8cec77c0cbf9c402c987e2261a34295573d48",
+    "features/forest/forest.gd": "3e82e4c11aab5e6ec4045fa1e89aaee7c137b8d784a55bd8da91283b6aae33b9",
+    "features/forest/plant.gd": "135304bb4b60658059e8a92c7424996922a999ec09ffdbbe5d6e149f06108a12",
+    "features/forest/seed_patches.gd": "daf7e3ef404be447c17b7549de2f5621c4476a576fa3f74145f0ad35ffb83309",
+    "features/forest/silk_catalog.gd": "d096d585d21ec55fcb951b76e0739e180f85d183142a0a8851d881bb948f4e55",
+    "features/gifts/camera_bridge.gd": "8b53ecf160b0f2c980b3ab1fb3f13da725895814ec584a54ff4fc0ab91d6f1b5",
+    "features/gifts/catalog.gd": "7a82c66bc9744b2c9b97ef720e2988904cbc85711769f2e6738aef008529e148",
+    "features/gifts/gifts.gd": "071bd2a82a6243cc8613cfe5faec3b4d85974dadecc31be1ee31e1681e7e2daf",
+    "features/gifts/mapping.gd": "4e5140a67e7bf489cf5a7d869d52a1cdeb23456e50c2bccad8cd4b3aef0db940",
+    "features/gifts/provenance.gd": "ece4c8826f778ea24ad9b2b5922ea7a29fd809573cb0cca927fd3f0bebb93cc8",
+    "features/harvesting/dead_tree.gd": "6355428c277779409f54f6cc8bbf7faeb8370d3c507f22d9c0968b53ae4aa49d",
+    "features/harvesting/harvesting.gd": "42cbe7f57da399477be74e9cf6ab483ac84acf39503238ef4e067b5bd31ab9c3",
+    "features/homestead/crop_catalog.gd": "ba036e513f3d3d5b2a7d39151711d9012309240837ede76f5dfebbd617e6fee7",
+    "features/homestead/farm_grid.gd": "6324aa4ddb006812020107d887fa7c32257b40a06ad03464ed546da2ff907087",
+    "features/homestead/grounds.gd": "c0c6871f07303ba90be70ddd4547c85ca9dabdead4745e9eeab51deda80a101d",
+    "features/homestead/homestead.gd": "9135afb0b80933f8019aa0065a6b0e89e5db3c51cff66980d25f05a96a8b8e68",
+    "features/homestead/kitchen_detail.gd": "db7323c14214e79b725033ab2d871594eb4499faab4eb5e4fb8932c022be9391",
+    "features/homestead/land.gd": "c3f37fec9dbeff4d42aeb0904db1f4157e3b42307c5eb47f93b671019989c933",
+    "features/homestead/meat_catalog.gd": "1fb7f1f4ff4899b2926ac536f3930c192adaac7c24af4db6dc139dcbdbf159d2",
+    "features/identity/name_profile.gd": "3b813febf3f831bbb10a758b84436f18f830a3f7478f1c65814673c498a1ddd9",
+    "features/interface/attributes.gd": "7254165f5de98a81bf880a888a141a4812115d7d5dd523bd54c14d5612045155",
+    "features/interface/belongings.gd": "77e2123a769cf55adf09db7c0e48e3013864a6504087604ec6e1036a90f80842",
+    "features/interface/durability_bar.gd": "92ee55d15ea0809f0459faf1444dca4d775ac79b641b2b36d1969d7756cfb8cf",
+    "features/interface/gift_icon_atlas.gd": "a08100aecc48ebebff0302a2cc6ec8e417783effa1464d1129fa7b32a15203f1",
+    "features/interface/gift_view.gd": "2eb8c43876e8d2c8d3fa7a845f0e711fd69625f037b41e95437e965a79d118b5",
+    "features/interface/hud.gd": "95a812a0cbddd3bdfd0031d8c00360917a03ad0827d9f4da8a5f8b8c10f0edfd",
+    "features/interface/item_icon.gd": "15bea4b499cfa8f4628e01756026d29ce14f1f47ab1bc948f3c661cc2ae9df36",
+    "features/interface/status_bar.gd": "724ba938eb217b35c1fe5920dcf2d9ce6ebfc2cb798e4d4d9181e38094ac979b",
+    "features/interface/workshop.gd": "28ed7f598b942167f2108c4b8058d21c58040c302fb7fc6e5ed54e588528256f",
+    "features/interiors/furniture.gd": "87c7e38fceca09069ab816ceab37a305173b4759002c40907e934d390c8fe0d6",
+    "features/interiors/furniture_catalog.gd": "1cc9ae35eacdb6866afbe5b897f7dc9e30a102fe20fcb4be7f33bb0fe29c93b3",
+    "features/interiors/furniture_editor.gd": "32ce0b0c6e43590156351ea47ba414fec8fd0d39806358bf1740737072b72338",
+    "features/interiors/interiors.gd": "0845fa2005e6cadd6f19a8ef36e39877e3b6ab47f19e6c90c991829564d8aad0",
+    "features/interiors/layout.gd": "2511ed3e7d51e973f3365d8301b8ce454b9d7c24d22fa8039093faff62a60ac6",
+    "features/interiors/room.gd": "26cf1d862ea90c2ba34a1ee8a80b9a8138d38232d34bc06df60b82cd20435ca6",
+    "features/inventory/catalog.gd": "aea5785155853eecbf5df80f479e98de746ff023a5ef7ece5610cccede83411e",
+    "features/inventory/categories.gd": "fec76ee09910ed6e010e24c2299cdbaafc1a23bb30f579504dda2be9f861d7d3",
+    "features/inventory/inventory.gd": "cfe4ce4837d0a8d09b27a2453452343afd3c4511a72e5a79238f798e6ebfa263",
+    "features/inventory/water_catalog.gd": "d1303e0f99eb221455fcb6d140da84636c54411e20a6feebf873cfecf6458b75",
+    "features/landscape/cliff_visual.gd": "2bf5529ff7dcd3dc3a136002192b9c4d898466a2876d1a24a3cdfc6cc41733cc",
+    "features/landscape/frontier.gd": "a4f8bc728000d80c661152203a5e3c5372c7a7393a4113617bc0e335881bd1aa",
+    "features/landscape/landscape.gd": "ae2d09e900fac4c9c9c1d5afb211afea9b52d455a222752789146b62f12e48fc",
+    "features/landscape/layout.gd": "8833911639236c2d51f484327c5fe35d7d410fe0c430c2982cf04f462bd39a57",
+    "features/landscape/view.gd": "ce6e7a4d7a19c5f25fa4dcfb85b9a30c0da3e75829d6b58320daa84cd7e4de8c",
+    "features/lighting/torches.gd": "2c0ca0c39b4617c77716d9eb1493ac9bf97b403a0f893a6a280742bbf38a560c",
+    "features/lighting/torch_record.gd": "120723b2efacf11bb81fd7cb3057b7a63e3f0d2df84fa0a93459bf4dd171d3cc",
+    "features/livestock/fauna_catalog.gd": "f4b9114d4a3d6d397031ba9a35fc2fcd4a73b9a1e85fb14ab5893695a07292d1",
+    "features/livestock/herd_catalog.gd": "65fde370a0b84b05f9ae4fb97d7bae08d52a35a702a15ab684d55d6b0493ee21",
+    "features/livestock/livestock.gd": "fcde56bf981c9e15f406a37c20e2fbd176c738edade7afddc2122b5c719a05a7",
+    "features/livestock/shed.gd": "6a52f81e7154b67cb0bb235eb9b6efd164f6e1f919e87abdb2cfa9f296dfe013",
+    "features/livestock/wildlife.gd": "e86961a1b0b91c9deaa0cbfcaa3af5a9946bd2f84742348c009c682ae247bde8",
+    "features/magic/branches.gd": "9152d01212c0fccdfaa194b62bc1807805e04f306d2dab3185b82f6f5503e7c5",
+    "features/magic/branch_catalog.gd": "b34f61f30a8c50be150f3adb6a2de3078d29a8df060e24bdeeabd215d6fbd873",
+    "features/magic/branch_visual.gd": "cb46b9b961461725b997ef279c0efe21fc637245733fbe6ffbb3b23a62e5065a",
+    "features/magic/catalog.gd": "bb70e0cc47e414e3728a349127f6ca80305bba0cdeaa5ad233f70dba6374eba0",
+    "features/magic/equipment_catalog.gd": "ceb153d2f63ff7a829f7dd23cf4557b292fb385f7b1e96495a300c70950f6efb",
+    "features/magic/progression.gd": "2a450b283bac8aafafb107434270ca6ee6b3e7681075e21d3792f4b3fd55a332",
+    "features/magic/rune_art.gd": "f0142208a9dcc77ef977f92e2c2c8ae42025d3108ad9090b9162659ca6f0668a",
+    "features/magic/skills.gd": "46fb3d5eb24324e8fe1ef09c88c42a574598003ad7305bccb3d27a09adb09c97",
+    "features/magic/skill_catalog.gd": "0e272a0a034a30216cc661c2d248269b3ddf6697659de3c574128c449d507035",
+    "features/magic/skill_visual.gd": "7e25982ff2d5bbd7aa4ee0daea99b8b7947ed4092a2929257dab53ccf80a8db7",
+    "features/magic/weapon_enchants.gd": "8d69dbe1609a1fd34903fb2a5f5c90b6dd06136930fb328fcc47480aae37455e",
+    "features/mining/cave_catalog.gd": "2814a4fde1b2b02f7df685771de1d94a53cf24f625adc202b76eabf8a3ecf1d5",
+    "features/mining/entrance.gd": "aaa8c62f528a7a6f7998e0d6141949a5b1cee17e08cd640fea3b74e95331ad2b",
+    "features/mining/mining.gd": "effde65aec167bc6a848c7c70d9138fd333410be7d7b1fdecd65f070a16b27a7",
+    "features/mining/ore.gd": "de61d6d09575b2d6e3849a85402899e5f228ad64f02d0bc7b05d680cc64710fd",
+    "features/mining/underground.gd": "94be23c112481e9b8fae88d87e97aa7c6e9f41ba3ba41bd11acaf48527b0d353",
+    "features/onboarding/onboarding.gd": "0816b92d0911be4180166965cde1c2df7f0e73d106d4f84203c7c15b317ad194",
+    "features/onboarding/view.gd": "38a833e23caf062c9835aaeee976b2f71a98eeb3d00f25195044db8959d63370",
+    "features/persistence/checkpoints.gd": "384dd22215c012d7257c412cd3faa7cbbd4e85eafe01b487b52c0e2b25e0e59b",
+    "features/production/craft_queue.gd": "e96ecfc2d938322f0373b625cc08f5197c0f02dcffe0e1c4c9e2d77cd62edb13",
+    "features/production/production.gd": "597d2b948d79432e72e589cf474e7a9256b20046fdc7f9bf7eb7a78219473257",
+    "features/production/repairs.gd": "66cd6098aa08dd8ddd43243980e9c02b76c29e5e2abd2402e539b16377eb7cee",
+    "features/production/scissors_tools.gd": "1272d8a46294858daaea11e532b227d8398c24448c6e09857920c42f553164fe",
+    "features/production/smith_catalog.gd": "a261e107db5cf190f018f452cb08538e539778918678aed2b1c37440dd1310f1",
+    "features/romance/curtain.gd": "65c102d2632e92ffde09fd5d73d3a125563df1d455741821c2654597517c5f33",
+    "features/romance/romance.gd": "60a71776320464e329f404673696be662aeaf9ef6b3dc5e8e397cc091efec028",
+    "features/romance/weddings.gd": "60816418027ed2866247063ad8beede2220a5d08d3e5ab62a92c0a227e657782",
+    "features/save_slots/library.gd": "0797f11408140f5b47838cf2129991f19354587d1ef4b40ba5cd977448e315e8",
+    "features/save_slots/profile.gd": "257e3e0f05877a1a82bb1aa7d1a7a30a125e3dda20143c56ac0543e4f863f796",
+    "features/simulation/clock.gd": "ca54fabb63c46d45404c5bf87446211194c3499cfa97fff6c2bcb6066ae06453",
+    "features/start_menu/backdrop.gd": "133b10a7b00ba1490c955926a8dc75cc80c7f1657a6359cdd759c9398cd42494",
+    "features/start_menu/controller.gd": "49167f990a662864099ef7cde010fc85879eb2accfb5e6002f4780f947ceaaa6",
+    "features/start_menu/gift_details.gd": "954f7fb8a6e990ec1fd25f218e2782caa0c5542d468140221884c8ece5dc1388",
+    "features/start_menu/view.gd": "b12b6893eced1e4d523ed25a642c9dc1f3c41a6b82bee45c12960d6579f15de4",
+    "features/streaming/overview.gd": "47aa833935f359d6081f31f1bccb93d1aa3091e7014b047ccde66b18a6b3d5b2",
+    "features/streaming/streaming.gd": "18aa8185eb6d71345257164189af8d86112da214ef871ebd1355ce13beebc20b",
+    "features/streaming/terrain_chunk.gd": "ad21fbf97e92a8f76b38b00d7eada613100d39694c858d21f82dfc8ff623cc67",
+    "features/survival/vitals.gd": "58bf2737777502d35d73cd3f72a419ab82e5f3c900035c5201f3e6de67f8c934",
+    "features/tribes/encounters.gd": "0ff0715577e9160585997695a652fa096db8d7eb1a78dfa3c9b0d654d714eb82",
+    "features/tribes/friendly_routine.gd": "e11081d7fcf788995e70214b635b405f1c9dc8ab31e4994d4951160de813e7e2",
+    "features/tribes/guards.gd": "e7f4636e0daffda735f6c4170ec9b39d083fd65d33fc770bdd59ab810564a2e3",
+    "features/tribes/movement.gd": "1c215d70ff75671fb92e11ca0bc6d242b68b8d1e264722cf41ea486d04682e94",
+    "features/tribes/population.gd": "ae55d49da2ca0cd698a25bf0de1c35364ab4b33ba415ed0790f269c499246767",
+    "features/tribes/profession_catalog.gd": "5c2bef2580bd4ae6929eee844ae8b39bd1ef3306531f958118885c3faad67727",
+    "features/tribes/projectile.gd": "b7290982abe2ebf5f1c5c463a35a807abb2a07baf8dc778775e324a734aa3ab7",
+    "features/tribes/relation_memory.gd": "19b359abd18dad5d39327edbf51939caf296d1b82f9962c933d138619fb3e7ff",
+    "features/tribes/relics.gd": "8513cc275dd2a77e98ce10e5bb10dd65a33d68860b87b8c554f9117decf8b684",
+    "features/tribes/relic_visual.gd": "e40c845854ee4fe96909c1f26699f818cb42c63a9b50ab9b4dd342a1259c6df7",
+    "features/tribes/settlements.gd": "4bf08717cf5e51b36991da504d5c7c77952c7413bf777ce2ff54b602d145c32b",
+    "features/tribes/tribes.gd": "e867c52acf21848948004ca060189946160148138e18c92f81ef38bb12059f88",
+    "features/tribes/war.gd": "9ec12a9d4ad465bfa1bb512a02ee22515cd2e3cb3b0e52d2d6349fc6de139fd0",
+    "features/tribes/workers.gd": "8cc48d7a6bef807e472544941cc23286ed94d6ab033bee25158aab400357f229",
+    "features/village/altar.gd": "30ff3046e0266e42e7f0f98182488cba943aa3a87db896946ef2e91703e96aa5",
+    "features/village/fence.gd": "40575a7503b591d835434a4a6529bbd79162a313ee4fd078fd8aa59a6b097890",
+    "features/village/layout.gd": "69ed392422e9dc418aec4de09ae6691513838474ae01a5bc1532075515ae3034",
+    "features/village/navigation.gd": "9321cb3006a82e63630971bd57db4192c567227830878e68821206388e9c158b",
+    "features/village/session.gd": "382aa9bfdca5650eb6f9a2000a25a2ad7c59a02d435bcc260e2a09d2d5af4a8f",
+    "features/village/terrain.gd": "1e5711952ff60cbdb01c30a9a0142d9d959a92e39cac2d3ba2c3febc3276b382",
+    "features/village/trough.gd": "4a635b8a6cc47faab12b9ad5271e99e7669b816e276f01b7d4fba28236a07133",
+    "features/village/well_detail.gd": "065db8971b44cbdff6a82a7d5ac8e5880d6a1d3dbceb12f49e35916be0162569",
+    "features/village/world.gd": "8c88661baedad0bcd63694fb0b85fe1d21bf8afd1d288f21241b8e14c406031f",
+    "features/weather/haze.gd": "84fadb335b4327e2bfc60bdd08dcee5e0ee4c63fba42ff06af2158e50621bc11",
+    "features/world_resources/density.gd": "41a30a7cb3b7108ebd4eff18e030c2ac774408fa5ef6a304269ab507355184cd",
+    "features/world_resources/generator.gd": "5889f37fdaf3fcb9c7006794efe4bef3c0b279a2c86ace4df1c2a4baf9c96148",
+    "features/world_resources/resources.gd": "40c128db8c8518fbb0c29240ed54a622a94a742517f71cdbc8c4bd7f5eb0271c"
+  },
+  "package": {
+    "name": "AIU5-Setup-0.10.3-win64.exe",
+    "bytes": 330852976,
+    "sha256": "f343f079c96dbaa5d97f36175d1c2f08ce32837c2f4cc62fdb3c4151bb5a9993",
+    "version": "0.10.3"
+  },
+  "windows_program": {
+    "exe_sha256": "baa81b92e25396c8c0601eb43095fdfbd8b3c2abecfa7409ac3d30f2b408ba7f",
+    "pck_sha256": "45cd354263f3db418ca86aabb70a5d9678a3ace3bbd13e8234089ca7365e31eb"
+  },
+  "performance": {
+    "method": "Same Godot 4.7.2 GPU engine loads the original exported PCK from each version; 120-frame warmup then 600 rendered frames per version",
+    "baseline": {
+      "active_npcs": 20,
+      "display": "Windows",
+      "frame_ms": {
+        "max": 18.227,
+        "mean": 16.665725,
+        "p50": 16.669,
+        "p95": 16.934
+      },
+      "physics_ms": {
+        "max": 2.375,
+        "mean": 1.5063,
+        "p50": 1.309,
+        "p95": 2.375
+      },
+      "process_ms": {
+        "max": 15.635,
+        "mean": 13.6781916666666,
+        "p50": 13.831,
+        "p95": 15.635
+      },
+      "registered_npcs": 62,
+      "samples": 600,
+      "scene": "forest yard (-1000,990)",
+      "version": "0.10.2"
+    },
+    "current": {
+      "active_npcs": 20,
+      "display": "Windows",
+      "frame_ms": {
+        "max": 18.441,
+        "mean": 16.66622,
+        "p50": 16.666,
+        "p95": 17.043
+      },
+      "physics_ms": {
+        "max": 2.998,
+        "mean": 1.64026000000001,
+        "p50": 1.493,
+        "p95": 2.998
+      },
+      "process_ms": {
+        "max": 17.4,
+        "mean": 14.3713799999999,
+        "p50": 14.024,
+        "p95": 17.4
+      },
+      "registered_npcs": 62,
+      "samples": 600,
+      "scene": "forest yard (-1000,990)",
+      "version": "0.10.3"
+    },
+    "process_mean_difference_ms": 0.6931883333333015,
+    "physics_mean_difference_ms": 0.13396000000001007,
+    "guarantees_constant_60fps": false
+  },
+  "synchronization": {
+    "target": "C:/Users/shao/Desktop/aiu面试题/aiu5",
+    "full_manifest": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\npc-audit\\directory-equality.json",
+    "scope": "Complete local source, Git metadata, runtime and installer mirror; no GitHub publication"
+  },
+  "updated_at": "2026-10-16T07:45:39.275395+08:00",
+  "installation": {
+    "npc_skill_probe_passed": true,
+    "player_files": 18,
+    "npc_combat_probe_passed": true,
+    "backup": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\npc-audit\\player-before-install-20261016-074311",
+    "version": "0.10.3",
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+    "installed_files_verified": true,
+    "override_removed": true,
+    "player_sha256_unchanged": true
+  }
+}

@@ -454,8 +454,11 @@ func section_guards() -> void:
 	check(is_equal_approx(s.vitals.ensure(actor).life, life_before), "normal approach by a neutral player is not attacked")
 	check(not in_states(npc_id, ["engage", "attack", "prepare"]), "normal approach keeps the NPC out of combat states")
 
-	# Entering the relic zone warns first and holds the five-second grace period.
-	player.position = t.relics.visuals["forest"].position + Vector2(0, 30)
+	# Use a nearby guard with an unobstructed ray, rather than a remote NPC behind buildings.
+	npc_id=patrol_id
+	unit(npc_id).position=t.relics.visuals["forest"].position+Vector2(28,32)
+	player.position=t.relics.visuals["forest"].position+Vector2(4,32)
+	await get_tree().physics_frame
 	s._sync_view()
 	await drive(1)
 	var warned := bool(field(callm(guards, ["snapshot_for"], [npc_id]), "warned", false))
@@ -492,8 +495,12 @@ func section_guards() -> void:
 	s.magic.ensure(actor).level = 1
 	var victim_id := first_visible_npc("forest")
 	var victim := unit(victim_id)
+	victim.position=acceptance_yard()
+	unit("forest:16").position=victim.position+Vector2(20,20)
+	unit("forest:12").position=victim.position+Vector2(0,-30)
 	player.position = victim.position + Vector2(40, 0)
 	s._sync_view()
+	await get_tree().physics_frame
 	victim.pursuit = 0
 	s.combat.hit_enemy(victim, 1.0, actor)
 	# The guard machine decides on its next tick, so give it one coarse tick before reading state.
@@ -637,9 +644,11 @@ func section_skills() -> void:
 		var archer_owner := "npc:" + archer_id
 		give(archer_owner, "arrow", 2)
 		var player_arrows := count(actor, "arrow")
-		archer.position = t.centers.forest
-		s.world.active_resident.position = archer.position + Vector2(60, 0)
+		archer.position = acceptance_yard()
+		s.world.active_resident.position = archer.position + Vector2(30, 0)
+		chief.position=archer.position+Vector2(0,-20)
 		s._sync_view()
+		await get_tree().physics_frame
 		callm(npc_skills, ["use"], [archer, "suppress_shot"])
 		check(count(archer_owner, "arrow") == 1, "suppression shot spends the archer's own arrow")
 		check(count(actor, "arrow") == player_arrows, "suppression shot never spends the player's arrows")
@@ -816,3 +825,14 @@ func section_clock() -> void:
 	check(after > 0.2 and after < 1.6, "resuming continues the clock without replaying paused time")
 	s.simulation.set_process(false)
 	s.simulation.pending = 0.0
+
+func acceptance_yard() -> Vector2:
+	var circle := CircleShape2D.new(); circle.radius=48
+	var query := PhysicsShapeQueryParameters2D.new(); query.shape=circle; query.collision_mask=1|2|4|8|16
+	for y in range(-240,241,80):
+		for x in range(-240,241,80):
+			var at: Vector2=t.centers.forest+Vector2(x,y)
+			query.transform=Transform2D(0,at)
+			if at.distance_to(t.relics.visuals.forest.position)<110: continue
+			if s.world.get_world_2d().direct_space_state.intersect_shape(query,1).is_empty(): return at
+	return t.centers.forest+Vector2(200,200)

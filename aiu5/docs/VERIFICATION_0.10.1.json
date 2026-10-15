@@ -1,0 +1,84 @@
+{
+  "version": "0.10.1",
+  "scope": "local friendly NPC idle-walk fix",
+  "date": "2026-10-15T22:44:56.498743+08:00",
+  "real_player_data_used": false,
+  "source_validation": {
+    "baseline": {
+      "result": "FRIENDLY_IDLE_REPRO {\"home:initial_female\":0.0,\"home:initial_male\":0.0}",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.1/baseline.txt"
+    },
+    "gpu": {
+      "result": "FRIENDLY_ROUTINE_OK checks=18 motion={\"home:initial_female\":35.8666801452637,\"home:initial_male\":38.4912376403809}",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.1/gpu.txt"
+    },
+    "live-gpu": {
+      "result": "FRIENDLY_LIVE_OK checks=2 motion={\"home:initial_female\":27.5735034942627,\"home:initial_male\":34.0}",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.1/live-gpu.txt"
+    },
+    "npc-regression": {
+      "result": "NPC_ATTITUDE_PROBE_OK checks=125",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.1/npc-regression.txt"
+    },
+    "romance-regression": {
+      "result": "ROMANCE_OK checks=30",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.1/romance-regression.txt"
+    },
+    "tribes-regression": {
+      "result": "TRIBES_FINAL_OK checks=30",
+      "exit_code": 0,
+      "script_errors": 0,
+      "log": "docs/verification-0.10.1/tribes-regression.txt"
+    },
+    "export-live": {
+      "result": "FRIENDLY_LIVE_OK checks=2 motion={\"home:initial_female\":27.5735034942627,\"home:initial_male\":34.0}",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_program": true
+    },
+    "export-routine": {
+      "result": "FRIENDLY_ROUTINE_OK checks=18 motion={\"home:initial_female\":35.8666801452637,\"home:initial_male\":38.4912376403809}",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_program": true
+    }
+  },
+  "installed": true,
+  "published": false,
+  "package": {
+    "name": "AIU5-Setup-0.10.1-win64.exe",
+    "bytes": 330834863,
+    "sha256": "29a62373ad4772ca6f22d88abeb524fbaa91ebecf3817fac12d85c9a8978876d",
+    "pe_version": "0.10.1"
+  },
+  "windows_program": {
+    "exe_sha256": "ebb53e51e2b588239fff817487bffbef91bd609f5b7704bcbbc4b0e777c569b6",
+    "pck_sha256": "331b02bfdf872d637d7233091426826b386cfc53d673a2a9eb1ba9fb1eec31d3"
+  },
+  "installation": {
+    "isolated_restart_passed": true,
+    "friendly_routine_probe_passed": true,
+    "backup": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\friendly-idle\\player-before-install-20261015-225359",
+    "version": "0.10.1",
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+    "player_sha256_unchanged": true,
+    "override_removed": true,
+    "player_files": 15
+  },
+  "updated_at": "2026-10-15T22:56:45.785667+08:00",
+  "synchronization": {
+    "target": "C:/Users/shao/Desktop/aiu面试题/aiu5",
+    "manifest_report": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\friendly-idle\\directory-equality.json",
+    "scope": "Complete local source and installer mirror; not published to GitHub"
+  }
+}

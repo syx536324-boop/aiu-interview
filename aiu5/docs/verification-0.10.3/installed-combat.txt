@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 591.91 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 5070 Laptop GPU
+
+NPC_BEHAVIOR_TRACE {"civilian":{"gap":116.957527160645,"lost_life":0.0,"motion":92.9619445800781,"sees":true,"states":{"life":29,"retreat":331},"weapon_cooldown":0.0},"civilian_trapped":{"gap":12.6575155258179,"lost_life":3.0,"motion":2.8239414691925,"sees":true,"states":{"life":20,"observe":30,"retreat":310},"weapon_cooldown":0.466707999999999},"hostile":{"gap":5.77998495101929,"lost_life":5.0,"motion":27.4525508880615,"sees":true,"states":{"engage":155,"life":29,"prepare":176},"weapon_cooldown":0.483354},"neutral":{"gap":24.0,"lost_life":0.0,"motion":0.0,"sees":true,"states":{"life":30,"observe":268,"patrol":62},"weapon_cooldown":0.0},"provoked":{"gap":5.77998495101929,"lost_life":5.0,"motion":27.4525508880615,"sees":true,"states":{"engage":155,"life":29,"prepare":176},"weapon_cooldown":0.483354},"search":{"last_seen_unchanged":true,"state_after_losing_sight":"search"},"trespass":{"gap":18.6571655273438,"lost_life":6.0,"motion":27.9263668060303,"sees":true,"states":{"engage":156,"life":29,"prepare":186,"warn":310},"weapon_cooldown":1.0}}
+NPC_BEHAVIOR_LIVE_OK checks=8
+NPC_ATTITUDE_PROBE_OK checks=8
