@@ -1,10 +1,10 @@
 # 沙盘上的生活
 
-Godot 4.7.2 Windows 村落生存游戏，当前本地版本 **0.10.3**。每24真实分钟为一天；暂停、全图、离线不推进经营计时。
+Godot 4.7.2 Windows 村落生存游戏，当前版本 **0.10.3**。每24真实分钟为一天；暂停、全图、离线不推进经营计时。
 
 ## 安装与运行
 
-双击 `exports/AIU5-Setup-0.10.3-win64.exe`，从开始菜单“沙盘上的生活”启动。安装器随附本地摄像头识别环境，升级不改动玩家存档。正式已发布版本见 [aiu-interview Releases](https://github.com/syx536324-boop/aiu-interview/releases)。
+双击 `exports/AIU5-Setup-0.10.3-win64.exe`，从开始菜单“沙盘上的生活”启动。安装器随附本地摄像头识别环境，升级不改动玩家存档。已发布安装包见 [0.10.3 Release](https://github.com/syx536324-boop/aiu-interview/releases/tag/v0.10.3)。
 
 源码启动：
 

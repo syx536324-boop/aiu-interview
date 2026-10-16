@@ -4,7 +4,7 @@
   "scope": "Original NPC plan audit and end-to-end combat repair",
   "real_player_data_used_for_probes": false,
   "installed": true,
-  "published": false,
+  "published": true,
   "original_plan": {
     "path": "docs/plans/NPC态度与技能行为-实施方案-2026-10-14.md",
     "sha256": "b4ee8a7a8d9bdaae8813d6df35179803149ede20f8eb8eb757f92b726e0d3bd8"
@@ -332,9 +332,9 @@
   "synchronization": {
     "target": "C:/Users/shao/Desktop/aiu面试题/aiu5",
     "full_manifest": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\npc-audit\\directory-equality.json",
-    "scope": "Complete local source, Git metadata, runtime and installer mirror; no GitHub publication"
+    "scope": "Complete local source, Git metadata, runtime and installer mirror; 0.10.3 source and Release published only to aiu-interview"
   },
-  "updated_at": "2026-10-16T07:45:39.275395+08:00",
+  "updated_at": "2026-10-16T08:05:39.847107+08:00",
   "installation": {
     "npc_skill_probe_passed": true,
     "player_files": 18,
@@ -345,5 +345,31 @@
     "installed_files_verified": true,
     "override_removed": true,
     "player_sha256_unchanged": true
+  },
+  "publication": {
+    "repository": "syx536324-boop/aiu-interview",
+    "version": "0.10.3",
+    "tag": "v0.10.3",
+    "source_commit": "0da6ab0fa26c4aa8aa60d9b84371e69187ea4136",
+    "url": "https://github.com/syx536324-boop/aiu-interview/releases/tag/v0.10.3",
+    "release_id": 414383209,
+    "published_at": "2026-10-16T00:05:19Z",
+    "latest_verified": true,
+    "draft": false,
+    "server_asset_digests_verified": true,
+    "assets": [
+      {
+        "name": "AIU5-Setup-0.10.3-win64.exe",
+        "bytes": 330852976,
+        "sha256": "f343f079c96dbaa5d97f36175d1c2f08ce32837c2f4cc62fdb3c4151bb5a9993",
+        "url": "https://github.com/syx536324-boop/aiu-interview/releases/download/v0.10.3/AIU5-Setup-0.10.3-win64.exe"
+      },
+      {
+        "name": "SHA256SUMS-0.10.3.txt",
+        "bytes": 95,
+        "sha256": "256b7eeae75721a55a1aea4f32618a0204f5d961886d8d73db82948ad5ba6a65",
+        "url": "https://github.com/syx536324-boop/aiu-interview/releases/download/v0.10.3/SHA256SUMS-0.10.3.txt"
+      }
+    ]
   }
 }
