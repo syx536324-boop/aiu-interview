@@ -1,4 +1,6 @@
-# 第三方素材
+# 第三方素材与依赖
+
+本项目原创代码的AGPL-3.0-only授权见[LICENSE](LICENSE)与[开源说明](OPEN_SOURCE.md)。下列第三方内容继续使用其原有许可。
 
 ## Ninja Adventure Asset Pack
 

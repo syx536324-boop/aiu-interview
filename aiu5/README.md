@@ -2,6 +2,10 @@
 
 Godot 4.7.2 Windows 村落生存游戏，当前版本 **0.10.3**。每24真实分钟为一天；暂停、全图、离线不推进经营计时。
 
+## 开源许可
+
+本游戏原创代码采用 **AGPL-3.0-only** 开源许可，见[完整许可证](LICENSE)、[源码运行与构建说明](OPEN_SOURCE.md)和[贡献说明](CONTRIBUTING.md)。第三方素材与依赖保留各自许可证，见[第三方声明](THIRD_PARTY_NOTICES.md)。
+
 ## 安装与运行
 
 双击 `exports/AIU5-Setup-0.10.3-win64.exe`，从开始菜单“沙盘上的生活”启动。安装器随附本地摄像头识别环境，升级不改动玩家存档。已发布安装包见 [0.10.3 Release](https://github.com/syx536324-boop/aiu-interview/releases/tag/v0.10.3)。

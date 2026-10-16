@@ -1,6 +1,6 @@
 # Windows 安装与打包
 
-Windows 10/11 x64，安装包 `AIU5-Setup-0.10.0-win64.exe`。双击安装，默认安装到当前用户 `%LOCALAPPDATA%\Programs\AIU5`，从开始菜单“沙盘上的生活”运行。首版模型、Python 3.12、CPU Torch、OpenCV、Ultralytics和运行所需VC DLL均随包附带；不需要Godot编辑器、D盘训练环境、网络或另装Python。源码同步到 https://github.com/syx536324-boop/aiu-interview 。0.9.1修复制作、冶炼和散落材料补充的在线计时。正式发布版本见：https://github.com/syx536324-boop/aiu-interview/releases 。
+Windows 10/11 x64，安装包 `AIU5-Setup-0.10.3-win64.exe`。双击安装，默认安装到当前用户 `%LOCALAPPDATA%\Programs\AIU5`，从开始菜单“沙盘上的生活”运行。首版模型、Python 3.12、CPU Torch、OpenCV、Ultralytics和运行所需VC DLL均随包附带；不需要Godot编辑器、D盘训练环境、网络或另装Python。源码同步到 https://github.com/syx536324-boop/aiu-interview 。0.9.1修复制作、冶炼和散落材料补充的在线计时。正式发布版本见：https://github.com/syx536324-boop/aiu-interview/releases 。
 
 祭台正面E → 赐予 → 定格 → 选择 → 确认。首次加载模型需数秒；稳定目标阈值0.45、3帧/0.6秒。摄像头仅在该面板开启，不录制或上传图像。Windows需允许桌面应用访问摄像头；设备被占用时先关闭相关应用。该安装包使用CPU推理，源码可通过AIU5_CAMERA_PYTHON使用GPU环境。18类首版模型仍须按实物、背景和光照逐类验收。
 
@@ -31,3 +31,7 @@ pwsh -File packaging/windows/build.ps1 -Godot 'C:\tools\Godot.exe' -ISCC 'C:\too
 
 
 0.10.3本地复核：保留森林初始中立；修复祭坛禁区超过5秒后近战准备反复重置而没有伤害。补齐受击逃跑／被堵反击、搜索返回、实际目击与亲属记忆、玩家指挥归属、援助、偷窃通知、正常走路减速、压制箭命中及土系安全撤离。NPC标记按真实态度区分。逐项证据见docs/NPC_PLAN_AUDIT_0.10.3.md。本次未上传或发布GitHub。
+
+## 开源代码
+
+本项目原创代码采用AGPL-3.0-only，完整许可与运行依赖说明见[LICENSE](../../LICENSE)和[OPEN_SOURCE.md](../../OPEN_SOURCE.md)。打包脚本会把LICENSE、开源说明及第三方声明一同复制到后续安装包。上文0.10.1至0.10.3“本地修复”是先前交付阶段记录；这些改动现已随[0.10.3 Release](https://github.com/syx536324-boop/aiu-interview/releases/tag/v0.10.3)发布。
