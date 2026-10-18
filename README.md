@@ -37,7 +37,9 @@ AIU3 已实现 LED 常亮/闪烁模块；AI 控灯、PID 调参与板端模型�
 
 VALORANT 静态页面在 aiu/valorant_platform/web/；华小牛原界面预览在 aiu4/preview/。完整后端功能需要本机服务。
 
-仓库提供手动 GitHub Pages 工作流。需要发布时，先在 Settings → Pages 选择 GitHub Actions，再手动运行 Publish AIU website previews。现有网站入口仍见原项目仓库。
+华小牛网页已发布：[打开华小牛](https://syx536324-boop.github.io/aiu-interview/aiu4/)。可浏览原界面、五个导航页和8篇基础论文目录；模型检索、全文翻译和研究对话仍需本机版。
+
+本仓库已启用 GitHub Pages，使用 GitHub Actions 发布。更新公开界面后，可手动运行 `Publish AIU website previews`；网页发布内容来自 `aiu4/preview/`，不包含个人论文、译文、笔记或会话。
 
 ## 提交范围
 
