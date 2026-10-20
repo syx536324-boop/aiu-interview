@@ -30,3 +30,11 @@
 ## 魔法分支接入（0.8.0）
 
 branch_runtime由magic模块注入，范围内非战斗旺炉将实际烹饪速度乘1.4；引水保持附近农田30秒湿润，仍使用原作物成熟／死亡／收获逻辑。
+
+
+0.10.5：grounds.placement_error在保留土地、设施入口、农田、村民和障碍碰撞校验后，委托navigation.preserves_access比较原有可达目标，不再逐目标两次全图A*和临时修改全局网格。搬动原家具及栅栏门开放仍按同一规则验证；成品扣除、部署记录保存及失败回滚由原编辑器与production事务负责。tests/building_deployment_probe.tscn覆盖相邻建筑预览、真实鼠标部署、搬动回收、保存失败、重新加载和通路封堵。
+
+
+0.10.6：grounds.retired_fixtures记录已回收预置工作台的稳定ID；remove_fixture记录移除，restore(records,retired)恢复对应布局与移除集。移动原台不记录移除。通过checkpoint完整快照参与自动保存、祭坛回退及失败回滚；回收为普通成品后重新部署使用新ID，不恢复原出生点。
+
+0.10.8：main注入equipment，hoe_equipped(actor)读取武器栏；till_bounds(actor)按世界坐标向下取整定位脚下16×16格，standing_plot(actor)供提示读取。till要求户外存活角色已装备可用锄头，沿用land_error，成功消耗一次武器使用计数；田格与耐久通过production.commit同次保存、失败回滚。Q进入till，E仍走原有灌溉和设施交互。

@@ -1,5 +1,6 @@
 # Presents altar rituals, in-memory camera previews and candidate selection through backend actions.
 extends CanvasLayer
+const InputHints := preload("res://features/interface/input_hints.gd")
 const GiftIcons := preload("res://features/interface/gift_icon_atlas.gd")
 var font := SystemFont.new()
 var overlay: ColorRect
@@ -102,7 +103,7 @@ func _present(state: Dictionary) -> void:
 	altar_panel.visible = not camera
 	camera_panel.visible = camera
 	title.text = "祭台赐予 · 首版模型" if camera else "祭台仪式"
-	feedback.text = str(state.feedback)
+	feedback.text = InputHints.text(str(state.feedback))
 	if not camera: return
 	camera_info.text = "已定格 · 世界暂停" if state.frozen else "实时预览 · 世界暂停 · " + str(state.device)
 	freeze_button.text = "继续识别" if state.frozen else "定格选择"

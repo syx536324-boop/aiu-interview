@@ -70,7 +70,9 @@ func advance(delta: float) -> void:
  relation.advance(delta); encounters.advance(delta)
  if session.world.active_resident.room_id=="mine": mine_visited=true
  workers.movement.begin_step()
- population.advance(delta); relics.advance(delta); romance.advance(delta); workers.advance(delta); war.advance(delta)
+ population.advance(delta); relics.advance(delta); romance.advance(delta)
+ if is_instance_valid(session.monsters): session.monsters.respond(delta)
+ workers.advance(delta); war.advance(delta)
  if is_instance_valid(guards): guards.advance(delta)
  if is_instance_valid(npc_skills): npc_skills.advance(delta)
  relation.day = current_day()
@@ -319,6 +321,7 @@ func interact() -> bool:
    open("animal",animal.animal_id); return true
  return false
 func open(kind: String, id: String) -> void:
+ if kind=="npc" and population.friendly(id) and population.members.has(id) and float(population.members[id].get("child_left",0))<=0 and is_instance_valid(session.onboarding):session.onboarding.record_feature("npc")
  dialog_kind=kind; dialog_id=id; session.production.mode="tribes"; session.production.opened=true; session.production.fixture=null
  session.refresh_interface()
 func choice(id: String, title: String, detail: String, enabled := true, cost: Dictionary={}) -> Dictionary:
@@ -351,6 +354,9 @@ func snapshot() -> Dictionary:
     for option: Dictionary in Careers.upgrades(r): choices.append(choice("upgrade:"+str(option.career),"升级：%d级%s"%[option.level,Careers.LABELS[option.career]],"当前生命上限%.0f，升级后%.0f。"%[unit.max_hp,Careers.life(option.career,option.level)],true,option.cost))
     if r.level==3 and r.career=="civilian":
      for career: String in ["civilian","archer","charger"]: choices.append(choice("career:"+career,"选择职业："+str(Careers.LABELS[career]),"平民可继续晋升为农民或矿工；弓箭手初始附带30支箭。"))
+    if r.career in ["archer","charger"] and is_instance_valid(session.monsters):
+     choices.append(choice("guard:mine","派往矿洞守卫","自动前往已标记矿洞，迎击哥布林并掩护矿工；弓箭手从自身背包消耗箭。",mine_marked))
+     choices.append(choice("guard:return","召回矿洞护卫","沿阶梯返回地面，恢复日常活动。",session.monsters.orders.has(dialog_id)))
     if r.career=="miner":
      for ore: String in ["stone","coal","iron_ore"]: choices.append(choice("mine:"+ore,"分配："+str(session.inventory.Catalog.ITEMS[ore].name)+"工","每%.0f在线秒开采1份，放入自身背包。\n需要已标记的矿洞；满包或采尽暂停。"%Careers.work_interval("miner",r.level,ore),mine_marked))
  if dialog_kind=="person":
@@ -409,6 +415,7 @@ func perform(id: String) -> bool:
   session.production.close(); session.inventory.open_container(session.world.active_resident.resident_id,session.world.active_resident.resident_name,"npc:"+dialog_id,str(population.members[dialog_id].name)+" · 9格背包"); session.refresh_interface(); return true
  if id.begins_with("upgrade:"): return population.upgrade(dialog_id,id.trim_prefix("upgrade:"))
  if id.begins_with("career:"): return population.specialize(dialog_id,id.trim_prefix("career:"))
+ if id.begins_with("guard:") and dialog_kind=="npc" and is_instance_valid(session.monsters): return session.monsters.order_guard(dialog_id,id=="guard:return")
  if id.begins_with("mine:"): return workers.assign(dialog_id,id.trim_prefix("mine:"))
  if id.begins_with("attack:"): return war.order(id.trim_prefix("attack:"))
  if id=="recall":

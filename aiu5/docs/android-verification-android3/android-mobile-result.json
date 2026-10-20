@@ -1,0 +1,7 @@
+{
+  "android": true,
+  "checks": 42,
+  "display": "Android",
+  "failures": [],
+  "version": "0.10.8"
+}

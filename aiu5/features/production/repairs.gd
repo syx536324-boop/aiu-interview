@@ -1,7 +1,7 @@
 # Offers and atomically repairs individual broken stone/iron weapons at the smith furnace.
 extends RefCounted
 const Wear := preload("res://features/combat/durability.gd")
-const MATERIALS := {"knife":"stone", "iron_knife":"crude_iron", "pickaxe":"stone","iron_pickaxe":"crude_iron", "stone_axe":"stone", "stone_sword":"stone", "iron_axe":"crude_iron", "iron_sword":"crude_iron"}
+const MATERIALS := {"hoe":"stone","knife":"stone", "iron_knife":"crude_iron", "pickaxe":"stone","iron_pickaxe":"crude_iron", "stone_axe":"stone", "stone_sword":"stone", "iron_axe":"crude_iron", "iron_sword":"crude_iron"}
 static func _weapon(session: Node, id: String) -> Dictionary:
 	var actor_id: String = session.world.active_resident.resident_id
 	if id == "repair:equipped":

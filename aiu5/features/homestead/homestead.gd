@@ -11,6 +11,7 @@ const DRY_AFTER := 7200.0
 var world: Node2D
 var interiors: Node2D
 var inventory: Node
+var equipment: Node
 var land: Node2D
 var plots: Array = []
 var selected_seeds: Dictionary = {}
@@ -248,23 +249,34 @@ func harvest(actor: CharacterBody2D) -> bool:
 	message.emit("已收获" + str(inventory.Catalog.ITEMS[crop.harvest].name) + "×1、" + str(inventory.Catalog.ITEMS[crop.seed].name) + "×2；土壤仍湿润时可直接再播种。")
 	return true
 
+func hoe_equipped(actor: CharacterBody2D) -> bool:
+	return is_instance_valid(equipment) and equipment.ensure(actor.resident_id).equipment.weapon == "hoe"
+
+func till_bounds(actor: CharacterBody2D) -> Rect2:
+	# Floor each world coordinate so the cell always contains the feet, including negative forest coordinates.
+	return Rect2((actor.position / 16.0).floor() * 16.0, Vector2(16,16))
+
+func standing_plot(actor: CharacterBody2D) -> bool:
+	return plots.any(func(plot: Dictionary) -> bool: return Land.bounds(plot).has_point(actor.position))
+
 func till(actor: CharacterBody2D, ground: Node2D) -> bool:
-	if actor.room_id != "" or not inventory.has_item(actor.resident_id, "hoe"):
-		message.emit("带上锄头，在户外空沙地按 Q 开垦。")
+	if actor.dead or actor.room_id != "" or not hoe_equipped(actor):
+		message.emit("先把锄头装备到武器栏，在户外空地按 Q 开垦脚下土地。")
 		return false
-	var direction: Vector2 = [Vector2.DOWN, Vector2.UP, Vector2.LEFT, Vector2.RIGHT][actor.facing]
-	var at: Vector2 = (actor.position + direction * 22 - Vector2(8, 8)).snapped(Vector2(16, 16))
-	var rect := Rect2(at, Vector2(16, 16))
+	if not equipment.session.production.allowed(actor) or not equipment.weapon_usable(actor.resident_id): return false
+	var rect := till_bounds(actor)
+	var at := rect.position
 	var error: String = ground.land_error(rect, actor, false)
 	for p: Dictionary in plots:
 		if rect.intersects(Land.bounds(p)): error = "这里已经是农田。"
 	if error != "":
 		message.emit(error)
 		return false
+	var before: Dictionary = inventory.export_data()
 	plots.append({"x": at.x, "y": at.y, "w": 16.0, "h": 16.0, "age": 0.0, "dry": true, "crop": ""})
 	refresh()
-	message.emit("已开垦一片农田，先 E 灌溉，再 G 播种。")
-	return true
+	equipment.consume_weapon(actor.resident_id)
+	return equipment.session.production.commit(before,"已开垦脚下田格，先 E 灌溉，再 G 播种。")
 
 func stove(actor: CharacterBody2D, preferred := "") -> bool:
 	if actor.dead: return false

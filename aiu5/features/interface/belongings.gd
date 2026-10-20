@@ -1,5 +1,6 @@
 # Presents inventory slots and furniture controls; all mutations are requested through signals.
 extends CanvasLayer
+const InputHints := preload("res://features/interface/input_hints.gd")
 
 signal use_requested
 signal gift_attribute_requested(element: String)
@@ -184,7 +185,7 @@ func _present(state: Dictionary) -> void:
 	for id: String in furniture_buttons:
 		furniture_buttons[id].visible = id=="campfire" if editing.get("mine",false) else ((id!="building_bench" and not editing.get("outdoors",false)) or (editing.get("outdoors",false) and id in ["campfire","workbench","fence","building_bench"]))
 	edit_info.visible = editing["open"]
-	edit_info.text = editing["hint"]
+	edit_info.text = InputHints.text(str(editing["hint"]))
 	rotate_button.disabled = not editing["holding"]
 	remove_button.disabled = not editing["existing"]
 	if not items["open"]:
@@ -226,6 +227,11 @@ func _present(state: Dictionary) -> void:
 				attribute_button.tooltip_text = "12级后可选择木、水、火、土属性；与武器赋能技能独立。" if attribute_button.disabled else "给选中的赐予物品设置魔法属性。"
 	if items["status"] != "":
 		selected_info.text = items["status"]
+	if not selected.is_empty():
+		var selected_slots: Array=items["bag"] if selected.side=="bag" else items["storage"]
+		var selected_slot: Dictionary=selected_slots[selected.index]
+		if selected_slot.get("item","")=="workbench":selected_info.text+=" · %d级工作台" % int(selected_slot.get("bench_level",1))
+	selected_info.text = InputHints.text(selected_info.text)
 
 func _present_offering(offering: Dictionary, altar: bool) -> void:
 	sacrifice_button.visible = altar
@@ -261,7 +267,7 @@ func _update_slots(buttons: Array[Button], slots: Array, side: String, selected:
 		button.get_node("ItemName").text = Catalog.ITEMS[id]["name"] if id != "" else ""
 		button.get_node("ItemName").add_theme_font_size_override("font_size", 9 if id != "" and str(Catalog.ITEMS[id].name).length() >= 4 else 10)
 		button.get_node("Count").text = str(slot["count"]) if id != "" and slot["count"] > 1 else ""
-		button.tooltip_text = Catalog.ITEMS[id]["name"] + "\n" + Catalog.ITEMS[id]["description"] if id != "" else "空格 · %d / %d" % [index+1,slots.size()]
+		button.tooltip_text = InputHints.text(Catalog.ITEMS[id]["name"] + "\n" + Catalog.ITEMS[id]["description"]) if id != "" else "空格 · %d / %d" % [index+1,slots.size()]
 		if id != "": button.tooltip_text += Wear.Origin.describe(slot)
 		if Wear.Origin.magical(slot): button.get_node("ItemName").text = "✦" + button.get_node("ItemName").text
 		if id != "": button.tooltip_text = "【"+Categories.label(id)+"】"+button.tooltip_text

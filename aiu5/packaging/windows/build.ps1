@@ -22,4 +22,4 @@ Copy-Item -LiteralPath "$taskProject\assets\branding\game-icon.ico" -Destination
 Copy-Item -LiteralPath "$taskProject\LICENSE","$taskProject\OPEN_SOURCE.md","$taskProject\THIRD_PARTY_NOTICES.md","$PSScriptRoot\README.md" -Destination $taskOutput
 & $ISCC "/DPackageDir=$taskOutput" "/DOutputDir=$taskProject\exports" "$PSScriptRoot\installer.iss"
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed' }
-Get-FileHash -LiteralPath "$taskProject\exports\AIU5-Setup-0.10.3-win64.exe"
+Get-FileHash -LiteralPath "$taskProject\exports\AIU5-Setup-0.10.8-win64.exe"

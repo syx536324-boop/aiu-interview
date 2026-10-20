@@ -1,4 +1,4 @@
-# Provides loose starter materials and fixed public crafting benches without granting tools.
+# Provides loose starter materials and one-time preplaced crafting benches without granting tools.
 extends Node
 signal gathered(item: String, actor_id: String)
 const REGROW := 120.0
@@ -32,7 +32,7 @@ func _build() -> void:
 	for village in [{"id":"desert","bench":Vector2(300,346),"materials":Vector2(224,306)},
 		{"id":"forest","bench":Vector2(-1230,882),"materials":Vector2(-1280,854)}]:
 		var bench_id: String = "outdoors:public:"+str(village.id)
-		if not session.grounds.fixtures.any(func(f: Node2D) -> bool: return f.fixture_id==bench_id):
+		if not session.grounds.retired_fixtures.has(bench_id) and not session.grounds.fixtures.any(func(f: Node2D) -> bool: return f.fixture_id==bench_id):
 			session.grounds.add_fixture({"id":bench_id,"kind":"workbench","at":[village.bench.x,village.bench.y],"size":[36,24],"public_fixture":true})
 		for i in range(12):
 			var id: String = str(village.id)+":"+str(i)

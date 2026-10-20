@@ -3,6 +3,7 @@ extends Node
 signal message(text: String)
 signal craft_completed(recipe: String, actor_id: String)
 const Categories := preload("res://features/inventory/categories.gd")
+const BenchRules := preload("res://features/production/bench_rules.gd")
 const CraftQueue := preload("res://features/production/craft_queue.gd")
 const Herbs := preload("res://features/forest/catalog.gd")
 const Smith := preload("res://features/production/smith_catalog.gd")
@@ -90,6 +91,11 @@ func _valid(expected: String) -> bool:
 	var near := context()
 	return near.get("fixture") == fixture
 func perform(id: String) -> bool:
+	if id=="bench:upgrade":return BenchRules.upgrade(self)
+	if id.begins_with("craft:collect:"):
+		if not _valid(mode):return false
+		return crafts.collect(self,station_id(),session.world.active_resident.resident_id,int(id.trim_prefix("craft:collect:")))
+	if id in ["fixture:move","fixture:recover"]: return _manage_fixture(id)
 	if mode=="tribes" and opened: return session.tribes.perform(id)
 	if mode=="scissors" and opened: return scissors.perform(id)
 	if mode=="upgrade" and opened:
@@ -115,8 +121,34 @@ func perform(id: String) -> bool:
 	var source: Dictionary = Herbs.RECIPES if mode == "herbs" else RECIPES
 	if not _valid("herbs" if mode=="herbs" else "craft") or not source.has(id): return false
 	return crafts.start(self,station_id(),id,source[id])
+func fixture_actions() -> Array:
+	if mode not in ["build","craft","herbs"] or not _valid(mode) or fixture.kind not in ["building_bench","workbench"]: return []
+	var label: String = fixture.display_name()
+	return [{"id":"fixture:move","name":"移动"+label,"enabled":true,"detail":"进入布置模式，移动到绿色位置后左键确认；右键取消。"},
+		{"id":"fixture:recover","name":"回收"+label,"enabled":can_remove_fixture(fixture),"detail":"回收为背包成品；正在制作或有成品待领时，请先完成并领取。"}]
+func _manage_fixture(id: String) -> bool:
+	if not fixture_actions().any(func(action: Dictionary) -> bool: return action.id==id and action.enabled): return false
+	var selected: Node2D = fixture
+	close()
+	if not session.editor.open(): return false
+	session.editor.pick(selected)
+	if session.editor.original != selected:
+		session.editor.close()
+		return false
+	if id == "fixture:move":
+		session.editor.point_at(selected.visual_bounds().get_center())
+		session.refresh_interface()
+		return true
+	var ok: bool = session.editor.remove_selected()
+	session.editor.close()
+	session.refresh_interface()
+	return ok
 func station_id() -> String:
 	return str(fixture.fixture_id) if is_instance_valid(fixture) else ""
+func craft_capacity() -> int:
+	return BenchRules.level(fixture)
+func craft_duration() -> float:
+	return BenchRules.TIMES[BenchRules.level(fixture)]
 func can_remove_fixture(item: Node2D) -> bool:
 	return not crafts.jobs.has(str(item.fixture_id))
 func all_recipes() -> Dictionary:
@@ -194,7 +226,8 @@ func snapshot() -> Dictionary:
 		for id: String in source:
 			var r: Dictionary = source[id]
 			recipes.append({"id":id,"name":r.name,"detail":_cost_text(r.cost),"enabled":true})
-	var job: Dictionary = crafts.jobs.get(station_id(),{}).duplicate(true)
+	var active_jobs: Array=crafts.queue(station_id()).duplicate(true)
+	var job: Dictionary = active_jobs[0] if not active_jobs.is_empty() else {}
 	var registered := all_recipes()
 	for r: Dictionary in recipes:
 		var recipe: Dictionary = registered.get(str(r.id),{})
@@ -213,29 +246,38 @@ func snapshot() -> Dictionary:
 		elif not recipe.is_empty(): group = Categories.group(str(recipe.gain.keys()[0]))
 		r["category"] = group
 		if not recipe.is_empty():
+			r["usage"] = session.inventory.Catalog.purpose(str(recipe.gain.keys()[0]))
 			r["ingredients"] = []
 			for item: String in recipe.cost:
 				var have := 0
 				for slot: Dictionary in session.inventory.ensure_bag(session.world.active_resident.resident_id):
 					if slot.get("item","")==item: have += int(slot.count)
 				r.ingredients.append({"item":item,"name":session.inventory.Catalog.ITEMS[item].name,"need":recipe.cost[item],"have":have})
-			r["duration"] = 60
-			r.enabled = job.is_empty() and session.inventory.exchange(session.world.active_resident.resident_id,recipe.cost,recipe.gain,false)
-	if not job.is_empty() and float(job.remaining)<=0:
-		recipes.append({"id":"craft:collect","name":"领取："+str(job.name),"detail":"背包满时暂存的成品；不再扣材料。","category":"all","enabled":true})
-	return {"open":true,"mode":mode,"station":station_id(),"job":job,"title":"建筑台 · 投入背包材料建造" if mode=="build" else ("草药屋 · 汤剂合成（返还空杯）" if mode=="herbs" else (("铁匠铺 · 冶炼、修复与装备" if is_smith() else "灶台 · 粗铁冶炼") if mode=="smelt" else "工作台 · 合成")),"recipes":recipes}
+			r["duration"] = craft_duration()
+			r.enabled = active_jobs.size()<craft_capacity() and session.inventory.exchange(session.world.active_resident.resident_id,recipe.cost,recipe.gain,false)
+
+	var first_ready := true
+	for pending: Dictionary in active_jobs:
+		if float(pending.remaining)>0:continue
+		var collect_id := "craft:collect" if first_ready else "craft:collect:"+str(pending.id)
+		first_ready=false
+		recipes.append({"id":collect_id,"name":"领取："+str(pending.name),"detail":"背包满时暂存的成品；不再扣材料。","category":"all","enabled":true})
+	var upgrade: Dictionary=BenchRules.option(self) if mode in ["craft","herbs"] else {}
+	if not upgrade.is_empty():recipes.push_front(upgrade)
+	return {"open":true,"mode":mode,"station":station_id(),"fixture_actions":fixture_actions(),"level":BenchRules.level(fixture),"capacity":craft_capacity(),"craft_duration":craft_duration(),"jobs":active_jobs,"job":job,"title":"建筑台 · 投入背包材料建造" if mode=="build" else ("草药屋 · 汤剂合成（返还空杯）" if mode=="herbs" else (("铁匠铺 · 冶炼、修复与装备" if is_smith() else "灶台 · 粗铁冶炼") if mode=="smelt" else "工作台 · 合成"))+(" · %d级 · %d制作位 / %.0f秒" % [BenchRules.level(fixture),craft_capacity(),craft_duration()] if is_instance_valid(fixture) and fixture.kind=="workbench" else ""),"recipes":recipes}
 func export_state() -> Dictionary:
 	var data := smelting.duplicate(true)
 	data["blacksmith"] = smith_smelting.duplicate(true)
 	data["smith_furnaces"]=smith_furnaces.duplicate(true)
 	data["craft_jobs"] = crafts.jobs.duplicate(true)
+	data["craft_next_id"] = crafts.next_id
 	data["scissors_tools"]=scissors.export_state()
 	return data
 func restore(data: Dictionary) -> void:
 	opened = false
 	fixture = null
 	smith_furnaces=data.get("smith_furnaces",{}).duplicate(true)
-	crafts.restore(data.get("craft_jobs",{}),all_recipes())
+	crafts.restore(data.get("craft_jobs",{}),all_recipes(),int(data.get("craft_next_id",0)))
 	scissors.restore(data.get("scissors_tools",{}))
 	smelting = {"remaining":clampf(float(data.get("remaining",0)),0,30),"ready":clampi(int(data.get("ready",0)),0,1)}
 

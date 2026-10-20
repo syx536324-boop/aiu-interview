@@ -1,0 +1,13 @@
+{
+  "checks": 77,
+  "display": "Windows",
+  "failures": [],
+  "metrics": {
+    "maximum_motion_per_frame": 0.53345000743866,
+    "moving_frames": 119,
+    "physics_frame_max_ms": 16.694,
+    "physics_frame_p95_ms": 16.684,
+    "pursuit_world_pixels": 57.3609352111816
+  },
+  "version": "0.10.7"
+}

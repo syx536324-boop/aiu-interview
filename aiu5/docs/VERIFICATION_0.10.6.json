@@ -1,0 +1,455 @@
+{
+  "version": "0.10.6",
+  "date": "2026-10-16T11:53:51.958027+08:00",
+  "scope": "Move/recover unconverted building benches and all workbenches, with UI and durable preplaced-fixture retirement",
+  "published": false,
+  "installed": true,
+  "player_data_policy": "Original files are never test write targets; source and Windows checks use fresh state or private copies",
+  "verification": {
+    "final-source-fresh": {
+      "checks": 41,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.6",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "final-source-player-copy": {
+      "checks": 41,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.6",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "source-deployment": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            220.0
+          ],
+          "ms": 17.109
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            220.0
+          ],
+          "ms": 8.23
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            224.0
+          ],
+          "ms": 7.521
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            224.0
+          ],
+          "ms": 7.791
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            228.0
+          ],
+          "ms": 7.375
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            228.0
+          ],
+          "ms": 7.548
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            232.0
+          ],
+          "ms": 7.609
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            232.0
+          ],
+          "ms": 7.489
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            236.0
+          ],
+          "ms": 7.428
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            236.0
+          ],
+          "ms": 7.393
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            240.0
+          ],
+          "ms": 7.817
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            240.0
+          ],
+          "ms": 7.649
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            244.0
+          ],
+          "ms": 7.266
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            244.0
+          ],
+          "ms": 7.328
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            248.0
+          ],
+          "ms": 7.594
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            248.0
+          ],
+          "ms": 7.461
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            252.0
+          ],
+          "ms": 7.604
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            252.0
+          ],
+          "ms": 7.243
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            256.0
+          ],
+          "ms": 7.316
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            256.0
+          ],
+          "ms": 7.7
+        },
+        {
+          "action": "place_and_save",
+          "ms": 80.533
+        }
+      ],
+      "version": "0.10.6",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "export-fresh": {
+      "checks": 41,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.6",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "export-player-copy": {
+      "checks": 41,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.6",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "export-deployment": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            220.0
+          ],
+          "ms": 13.834
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            220.0
+          ],
+          "ms": 6.348
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            224.0
+          ],
+          "ms": 5.611
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            224.0
+          ],
+          "ms": 5.728
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            228.0
+          ],
+          "ms": 5.861
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            228.0
+          ],
+          "ms": 5.835
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            232.0
+          ],
+          "ms": 5.667
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            232.0
+          ],
+          "ms": 5.618
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            236.0
+          ],
+          "ms": 5.588
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            236.0
+          ],
+          "ms": 5.612
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            240.0
+          ],
+          "ms": 5.679
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            240.0
+          ],
+          "ms": 5.585
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            244.0
+          ],
+          "ms": 5.582
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            244.0
+          ],
+          "ms": 5.615
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            248.0
+          ],
+          "ms": 5.476
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            248.0
+          ],
+          "ms": 5.509
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            252.0
+          ],
+          "ms": 13.662
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            252.0
+          ],
+          "ms": 7.516
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            256.0
+          ],
+          "ms": 5.509
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            256.0
+          ],
+          "ms": 5.588
+        },
+        {
+          "action": "place_and_save",
+          "ms": 71.039
+        }
+      ],
+      "version": "0.10.6",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "installed-fresh": {
+      "checks": 41,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.6",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "installed-player-copy": {
+      "checks": 41,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.6",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    }
+  },
+  "package": {
+    "name": "AIU5-Setup-0.10.6-win64.exe",
+    "bytes": 330896873,
+    "sha256": "8829d253aab1655d5dcdcc4b0279458a573ffa4856a599f487a8bed5f2d9a814"
+  },
+  "windows_program": {
+    "AIU5.exe": "6d17cd25f583c738016595a45b7005682530dd0751c2c0b6b9fa6cb6acc974e5",
+    "AIU5.pck": "52638a8b8c5909f047ccf287551784b4b56d108b00d5a3d2989e0b5877209430",
+    "LICENSE": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+    "OPEN_SOURCE.md": "5452fe71e5cf47b1fafd41b97aa105dde5be21cdc290ddd9265d2f0ab772a12c"
+  },
+  "tested_native_copy_sha256": {
+    "AIU5.exe": "6d17cd25f583c738016595a45b7005682530dd0751c2c0b6b9fa6cb6acc974e5",
+    "AIU5.pck": "52638a8b8c5909f047ccf287551784b4b56d108b00d5a3d2989e0b5877209430"
+  },
+  "code_hashes": {
+    "features/interiors/furniture_editor.gd": "5aada367cebe3b6c87860d50197ad9f4bb979d4c12daaab05ec66294609f0e1d",
+    "features/homestead/grounds.gd": "4733340726db6383546a017513583a55e56a4df90f6710bd55ff1e8e0e9156ac",
+    "features/production/production.gd": "cee17ac0cbbb70ee35e978dbd96949050a0c353f99716be7e0a77491334efb1e",
+    "features/interface/workshop.gd": "f94426d9a6c48d4b9e8ab1005baceb463d07086ded889eb506b193ea2bd05b94",
+    "features/foraging/foraging.gd": "11398886b81c68d5dfdf3a0583f15a149c50a5a726572a2c1caa16fdda467258",
+    "features/tribes/settlements.gd": "28682e72cac639ce00825c4fe115dac2abc8576267854429515eb171f3778a58",
+    "features/persistence/checkpoints.gd": "accc2655a7108c1ee33c6e47fda331502544345ebc000e331f0c01f0ddf40629",
+    "tests/bench_management_probe.gd": "044e8a96cbcc5993939f29bccbf05a67a947ceb05e9e786a11f9e2da22275282"
+  },
+  "installation": {
+    "player_files": 18,
+    "installed_fresh_passed": true,
+    "player_sha256_unchanged": true,
+    "installed_files_verified": true,
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+    "override_removed": true,
+    "installed_player_copy_passed": true,
+    "version": "0.10.6",
+    "private_player_backup_created": true
+  },
+  "synchronization": {
+    "target": "C:/Users/shao/Desktop/aiu面试题/aiu5",
+    "scope": "Complete local folder including source, .git, .godot, runtime and installers",
+    "manifest": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\bench-recovery\\directory-equality.json"
+  }
+}

@@ -42,7 +42,9 @@ var menu_paused := false
 var torches: Node
 var achievements: Node
 var foraging: Node
+var monsters: Node
 var onboarding: Node
+var orchard: Node
 var forest: Node
 var nearest := ""
 var notice := "沿沙路探索村落；靠近设施按 E 互动。"
@@ -165,8 +167,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else: close_attributes()
 		get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.pressed and event.keycode in [KEY_T,KEY_V,KEY_J,KEY_X,KEY_Z,KEY_H,KEY_K,KEY_L,KEY_P,KEY_U] and not roster_open and not inventory.opened and not editor.opened:
+	if event is InputEventKey and event.pressed and event.keycode in [KEY_T,KEY_V,KEY_J,KEY_X,KEY_Z,KEY_H,KEY_K,KEY_L,KEY_P,KEY_U,KEY_O] and not roster_open and not inventory.opened and not editor.opened:
 		match event.keycode:
+			KEY_O: orchard.plant()
 			KEY_P: magic.branches.cast(str(magic.ensure(world.active_resident.resident_id).branch_selected),world.active_resident.get_global_mouse_position())
 			KEY_U: production.open_upgrade()
 			KEY_T: production.open_near()
@@ -343,6 +346,9 @@ func _interact_impl() -> void:
 			_set_notice(str(context.get("description", "走到家具、草席或门口，按 E 互动。")))
 		return
 	_refresh_nearest()
+	if nearest.begins_with("orchard:"):
+		orchard.gather(nearest.trim_prefix("orchard:"))
+		return
 	if nearest.begins_with("branch:"):
 		magic.branches.interact(nearest.trim_prefix("branch:"))
 		return
@@ -436,7 +442,7 @@ func snapshot() -> Dictionary:
 		var point: Dictionary = world.point_info(nearest)
 		if not point.is_empty():
 			prompt = "E  " + str(point["label"]) + " · " + str(point["action"])
-			if nearest.begins_with("animal:") or nearest.begins_with("ore:") or nearest.begins_with("built:"): interaction_detail = str(point.get("description", ""))
+			if nearest.begins_with("animal:") or nearest.begins_with("ore:") or nearest.begins_with("built:") or nearest.begins_with("orchard:"): interaction_detail = str(point.get("description", ""))
 			if nearest in ["altar", "forest_altar"]:
 				prompt = "E 祭台 · 存档 / 觉醒 / 赐予"
 	if is_instance_valid(homestead) and not inside and (nearest == "" or nearest.begins_with("npc:")):
@@ -444,6 +450,9 @@ func snapshot() -> Dictionary:
 		if not farm_context.is_empty():
 			prompt = farm_context.label + " · " + farm_context.action
 			crop_detail = farm_context.description
+	if is_instance_valid(homestead) and not inside and nearest == "" and homestead.hoe_equipped(world.active_resident) and not homestead.standing_plot(world.active_resident):
+		prompt = "Q 开垦脚下土地 · 16×16世界像素"
+		crop_detail = "E 灌溉附近农田 · G 播种或收获；Q只开垦脚下空地。"
 	if is_instance_valid(homestead) and inside and interiors.context(world.active_resident).get("id", "") == "stove":
 		prompt = "E 灶台 · " + ("剩余 %d 秒" % ceili(homestead.cooking.remaining) if homestead.cooking.remaining > 0 else ("领取熟肉" if homestead.cooking.ready > 0 else "放入生猪肉"))
 		prompt += " / T 冶炼铁矿"
@@ -551,10 +560,6 @@ func use_selected() -> void:
 	elif item == "iron_bucket":
 		close_inventory()
 		production.gather_sand()
-	elif item == "hoe":
-		close_inventory()
-		homestead.till(world.active_resident, grounds)
-		persistence.save_now()
 	elif homestead.Crops.SEEDS.has(item):
 		close_inventory()
 		homestead.select_seed(world.active_resident, item)
@@ -594,6 +599,7 @@ func open_awakening() -> void:
 	editor.close()
 	inventory.close()
 	awakening_open = true
+	if is_instance_valid(onboarding):onboarding.record_feature("magic")
 	refresh_interface()
 
 func close_awakening() -> void:

@@ -99,7 +99,7 @@ func fire(target: Vector2) -> bool:
 	if cooldown > 0 or not ready_for_action(): return false
 	var actor: CharacterBody2D = session.world.active_resident
 	var roof: bool = session.world.home_data(actor.room_id).get("tower",false)
-	if actor.room_id != "" and not roof: return false
+	if actor.room_id not in ["","mine"] and not roof: return false
 	var weapon: String = session.magic.ensure(actor.resident_id).equipment.weapon
 	if weapon not in Gear.WEAPONS:
 		message.emit("请先装备镐子、斧、剑或弓。")
@@ -131,7 +131,7 @@ func fire(target: Vector2) -> bool:
 	if roof:
 		for body in session.interiors.rooms[actor.room_id].find_children("*","StaticBody2D",true,false): arrow.excluded.append(body.get_rid())
 		for body in session.construction.nodes[actor.room_id].find_children("*","StaticBody2D",true,false): arrow.excluded.append(body.get_rid())
-	session.world.objects.add_child(arrow)
+	actor.get_parent().add_child(arrow)
 	arrow.global_position = origin
 	cooldown = Gear.interval(weapon)
 	return true
@@ -140,10 +140,11 @@ func attack_clicked(at: Vector2) -> bool:
 	var actor: CharacterBody2D = session.world.active_resident
 	var weapon: String = session.magic.ensure(actor.resident_id).equipment.weapon
 	if weapon not in Gear.WEAPONS or not session.magic.weapon_usable(actor.resident_id): return false
-	if actor.room_id!="" and not session.world.home_data(actor.room_id).get("tower",false): return false
+	if actor.room_id not in ["","mine"] and not session.world.home_data(actor.room_id).get("tower",false): return false
 	var clicked: CharacterBody2D
 	# Both NPCs and livestock are selected by their visible body, never by a nearby substitute.
 	for enemy: CharacterBody2D in enemies.values()+session.livestock.animals:
+		if "room_id" in enemy and enemy.room_id!=actor.room_id: continue
 		if not is_instance_valid(enemy) or ("friendly" in enemy and enemy.friendly) or enemy.hp<=0 or enemy.get_parent()==null: continue
 		var bounds: Rect2=enemy.attack_bounds() if enemy.has_method("attack_bounds") else Rect2(enemy.global_position+Vector2(-8,-16),Vector2(16,20))
 		if bounds.has_point(at):
@@ -168,6 +169,7 @@ func _melee(target: Vector2, weapon: String, clicked: CharacterBody2D = null) ->
 	var candidate: CharacterBody2D
 	var nearest := (minf(reach(weapon),39.9999) if weapon=="magic_scissors" else reach(weapon))+0.0001
 	for enemy: CharacterBody2D in enemies.values()+session.livestock.animals:
+		if "room_id" in enemy and enemy.room_id!=actor.room_id: continue
 		if ("friendly" in enemy and enemy.friendly) or enemy.hp <= 0 or enemy.get_parent() == null: continue
 		var gap := actor.global_position.distance_to(enemy.global_position)
 		if (not is_instance_valid(clicked) or enemy==clicked) and gap < nearest and direction.dot(actor.global_position.direction_to(enemy.global_position)) >= 0.3:
@@ -209,7 +211,7 @@ func _spawn_swing(actor: CharacterBody2D, direction: Vector2, weapon: String) ->
 	swing.direction = direction
 	swing.weapon=weapon
 	swing.record=session.magic.ensure(actor.resident_id).weapon_wear.duplicate(true)
-	session.world.objects.add_child(swing)
+	actor.get_parent().add_child(swing)
 	swing.global_position = actor.global_position+Vector2(0,-8)
 	cooldown = Gear.interval(weapon)
 func hit_animal(animal: CharacterBody2D, raw: float, actor_id := "", record: Dictionary={}) -> bool:
@@ -270,6 +272,7 @@ func apply_skill_damage(target: CharacterBody2D, raw: float, actor_id: String) -
 # 玩家对未归附部落成员造成实际伤害时的声誉与记忆结算；
 # 多段伤害、持续灼烧、未命中都经由本入口，因此不会逐帧重复扣分。
 func _note_hostile_damage(target: Node, attacker: String, dealt: float, hp_before: float, raiding := false) -> void:
+	if target.has_meta("goblin"): return
 	if is_instance_valid(session.tribes) and dealt>0:
 		session.tribes.encounters.observe_damage(target,attacker,dealt,hp_before)
 
@@ -319,6 +322,7 @@ func export_state() -> Dictionary:
 	var data: Dictionary = {}
 	for id: String in enemies:
 		var e: CharacterBody2D = enemies[id]
+		if e.has_meta("goblin"): continue
 		data[id] = {"hp":e.hp,"thirst":e.thirst,"at":[e.position.x,e.position.y],"cooldown":e.cooldown,"pursuit":e.pursuit}
 	data["scissors_flights"]=scissors.flights.duplicate(true)
 	data["weapon_cooldown"]=cooldown
@@ -327,6 +331,7 @@ func restore(data: Dictionary) -> void:
 	scissors.restore(data.get("scissors_flights",[]) if data.get("scissors_flights",[]) is Array else [])
 	for id: String in enemies:
 		var e: CharacterBody2D = enemies[id]
+		if e.has_meta("goblin"): continue
 		var record: Variant = data.get(id,{})
 		var saved: Dictionary = record if record is Dictionary else {}
 		var initial: Dictionary = initial_states[id]

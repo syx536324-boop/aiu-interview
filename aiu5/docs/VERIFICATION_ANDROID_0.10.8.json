@@ -1,0 +1,83 @@
+{
+  "version": "0.10.8-android.1",
+  "apk": "E:\\AIU\\aiu5\\exports\\android\\沙盘上的生活-0.10.8-android.1.apk",
+  "size_bytes": 197272614,
+  "sha256": "f0a6c3f1eda3cb7bf112a909ec22aed1b8c24f1022927be8f3182553cf53ae30",
+  "built_local": "2026-10-19 22:04:07 +08:00",
+  "package": "com.aiu5.sandboxlife",
+  "min_android_api": 26,
+  "target_android_api": 36,
+  "abis": [
+    "arm64-v8a",
+    "armeabi-v7a",
+    "x86_64"
+  ],
+  "native_libraries_compressed": true,
+  "internet_permission": false,
+  "camera_permission": true,
+  "onnx_model_identical": true,
+  "mobile_layout": {
+    "change": "Run button moved to the former attack slot directly below 交互; the dedicated attack button was removed.",
+    "attack": "Tap the world (enemy or position) to trigger the shared combat action; same domain code as before.",
+    "run": "Hold the 奔跑 button below 交互 while steering with the left joystick.",
+    "layout_coordinates": {
+      "interact": [
+        559,
+        272,
+        70,
+        40
+      ],
+      "run": [
+        548,
+        318,
+        81,
+        43
+      ]
+    },
+    "layout_verified_on_emulator": true
+  },
+  "android_15_emulator_qa": {
+    "android": true,
+    "checks": 35,
+    "display": "Android",
+    "failures": [],
+    "version": "0.10.8",
+    "built_sha256": "f0a6c3f1eda3cb7bf112a909ec22aed1b8c24f1022927be8f3182553cf53ae30"
+  },
+  "source_regression": {
+    "android": false,
+    "checks": 32,
+    "display": "headless",
+    "failures": [],
+    "version": "0.10.8",
+    "evidence": "E:\\AIU\\build-cache\\android-port\\source-mobile-touchattack"
+  },
+  "apk_signature_v2_verified": true,
+  "installer_certificate_sha256": "0710df12c3877c3958ad1310e2920416f4573f2cd091b6981e953734e8cd45aa",
+  "desktop_sha256_unchanged": {
+    "exports\\windows\\AIU5.exe": "95ac06bd9c8a9f056d94b5366449e65f05dbd2181f361ae2e61b2ed10c4abe9e",
+    "exports\\windows\\AIU5.pck": "5ba2656c846ca391927c770539a9e1411f7022e7b11c6196bfaf3743ff726408",
+    "exports\\AIU5-Setup-0.10.8-win64.exe": "51e336eb805cbe43058cd453f7f4b8b63e7132d88eecaecb41fa6ac3b6af0063"
+  },
+  "desktop_hashes_verified_after_rebuild": true,
+  "interview_game_directory_same_physical_data": true,
+  "physical_phone": {
+    "model": "V2307A",
+    "android": 15,
+    "tested": false
+  },
+  "evidence_directory": "E:\\AIU\\build-cache\\android-port",
+  "manual_release_checks": [
+    "Signed release installed on Android 15 emulator (overwrite of previous build retained app data)",
+    "New game created through touch UI",
+    "Right-side controls inspected: 交互 with 奔跑 directly below it, attack button removed",
+    "Backpack opened by touch; system Back closed it",
+    "Background save and pause verified in device QA (35 checks)",
+    "Camera2 + local ONNX inference and camera release verified in device QA"
+  ],
+  "screenshots": [
+    "android-verification/release-home-final.png",
+    "android-verification/release-game-final.png",
+    "android-verification/release-bag.png"
+  ]
+}

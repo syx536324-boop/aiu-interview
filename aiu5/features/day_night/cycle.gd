@@ -36,7 +36,7 @@ func _refresh() -> void:
 	if is_instance_valid(light):
 		var color := tint(hour())
 		if is_instance_valid(session) and session.world.active_resident.room_id != "":
-			color=Color("303345") if session.world.active_resident.room_id=="mine" else color.lerp(Color.WHITE,0.4)
+			color=Color("11141d") if session.world.active_resident.room_id=="mine" else color.lerp(Color.WHITE,0.4)
 		light.color = color
 	changed.emit(snapshot())
 func export_state() -> Dictionary:

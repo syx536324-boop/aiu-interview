@@ -84,8 +84,8 @@ func _create_ghost(record: Dictionary) -> void:
 	room.add_child(ghost)
 
 func pick(fixture: Node2D) -> void:
-	if fixture.public_fixture:
-		message.emit("公共工作台固定在村里，不能搬动或回收。")
+	if fixture.public_fixture and fixture.kind != "workbench":
+		message.emit("该公共设施不能搬动或回收。")
 		return
 	if fixture.kind == "stove":
 		message.emit("灶台固定在灶房内。")
@@ -143,6 +143,7 @@ func place() -> bool:
 		var record: Dictionary = bag[index].duplicate(true)
 		record.count = 1
 		data["gift_origin"] = record
+		if ghost.kind=="workbench":data["bench_level"]=clampi(int(record.get("bench_level",1)),1,3)
 		bag[index].count -= 1
 		if bag[index].count <= 0: bag[index] = {}
 		data["id"] = room.allocate_id()
@@ -169,6 +170,7 @@ func remove_selected() -> bool:
 	var before: Dictionary = inventory.export_data()
 	var record: Dictionary = original.gift_origin.duplicate(true)
 	if record.is_empty(): record={"item":original.kind,"count":1}
+	if original.kind=="workbench":record["bench_level"]=original.bench_level
 	if not inventory.insert_record(world.active_resident.resident_id,record):
 		message.emit("背包已满，家具仍保留在原处。")
 		return false

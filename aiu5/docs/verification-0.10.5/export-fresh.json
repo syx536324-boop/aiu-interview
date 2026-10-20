@@ -1,0 +1,172 @@
+{
+  "checks": 186,
+  "display": "Windows",
+  "failures": [],
+  "measurements": [
+    {
+      "action": "preview",
+      "at": [
+        296.0,
+        264.0
+      ],
+      "ms": 12.52
+    },
+    {
+      "action": "preview",
+      "at": [
+        300.0,
+        264.0
+      ],
+      "ms": 5.531
+    },
+    {
+      "action": "preview",
+      "at": [
+        304.0,
+        264.0
+      ],
+      "ms": 5.209
+    },
+    {
+      "action": "preview",
+      "at": [
+        308.0,
+        264.0
+      ],
+      "ms": 4.97
+    },
+    {
+      "action": "preview",
+      "at": [
+        312.0,
+        264.0
+      ],
+      "ms": 4.999
+    },
+    {
+      "action": "preview",
+      "at": [
+        316.0,
+        264.0
+      ],
+      "ms": 4.851
+    },
+    {
+      "action": "preview",
+      "at": [
+        320.0,
+        264.0
+      ],
+      "ms": 5.171
+    },
+    {
+      "action": "preview",
+      "at": [
+        324.0,
+        264.0
+      ],
+      "ms": 4.863
+    },
+    {
+      "action": "preview",
+      "at": [
+        328.0,
+        264.0
+      ],
+      "ms": 4.958
+    },
+    {
+      "action": "preview",
+      "at": [
+        332.0,
+        264.0
+      ],
+      "ms": 5.043
+    },
+    {
+      "action": "preview",
+      "at": [
+        336.0,
+        264.0
+      ],
+      "ms": 6.307
+    },
+    {
+      "action": "preview",
+      "at": [
+        340.0,
+        264.0
+      ],
+      "ms": 4.924
+    },
+    {
+      "action": "preview",
+      "at": [
+        296.0,
+        268.0
+      ],
+      "ms": 4.676
+    },
+    {
+      "action": "preview",
+      "at": [
+        300.0,
+        268.0
+      ],
+      "ms": 4.727
+    },
+    {
+      "action": "preview",
+      "at": [
+        304.0,
+        268.0
+      ],
+      "ms": 4.65
+    },
+    {
+      "action": "preview",
+      "at": [
+        308.0,
+        268.0
+      ],
+      "ms": 4.528
+    },
+    {
+      "action": "preview",
+      "at": [
+        312.0,
+        268.0
+      ],
+      "ms": 4.676
+    },
+    {
+      "action": "preview",
+      "at": [
+        316.0,
+        268.0
+      ],
+      "ms": 4.64
+    },
+    {
+      "action": "preview",
+      "at": [
+        320.0,
+        268.0
+      ],
+      "ms": 4.455
+    },
+    {
+      "action": "preview",
+      "at": [
+        324.0,
+        268.0
+      ],
+      "ms": 4.63
+    },
+    {
+      "action": "place_and_save",
+      "ms": 63.579
+    }
+  ],
+  "version": "0.10.5"
+}

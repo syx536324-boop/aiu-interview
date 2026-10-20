@@ -449,7 +449,9 @@ func _advance_projectiles(delta: float) -> void:
 func _rebuild_visuals() -> void:
 	for key: String in visuals:
 		if key.begins_with("facility:") or key.begins_with("bush:"): session.world.points.erase("branch:"+key)
-		if is_instance_valid(visuals[key]): visuals[key].free()
+		if is_instance_valid(visuals[key]):
+			visuals[key].hide()
+			visuals[key].queue_free()
 	visuals.clear()
 	for owner: String in facilities: _visual("facility:"+owner,"facility",facilities[owner])
 	for owner: String in bushes: _visual("bush:"+owner,"bush",bushes[owner])
@@ -461,16 +463,26 @@ func _visual(key: String, kind: String, record: Dictionary) -> void:
 	node.position=pos(record)
 	var parent: Node=session.world.objects
 	var room_id: String=session.world.active_resident.room_id
+	var caster: Node
 	if kind in ["cast","enchant_rune"] or key.begins_with("buff:"):
-		var caster: Node=magic._actor(str(record.get("actor","")))
+		caster=magic._actor(str(record.get("actor","")))
 		if is_instance_valid(caster): room_id=str(caster.room_id)
-	if (kind in ["survey","cast","enchant_rune"] or key.begins_with("buff:")) and room_id!="" and session.interiors.rooms.has(room_id): parent=session.interiors.rooms[room_id]
+	# Actor-bound effects must survive destruction of an empty room after its actor leaves.
+	if key.begins_with("buff:") and is_instance_valid(caster): parent=caster
+	elif kind in ["survey","cast","enchant_rune"] and room_id!="" and session.interiors.rooms.has(room_id): parent=session.interiors.rooms[room_id]
+	# This module owns effect lifetime; outdoor streaming must never park the same node.
+	node.set_meta("streaming_exempt",true)
 	parent.add_child(node); node.global_position=pos(record); visuals[key]=node
 	if kind in ["facility","bush"]:
 		var label := "魔力草丛" if kind=="bush" else str(Rules.DATA[record.element].build[0][0])
 		session.world.points["branch:"+key]={"position":node.position,"radius":22.0,"label":label,"action":"采集" if kind=="bush" else ("烹饪 / 恢复" if record.element=="fire" else "范围恢复"),"description":label,"source":node}
 func _update_visuals() -> void:
-	for key: String in visuals: visuals[key].queue_redraw()
+	for key: String in visuals.keys():
+		# Room-owned short-lived casts may have been freed with the room; never call stale references.
+		if not is_instance_valid(visuals[key]) or visuals[key].is_queued_for_deletion():
+			visuals.erase(key)
+			continue
+		visuals[key].queue_redraw()
 	var desired: Dictionary={}
 	for i in range(projectiles.size()): desired["projectile:"+str(i)]={"at":projectiles[i].at,"element":"fire"}
 	for at: Vector2 in survey_points(str(session.world.active_resident.resident_id)):
@@ -491,13 +503,13 @@ func _update_visuals() -> void:
 		if is_instance_valid(actor) and not buffs[actor_id].is_empty() : desired["buff:"+actor_id]={"at":[actor.global_position.x,actor.global_position.y-8],"element":magic.ensure(actor_id).element,"actor":actor_id,"shield":_buff(actor_id,"tide").get("shield",_buff(actor_id,"membrane").get("shield",0))}
 	for key: String in visuals.keys():
 		if key.begins_with("status:") or key.begins_with("projectile:") or key.begins_with("buff:") or key.begins_with("survey:") or key.begins_with("enchant:"):
-			if not desired.has(key): visuals[key].free(); visuals.erase(key)
+			if not desired.has(key):
+				visuals[key].hide(); visuals[key].queue_free(); visuals.erase(key)
 	for key: String in desired:
 		if not visuals.has(key): _visual(key,"survey" if key.begins_with("survey:") else ("orb" if key.begins_with("projectile:") else "mark"),desired[key])
 		if key.begins_with("buff:"):
 			var actor: Node=magic._actor(str(desired[key].get("actor",key.trim_prefix("buff:"))))
-			var parent: Node=session.world.objects
-			if is_instance_valid(actor) and actor.room_id!="" and session.interiors.rooms.has(actor.room_id): parent=session.interiors.rooms[actor.room_id]
+			var parent: Node=actor if is_instance_valid(actor) else session.world.objects
 			if visuals[key].get_parent()==null: parent.add_child(visuals[key])
 			elif visuals[key].get_parent()!=parent: visuals[key].reparent(parent,true)
 		visuals[key].global_position=pos(desired[key]); visuals[key].record=desired[key]

@@ -8,6 +8,7 @@ var lit := false
 var lamp: PointLight2D
 var gift_origin: Dictionary = {}
 var public_fixture := false
+var bench_level := 1
 var kind := "table"
 var fixture_id := ""
 var orientation := 0
@@ -34,6 +35,7 @@ func configure(data: Array) -> void:
 func configure_record(record: Dictionary) -> void:
 	configure([record["kind"], Vector2(record["at"][0], record["at"][1]), Vector2(record["size"][0], record["size"][1]), int(record.get("variant", 0))])
 	gift_origin = record.get("gift_origin", {}).duplicate(true)
+	bench_level=clampi(int(record.get("bench_level",gift_origin.get("bench_level",1))),1,3)
 	lit = bool(record.get("lit",false))
 	gate_open=bool(record.get("gate_open",false)); hp=clampf(float(record.get("hp",10)),0,10)
 	public_fixture = bool(record.get("public_fixture",false))
@@ -52,7 +54,7 @@ func visual_bounds() -> Rect2:
 
 func record() -> Dictionary:
 	var at := visual_bounds().position
-	return {"gate_open":gate_open,"hp":hp,"lit":lit,"public_fixture":public_fixture,"gift_origin":gift_origin.duplicate(true), "id": fixture_id, "kind": kind, "at": [at.x, at.y], "size": [base_size.x, base_size.y], "variant": variant, "orientation": orientation}
+	return {"bench_level":bench_level,"gate_open":gate_open,"hp":hp,"lit":lit,"public_fixture":public_fixture,"gift_origin":gift_origin.duplicate(true), "id": fixture_id, "kind": kind, "at": [at.x, at.y], "size": [base_size.x, base_size.y], "variant": variant, "orientation": orientation}
 
 func _ready() -> void:
 	if kind!="campfire" or preview: return

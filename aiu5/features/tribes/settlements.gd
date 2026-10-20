@@ -19,7 +19,7 @@ func match_population(tribe: String, people: int) -> void:
   _home(tribe,"smith","blacksmith",center+Vector2(140,210),0)
   _home(tribe,"herbs","herb_house",center+Vector2(-50,210),0)
   var id := "outdoors:tribe:"+tribe+":workbench"
-  if not runtime.session.grounds.fixtures.any(func(f: Node)->bool:return f.fixture_id==id): runtime.session.grounds.add_fixture({"id":id,"kind":"workbench","at":[center.x-80,center.y+70],"size":[36,24],"public_fixture":true})
+  if not runtime.session.grounds.retired_fixtures.has(id) and not runtime.session.grounds.fixtures.any(func(f: Node)->bool:return f.fixture_id==id): runtime.session.grounds.add_fixture({"id":id,"kind":"workbench","at":[center.x-80,center.y+70],"size":[36,24],"public_fixture":true})
   for y in range(2):
    for x in range(4): runtime.session.homestead.plots.append({"x":center.x+120+x*16,"y":center.y+90+y*16,"w":16,"h":16,"age":0.0,"dry":true,"crop":"","growth":0.0,"tribe":tribe})
   runtime.session.homestead.refresh()

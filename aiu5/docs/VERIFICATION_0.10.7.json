@@ -1,0 +1,579 @@
+{
+  "version": "0.10.7",
+  "date": "2026-10-16T15:21:56.552262+08:00",
+  "scope": "Wood goblins with inherited telegraphed skills, darker mines, safe spawning and civilian/worker/escort responses",
+  "published": false,
+  "installed": true,
+  "player_data_policy": "Original player files were never test write targets. Tests use fresh state or private copies outside the game source and installer.",
+  "verification": {
+    "safe-spawn-fresh": {
+      "checks": 77,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "maximum_motion_per_frame": 0.53345000743866,
+        "moving_frames": 119,
+        "physics_frame_max_ms": 16.721,
+        "physics_frame_p95_ms": 16.678,
+        "pursuit_world_pixels": 57.3609352111816
+      },
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "safe-spawn-player-copy": {
+      "checks": 77,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "maximum_motion_per_frame": 0.53345000743866,
+        "moving_frames": 119,
+        "physics_frame_max_ms": 16.938,
+        "physics_frame_p95_ms": 16.816,
+        "pursuit_world_pixels": 57.3609352111816
+      },
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "safe-spawn-forest": {
+      "checks": 6,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "frame_max_ms": 24.576,
+        "frame_p95_ms": 16.807,
+        "maximum_motion_per_frame": 0.533390045166016,
+        "moving_frames": 120,
+        "pursuit_world_pixels": 63.4065399169922
+      },
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "source-bench": {
+      "checks": 41,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "source-deployment": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            264.0
+          ],
+          "ms": 17.029
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            264.0
+          ],
+          "ms": 7.545
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            264.0
+          ],
+          "ms": 7.262
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            264.0
+          ],
+          "ms": 7.233
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            264.0
+          ],
+          "ms": 7.166
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            264.0
+          ],
+          "ms": 7.025
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            264.0
+          ],
+          "ms": 7.207
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            264.0
+          ],
+          "ms": 6.957
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            264.0
+          ],
+          "ms": 6.969
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            264.0
+          ],
+          "ms": 6.692
+        },
+        {
+          "action": "preview",
+          "at": [
+            336.0,
+            264.0
+          ],
+          "ms": 6.59
+        },
+        {
+          "action": "preview",
+          "at": [
+            340.0,
+            264.0
+          ],
+          "ms": 6.753
+        },
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            268.0
+          ],
+          "ms": 6.077
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            268.0
+          ],
+          "ms": 6.153
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            268.0
+          ],
+          "ms": 6.181
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            268.0
+          ],
+          "ms": 6.013
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            268.0
+          ],
+          "ms": 6.324
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            268.0
+          ],
+          "ms": 6.184
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            268.0
+          ],
+          "ms": 6.101
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            268.0
+          ],
+          "ms": 6.141
+        },
+        {
+          "action": "place_and_save",
+          "ms": 82.39
+        }
+      ],
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "source-transitions": {
+      "checks": 220,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 8,
+      "transitions": 56,
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "final-export-fresh": {
+      "checks": 77,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "maximum_motion_per_frame": 0.53345000743866,
+        "moving_frames": 119,
+        "physics_frame_max_ms": 16.911,
+        "physics_frame_p95_ms": 16.688,
+        "pursuit_world_pixels": 57.3609352111816
+      },
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "final-export-player-copy": {
+      "checks": 77,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "maximum_motion_per_frame": 0.53345000743866,
+        "moving_frames": 119,
+        "physics_frame_max_ms": 16.694,
+        "physics_frame_p95_ms": 16.684,
+        "pursuit_world_pixels": 57.3609352111816
+      },
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "final-export-bench": {
+      "checks": 41,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "final-export-deployment": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            264.0
+          ],
+          "ms": 12.78
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            264.0
+          ],
+          "ms": 6.439
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            264.0
+          ],
+          "ms": 5.232
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            264.0
+          ],
+          "ms": 5.061
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            264.0
+          ],
+          "ms": 5.161
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            264.0
+          ],
+          "ms": 5.324
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            264.0
+          ],
+          "ms": 5.18
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            264.0
+          ],
+          "ms": 5.157
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            264.0
+          ],
+          "ms": 5.207
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            264.0
+          ],
+          "ms": 5.122
+        },
+        {
+          "action": "preview",
+          "at": [
+            336.0,
+            264.0
+          ],
+          "ms": 5.091
+        },
+        {
+          "action": "preview",
+          "at": [
+            340.0,
+            264.0
+          ],
+          "ms": 5.272
+        },
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            268.0
+          ],
+          "ms": 4.808
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            268.0
+          ],
+          "ms": 4.968
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            268.0
+          ],
+          "ms": 4.75
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            268.0
+          ],
+          "ms": 4.725
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            268.0
+          ],
+          "ms": 4.896
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            268.0
+          ],
+          "ms": 5.394
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            268.0
+          ],
+          "ms": 5.087
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            268.0
+          ],
+          "ms": 4.953
+        },
+        {
+          "action": "place_and_save",
+          "ms": 95.427
+        }
+      ],
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "final-export-transitions": {
+      "checks": 274,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 8,
+      "transitions": 56,
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "final-export-forest": {
+      "checks": 6,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "frame_max_ms": 26.118,
+        "frame_p95_ms": 16.693,
+        "maximum_motion_per_frame": 0.533351063728333,
+        "moving_frames": 120,
+        "pursuit_world_pixels": 63.2937507629395
+      },
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "installed-fresh": {
+      "checks": 77,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "maximum_motion_per_frame": 0.53345000743866,
+        "moving_frames": 119,
+        "physics_frame_max_ms": 16.87,
+        "physics_frame_p95_ms": 16.686,
+        "pursuit_world_pixels": 57.3609352111816
+      },
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "installed-player-copy": {
+      "checks": 77,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "maximum_motion_per_frame": 0.53345000743866,
+        "moving_frames": 119,
+        "physics_frame_max_ms": 16.88,
+        "physics_frame_p95_ms": 16.691,
+        "pursuit_world_pixels": 57.3609352111816
+      },
+      "version": "0.10.7",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    }
+  },
+  "package": {
+    "name": "AIU5-Setup-0.10.7-win64.exe",
+    "bytes": 330947387,
+    "sha256": "f15cbf90d98dd7dda70fbd0f446eff06dd7460d1757fecc568e0a8a89885d33f"
+  },
+  "windows_program": {
+    "AIU5.exe": "42dd4a58ca46463f4abee3f84ce660613b60f4abdda52f9cfab9a0b8dee55c97",
+    "AIU5.pck": "6d00f89d14c8a4b4a3383a3378068cccab73e0ab69f545e310d41743468f1f43",
+    "LICENSE": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+    "OPEN_SOURCE.md": "5452fe71e5cf47b1fafd41b97aa105dde5be21cdc290ddd9265d2f0ab772a12c"
+  },
+  "tested_native_copy_sha256": {
+    "AIU5.exe": "42dd4a58ca46463f4abee3f84ce660613b60f4abdda52f9cfab9a0b8dee55c97",
+    "AIU5.pck": "6d00f89d14c8a4b4a3383a3378068cccab73e0ab69f545e310d41743468f1f43"
+  },
+  "code_hashes": {
+    "features/monsters/catalog.gd": "2436fa690505819aa6843549107ce5fc6bec5f913d85119c747d5c7c3ff51d21",
+    "features/monsters/monsters.gd": "a58e4a730c3262125c34fad7b80a99c2fcbb408678a0c6ce8655b9678562a518",
+    "features/monsters/goblin.gd": "75fd8fbba6ba1edc1dea09bd84b8e6bc48e94b4fb51f9be8cfc83ff1415087e6",
+    "features/monsters/flight.gd": "b32d068aa00c2824c64687babe95990f9e67f3a44107dbfd295c44ef9accc126",
+    "features/combat/combat.gd": "f77d3fb959efcddf1ff61a2d3f1d3ad43b914a5e4420319546c9e14fa75a5f46",
+    "features/combat/enemy.gd": "e515102a579cdcd88768036205ca7ad24e0937445578fab7d6667aaf00f45376",
+    "features/day_night/cycle.gd": "953a2a8ffb85a279b13e5f4bed72a9146049033071004a7d4b5c64d90f3abe83",
+    "features/interiors/interiors.gd": "726dcee5d8ab9616a5b18641a89507614315e0729c9892a0f97c036128d12b8b",
+    "features/tribes/workers.gd": "f575250a63104ff02da13bf0027c884c238283c0313db13b4e3974e9af0b090e",
+    "features/tribes/war.gd": "d6b8cc17d79272048eff7707a7aec012a43e28362c1269a0efaa1c14e32cf5d6",
+    "features/tribes/projectile.gd": "fe3deb0d2a40067c9eaa6a24bc2278ad6461308037172db86e3da2e903b98082",
+    "features/persistence/checkpoints.gd": "8d142c004f78a32ed8c8e508198e471b669a4bdd60f99c2afdfaa83758e867e0",
+    "tests/goblins_probe.gd": "c14e8b290d556a3977d6c64d01daf1839502ad1dad91333de462e6054727da1d",
+    "tests/goblin_forest_probe.gd": "26cb1b5145ce19dd9c63d81b1217faa5b9f0fd4188c1987fdd9c7af5efbb9da5"
+  },
+  "installation": {
+    "player_sha256_unchanged": true,
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+    "installed_fresh_passed": true,
+    "player_files": 18,
+    "version": "0.10.7",
+    "installed_player_copy_passed": true,
+    "override_removed": true,
+    "installed_files_verified": true,
+    "private_player_backup_created": true
+  },
+  "synchronization": {
+    "target": "C:/Users/shao/Desktop/aiu面试题/aiu5",
+    "scope": "Complete local source folder, including .git, .godot, runtime, exports and all installers",
+    "manifest": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\goblins\\directory-equality.json",
+    "verification_order": "After this report is written, mirror the complete source and verify every path, length and SHA-256; do not modify either folder after that verification."
+  },
+  "limitations": [
+    "Automated frame measurements cover sampled seeded encounters; they do not guarantee every device or every long-running world has identical frame times."
+  ]
+}

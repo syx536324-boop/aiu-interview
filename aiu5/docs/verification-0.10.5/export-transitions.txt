@@ -1,0 +1,53 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 591.91 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 5070 Laptop GPU
+
+TRANSITION_BEGIN round=0 room=kitchen outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=0 room=kitchen
+TRANSITION_BEGIN round=0 room=blacksmith outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=0 room=blacksmith
+TRANSITION_BEGIN round=0 room=mine outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=0 room=mine
+TRANSITION_BEGIN round=1 room=kitchen outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=1 room=kitchen
+TRANSITION_BEGIN round=1 room=blacksmith outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=1 room=blacksmith
+TRANSITION_BEGIN round=1 room=mine outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=1 room=mine
+TRANSITION_BEGIN round=2 room=kitchen outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=2 room=kitchen
+TRANSITION_BEGIN round=2 room=blacksmith outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=2 room=blacksmith
+TRANSITION_BEGIN round=2 room=mine outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=2 room=mine
+TRANSITION_BEGIN round=3 room=kitchen outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=3 room=kitchen
+TRANSITION_BEGIN round=3 room=blacksmith outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=3 room=blacksmith
+TRANSITION_BEGIN round=3 room=mine outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=3 room=mine
+TRANSITION_BEGIN round=4 room=kitchen outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=4 room=kitchen
+TRANSITION_BEGIN round=4 room=blacksmith outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=4 room=blacksmith
+TRANSITION_BEGIN round=4 room=mine outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=4 room=mine
+TRANSITION_BEGIN round=5 room=kitchen outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=5 room=kitchen
+TRANSITION_BEGIN round=5 room=blacksmith outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=5 room=blacksmith
+TRANSITION_BEGIN round=5 room=mine outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=5 room=mine
+TRANSITION_BEGIN round=6 room=kitchen outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=6 room=kitchen
+TRANSITION_BEGIN round=6 room=blacksmith outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=6 room=blacksmith
+TRANSITION_BEGIN round=6 room=mine outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=6 room=mine
+TRANSITION_BEGIN round=7 room=kitchen outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=7 room=kitchen
+TRANSITION_BEGIN round=7 room=blacksmith outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=7 room=blacksmith
+TRANSITION_BEGIN round=7 room=mine outside_parent=VillageObjects:<Node2D#86436218423>
+TRANSITION_EXIT round=7 room=mine
+SCENE_TRANSITION_RESULT {"checks":345,"display":"Windows","failures":[],"rounds":8,"transitions":56,"version":"0.10.5"}
+SCENE_TRANSITION_OK transitions=56

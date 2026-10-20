@@ -56,7 +56,7 @@ func aggro_range() -> float:
 	return 110.0
 func attack_reach() -> float:
 	var reach: float= combat.Gear.attack_range("bow") if role=="archer" else (200.0 if role=="chief" else (30.0 if role=="charger" else 13.0))
-	if role in ["archer","chief"] and is_instance_valid(combat):
+	if room_id=="" and role in ["archer","chief"] and is_instance_valid(combat):
 		var layout = combat.session.world.Layout
 		if layout.PLATEAU.has_point(global_position) or layout.MOUNTAINS_EAST.has_point(global_position): reach *= 0.7
 	return reach

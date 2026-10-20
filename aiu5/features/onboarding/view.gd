@@ -1,5 +1,6 @@
 # Presents the onboarding service as a compact HUD card and a projected world-direction cue.
 extends CanvasLayer
+const InputHints := preload("res://features/interface/input_hints.gd")
 var service: Node
 var session: Node
 var panel: PanelContainer
@@ -7,6 +8,7 @@ var title: Label
 var detail: Label
 var marker: Control
 var marker_text: Label
+var learn_button: Button
 var fold_button: Button
 var folded := false
 var latest: Dictionary={}
@@ -57,6 +59,12 @@ func _ready() -> void:
 	fold_button.pressed.connect(_fold)
 	heading.add_child(fold_button)
 	detail=_label(column,10,Color("f2dfb8"))
+	detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	detail.custom_minimum_size.x=214
+	learn_button=Button.new();learn_button.text="已了解";learn_button.focus_mode=Control.FOCUS_NONE
+	learn_button.add_theme_font_override("font",font);learn_button.add_theme_font_size_override("font_size",10)
+	learn_button.pressed.connect(func() -> void:service.acknowledge())
+	column.add_child(learn_button)
 	marker=DirectionCue.new()
 	marker.name="GuideDirection"
 	marker.size=Vector2(18,18)
@@ -97,8 +105,13 @@ func _present(state: Dictionary) -> void:
 	latest=service.presentation()
 	var obscured: bool=state.overview or state.roster_open or state.inventory.open or state.furnishing.open or state.get("attributes",{}).get("open",false) or state.get("awakening",{}).get("open",false) or state.get("workshop",{}).get("open",false) or state.get("menu_paused",false) or (is_instance_valid(session.gifts) and session.gifts.opened) or (is_instance_valid(session.tribes) and not session.tribes.romance.ceremony.is_empty())
 	panel.visible=bool(latest.visible) and not obscured
+	learn_button.visible=not folded and int(latest.stage) in [4,5,6]
+	detail.visible=not folded
+	panel.custom_minimum_size=Vector2(230,28 if folded else (110 if int(latest.stage)>=4 else 66))
+	panel.size=panel.custom_minimum_size
 	title.text=str(latest.title)
-	detail.text=str(latest.text)
+	detail.text=InputHints.text(str(latest.text))
+	if InputHints.mobile(): detail.text=detail.text.replace("B 背包","背包")
 	marker.visible=panel.visible and not folded and not latest.target.is_empty()
 	if not marker.visible: return
 	var target: Vector2=latest.target.at

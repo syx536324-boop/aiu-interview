@@ -35,6 +35,7 @@ func _ready() -> void:
 	$Magic.start($Session)
 	$Vitals.magic = $Magic
 	$Harvesting.equipment = $Magic
+	$Homestead.equipment = $Magic
 	$Mining.equipment = $Magic
 	$Magic.message.connect($Session._set_notice)
 	$Homestead.message.connect($Session._set_notice)
@@ -86,6 +87,11 @@ func _ready() -> void:
 	$Foraging.gathered.connect(onboarding.record_pickup)
 	$Production.craft_completed.connect(onboarding.record_craft)
 	$Mining.deposit_mined.connect(onboarding.record_mining)
+	var monsters := preload("res://features/monsters/monsters.gd").new()
+	monsters.name="Monsters"; add_child(monsters); $Session.monsters=monsters; monsters.start($Session)
+	var orchard := preload("res://features/orchard/orchard.gd").new()
+	orchard.name="Orchard"; add_child(orchard); $Session.orchard=orchard; orchard.start($Session)
+	$WorldResources.orchard=orchard
 	$Persistence.start($Session, $Vitals, $Homestead, $Grounds)
 	var onboarding_view := preload("res://features/onboarding/view.gd").new()
 	onboarding_view.name="OnboardingView"; add_child(onboarding_view); onboarding_view.bind(onboarding,$Session)
@@ -132,3 +138,6 @@ func _ready() -> void:
 	$Session.gifts = $Gifts
 	$Gifts.start($Session, $GiftCamera)
 	$GiftView.bind_gifts($Gifts)
+	if preload("res://features/mobile/controls.gd").enabled():
+		var mobile := preload("res://features/mobile/controls.gd").new()
+		mobile.name = "MobileControls"; add_child(mobile); mobile.start($Session)

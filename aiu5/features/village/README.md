@@ -37,3 +37,8 @@ world.settlement决定建筑和居民集合，world.homes是当前村落实际�
 `Layout.MIN.y` 由 0 改为 -1600、BOUNDS 变为 4800×3200：地图向北翻倍。北半部东侧是山地高原（`Layout.PLATEAU`，2400×1600，与沙漠同面积），由南缘断崖（`Layout.CLIFF`）与西侧山壁（`Layout.PLATEAU_WALL`）围合，只能靠云梯从南侧通行；高原区块由 terrain_chunk 以冷灰岩地绘制，landscape/view 画断崖与向北延伸的东部山体。相机 limit_top、顶部边界墙、terrain 分块钳制（y -8..7）、land/landscape 的 render_region 与全图投影都随之更新。
 
 0.9.0：地图7200×6400，向南扩建而不移动旧坐标。新村落主村三创始角色及男女普通NPC各1、工作台、最低灶房、铁匠铺和圣品祭坛。旧实体栅栏亦有10HP，破坏和碰撞状态保存。场景入口只新增wildlife与tribes装配，职业/战争/婚恋业务仍在所属模块。
+
+
+0.10.5：navigation.preserves_access(from,targets,removed,added)通过accessibility.gd压缩水平空格段并连通相邻行，比较放置前后的可达性。四邻接连通与禁止穿角的八邻接寻路可达性相同；端点沿用原49格最近空格规则，支持负坐标、重叠障碍计数和临时打开栅栏门。基础拓扑按revision缓存，候选只复制变化行并复用重复候选；每次真实障碍集合变化均使缓存失效。预览不重建共享AStarGrid2D、不变更revision，不影响正在行走的角色。
+
+0.10.8：会话沿用Q输入转发homestead.till，锄头使用动作走统一equip_weapon。空地快照提示“Q 开垦脚下土地”；E保留原有设施、NPC及灌溉路由，不触发开垦。场景入口仅注入Homestead.equipment。

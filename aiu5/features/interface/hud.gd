@@ -1,5 +1,6 @@
 # Presents session snapshots without implementing movement or interaction rules.
 extends CanvasLayer
+const InputHints := preload("res://features/interface/input_hints.gd")
 
 signal resident_requested(index: int)
 signal roster_close_requested
@@ -158,7 +159,8 @@ func _present(state: Dictionary) -> void:
 	var weapon: Dictionary = state.get("weapon",{})
 	weapon_icon.set_item(str(weapon.get("item","")), bool(weapon.get("magical", false)),str(weapon.get("magic_attribute","")))
 	weapon_label.text = str(weapon.get("name","武器")) if weapon.get("item", "") != "" else "武器"
-	weapon_button.tooltip_text = "%s · 攻击%s · 点击卸回背包 · 右键点击敌人 / J攻击 / E采集" % [weapon.get("name",""),weapon.get("attack_text","0")] if weapon.get("item", "") != "" else "武器位 · 点击打开背包，选择镐子、斧、剑或弓装备"
+	var tool_hint := "Q开垦脚下土地" if weapon.get("item", "") == "hoe" else "E采集"
+	weapon_button.tooltip_text = "%s · 攻击%s · 点击卸回背包 · 右键点击敌人 / J攻击 / %s" % [weapon.get("name",""),weapon.get("attack_text","0"),tool_hint] if weapon.get("item", "") != "" else "武器位 · 点击打开背包，选择锄头、镐子、斧、剑或弓装备"
 	weapon_durability.visible = weapon.get("item","") != ""
 	weapon_durability.value = int(weapon.get("wear",{}).get("durability",40))
 	weapon_durability.queue_redraw()
@@ -227,6 +229,8 @@ func _present(state: Dictionary) -> void:
 	if not roster_root.visible and names_root.visible:
 		_close_name_editor()
 	if roster_root.visible: _update_roster(state)
+	for label: Label in [prompt_label,crop_label,notice_label]: label.text = InputHints.text(label.text)
+	weapon_button.tooltip_text = InputHints.text(weapon_button.tooltip_text)
 
 func _build_roster(root: Control) -> void:
 	roster_root = ColorRect.new()

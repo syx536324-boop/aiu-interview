@@ -37,7 +37,7 @@ func move_step(actor: Node, at: Vector2, delta: float, speed: float, smooth := f
  actor.set_meta("work_retry",maxf(0,float(actor.get_meta("work_retry",0.0))-delta))
  if actor.navigation.is_empty():
   if float(actor.get_meta("work_retry",0))>0: return false
-  actor.navigation=nav.find_path(actor.position,at)
+  actor.navigation=runtime.session.monsters.path_to(actor,at) if actor.get_meta("monster_engaged",false) and is_instance_valid(runtime.session.monsters) else nav.find_path(actor.position,at)
   if actor.navigation.is_empty(): actor.set_meta("work_retry",2.0); return false
  while not actor.navigation.is_empty() and actor.position.distance_to(actor.navigation[0])<5: actor.navigation.remove_at(0)
  if actor.navigation.is_empty(): return false
@@ -69,7 +69,8 @@ func advance(delta: float) -> void:
  for id: String in runtime.population.members:
   var r: Dictionary=runtime.population.members[id]; var actor: Node=runtime.population.node(id)
   if not is_instance_valid(actor) or actor.hp<=0 or not runtime.population.friendly(id) or float(r.child_left)>0: continue
-  if runtime.romance.busy(actor.resident_id) or runtime.encounters.in_combat(actor): continue
+  if is_instance_valid(s.monsters) and s.monsters.blocks_work(actor): continue
+  if runtime.romance.busy(actor.resident_id) or (runtime.encounters.in_combat(actor) and not (is_instance_valid(s.monsters) and s.monsters.is_protected(actor))): continue
   var task := job(id); task.left=maxf(0,float(task.left)-delta)
   if float(task.left)>0.000001: continue
   if r.career=="farmer": _farmer(id,actor,task,delta)
@@ -127,9 +128,9 @@ func _miner(id: String, actor: Node, task: Dictionary, delta: float) -> void:
  if not move(actor,ore.at+Vector2(0,15),delta): task.status="前往矿脉"; return
  # First arrival starts a full interval; resource production never occurs on the same instant as arrival.
  if str(task.get("ore",""))!=str(ore.id):
-  task.ore=ore.id; task.left=Careers.work_interval("miner",int(runtime.population.members[id].level),str(task.kind)); task.status="开采中"; return
+  task.ore=ore.id; task.left=Careers.work_interval("miner",int(runtime.population.members[id].level),str(task.kind)); task.status="开采中（护卫掩护）" if is_instance_valid(s.monsters) and s.monsters.is_protected(actor) else "开采中"; return
  if s.mining.worker_take(ore,actor.resident_id):
-  task.left=Careers.work_interval("miner",int(runtime.population.members[id].level),str(task.kind)); task.status="开采中"
+  task.left=Careers.work_interval("miner",int(runtime.population.members[id].level),str(task.kind)); task.status="开采中（护卫掩护）" if is_instance_valid(s.monsters) and s.monsters.is_protected(actor) else "开采中"
  else: task.status="背包已满，等待取出"; task.left=1.0
 func export_state() -> Dictionary: return jobs.duplicate(true)
 func restore(data: Dictionary) -> void:

@@ -41,6 +41,11 @@ Thumbs.db
 export_credentials.cfg
 *.translation
 exports/
+android/build/
+android/.gradle/
+android/plugins/*.aar
+*.jks
+*.keystore
 
 models/*.pt
 runtime/

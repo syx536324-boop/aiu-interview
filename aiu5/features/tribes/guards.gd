@@ -53,6 +53,7 @@ func advance(delta: float) -> void:
 	for id: String in all.keys():
 		var enemy: Node = all.get(id)
 		if not is_instance_valid(enemy): continue
+		if is_instance_valid(session.monsters) and session.monsters.handles(enemy): continue
 		if not manages(enemy):
 			_release(enemy)
 			continue

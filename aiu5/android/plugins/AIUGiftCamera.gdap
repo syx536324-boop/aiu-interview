@@ -1,0 +1,6 @@
+[config]
+name="AIUGiftCamera"
+binary_type="local"
+binary="aiu-camera.aar"
+[dependencies]
+local=["onnxruntime-android-1.23.2.aar"]

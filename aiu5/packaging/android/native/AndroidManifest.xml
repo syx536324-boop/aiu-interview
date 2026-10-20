@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.aiu5.mobile">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
+    <application>
+        <meta-data android:name="org.godotengine.plugin.v2.AiuGiftCamera" android:value="com.aiu5.mobile.AiuGiftCamera" />
+    </application>
+</manifest>

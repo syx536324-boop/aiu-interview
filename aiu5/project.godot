@@ -13,11 +13,12 @@ config_version=5
 config/name="沙盘上的生活"
 config/icon="res://assets/branding/game-icon.png"
 config/windows_native_icon="res://assets/branding/game-icon.ico"
-config/version="0.10.3"
+config/version="0.10.8"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Godot/app_userdata/AIU5 · 赤沙村"
 run/max_fps=60
 run/main_scene="res://scenes/start.tscn"
+run/main_scene.android="res://scenes/android_start.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [display]
@@ -28,6 +29,8 @@ window/size/window_width_override=1280
 window/size/window_height_override=800
 window/stretch/mode="viewport"
 window/stretch/scale_mode="integer"
+window/stretch/scale_mode.android="fractional"
+window/handheld/orientation=4
 
 [rendering]
 
@@ -36,3 +39,5 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.24, 0.2, 0.16, 1)
 2d/snap/snap_2d_transforms_to_pixel=true
+
+textures/vram_compression/import_etc2_astc=true

@@ -166,9 +166,9 @@ func run() -> void:
 	s.mining.cooldown=0
 	await key(KEY_E)
 	check(ore.hits==3 and count("stone")==3 and s.onboarding.stage()==4,"actual final E mining yields stone3 and completes guide")
-	check(not view.panel.visible and not view.marker.visible,"completed guide and direction marker hide")
+	check(view.panel.visible and "不同人物" in view.detail.text,"mining transitions to elemental choice guidance")
 	await restart()
-	check(s.onboarding.stage()==4 and not view.panel.visible and s.foraging.taken["desert:0"]==2,"completed state and exhausted starter resources survive restart")
+	check(s.onboarding.stage()==4 and view.panel.visible and s.foraging.taken["desert:0"]==2,"completed state and exhausted starter resources survive restart")
 
 	# Old saved records deliberately retain prior unlimited replenishment and no forced guide.
 	var new_state: Dictionary=s.foraging.export_state()

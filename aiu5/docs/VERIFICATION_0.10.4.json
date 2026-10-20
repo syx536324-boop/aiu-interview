@@ -1,0 +1,129 @@
+{
+  "version": "0.10.4",
+  "date": "2026-10-16T10:54:31.662297+08:00",
+  "scope": "Room/cave transition crash when magic visuals outlive their room",
+  "published": false,
+  "installed": true,
+  "real_player_test_policy": "Original saves are read-only; tests use private copied or freshly generated state in workspace isolation folders",
+  "baseline": {
+    "version": "0.10.3",
+    "unlocked_passive_new_game": "Native program crashes on first kitchen exit",
+    "player_copy": "Native program crashes after kitchen and blacksmith transitions, with already-parented and null canvas_item errors",
+    "observed_native_exit_code": -1073741819,
+    "exception_code": "0xc0000005",
+    "read_address": "0x68",
+    "original_dump_fault_module_offset": "AIU5.exe+0x2fbf249",
+    "exe_sha256": "baa81b92e25396c8c0601eb43095fdfbd8b3c2abecfa7409ac3d30f2b408ba7f",
+    "pck_sha256": "45cd354263f3db418ca86aabb70a5d9678a3ace3bbd13e8234089ca7365e31eb"
+  },
+  "source_validation": {
+    "final-source-passive": {
+      "checks": 1521,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 40,
+      "transitions": 248,
+      "version": "0.10.4",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "final-source-player-copy": {
+      "checks": 522,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 20,
+      "transitions": 128,
+      "version": "0.10.4",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "export-fresh": {
+      "checks": 1522,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 40,
+      "transitions": 248,
+      "version": "0.10.4",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "export-player-copy": {
+      "checks": 523,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 20,
+      "transitions": 128,
+      "version": "0.10.4",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "installed-fresh": {
+      "checks": 651,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 20,
+      "transitions": 128,
+      "version": "0.10.4",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "installed-player-copy": {
+      "checks": 523,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 20,
+      "transitions": 128,
+      "version": "0.10.4",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "final-branches": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "BRANCHES_SMOKE_OK checks=305"
+    },
+    "final-elemental": {
+      "exit_code": 0,
+      "script_errors": 0,
+      "result": "ELEMENTAL_SKILLS_OK"
+    }
+  },
+  "package": {
+    "name": "AIU5-Setup-0.10.4-win64.exe",
+    "bytes": 330888587,
+    "sha256": "ba9410332afa6c78390e684b236c3712fc7cf80d18b7f1c1eb301ca414dcbc56"
+  },
+  "windows_program": {
+    "AIU5.exe": "4a772173273d5dca2fc9f3d09c5ed742eb41b6746719051049398b4dbb81389f",
+    "AIU5.pck": "eec994087d0f75800c66bd08ccf92580d7bcf444491828d1080f28fa00a42747",
+    "LICENSE": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+    "OPEN_SOURCE.md": "5452fe71e5cf47b1fafd41b97aa105dde5be21cdc290ddd9265d2f0ab772a12c"
+  },
+  "code_hashes": {
+    "features/magic/branches.gd": "9ae1c2cf1b9cddd1306f73ee5f5140731dc2a13548cdcb20cb7c7127769ea875",
+    "features/streaming/streaming.gd": "2139ec049c07204965709628e5ddf8f3bfd901dfec04d6ec80062aba5c419635",
+    "tests/scene_transition_probe.gd": "05bbd314b110a1f91e136c9a0d64519d39e12306876ee88a8efbc8f44373f2e0"
+  },
+  "installation": {
+    "installed_fresh_passed": true,
+    "version": "0.10.4",
+    "player_files": 18,
+    "player_sha256_unchanged": true,
+    "installed_files_verified": true,
+    "override_removed": true,
+    "backup": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\scene-crash\\player-before-install-20261016-105209",
+    "installed_player_copy_passed": true,
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5"
+  },
+  "synchronization": {
+    "target": "C:/Users/shao/Desktop/aiu面试题/aiu5",
+    "full_manifest": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\scene-crash\\directory-equality.json",
+    "scope": "Complete local folders including source, runtime, Git metadata and installers"
+  }
+}

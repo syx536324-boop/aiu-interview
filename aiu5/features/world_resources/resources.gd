@@ -10,6 +10,7 @@ var harvesting: Node
 var mining: Node
 var farming: Node
 var grounds: Node2D
+var orchard: Node
 var descriptors: Dictionary = {}
 var loaded: Dictionary = {}
 var suppressed: Dictionary = {}
@@ -85,6 +86,7 @@ func _depleted(record: Dictionary) -> bool:
 
 func _occupied(record: Dictionary) -> bool:
 	var footprint := Rect2(record.at - Vector2(28, 54 if record.kind == "tree" else 24), Vector2(56, 62 if record.kind == "tree" else 32))
+	if is_instance_valid(orchard) and orchard.occupied(footprint): return true
 	for plot: Dictionary in farming.plots:
 		if footprint.intersects(Land.bounds(plot).grow(4)): return true
 	for home: Dictionary in world.homes:

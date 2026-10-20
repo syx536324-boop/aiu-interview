@@ -53,9 +53,10 @@ func advance(delta: float) -> void:
    raid_left=300.0
  for id: String in runtime.population.members:
   var actor: Node=runtime.population.node(id)
-  if not is_instance_valid(actor) or actor.hp<=0 or actor.room_id!="" or runtime.population.members[id].child_left>0: continue
+  if not is_instance_valid(actor) or actor.hp<=0 or runtime.population.members[id].child_left>0: continue
   if runtime.romance.busy(actor.resident_id): continue
   cooldowns[id]=maxf(0,float(cooldowns.get(id,0))-delta)
+  if actor.room_id!="" or (is_instance_valid(runtime.session.monsters) and runtime.session.monsters.handles(actor)): continue
   if is_instance_valid(runtime.guards) and runtime.guards.manages(actor): continue
   _act(id,actor,delta)
 func _act(id: String, actor: Node, delta: float) -> void:
@@ -138,7 +139,9 @@ func strike(id: String, actor: Node, target: Node) -> bool:
  var reach: float=actor.attack_reach()
  var destination: Vector2=target.global_position
  if actor.global_position.distance_to(destination)>reach: return false
- if not actor.is_inside_tree(): return false # Parked squads move logically; impacts require active physical collisions.
+ if "room_id" in target and actor.room_id!=target.room_id: return false
+ if not actor.is_inside_tree():
+  return runtime.session.monsters.parked_strike(actor,target,id) if is_instance_valid(runtime.session.monsters) and target.has_meta("goblin") else false
  if target.is_in_group("relic_targets"):
   if runtime.relics.owner(str(target.get_meta("tribe")))==("player" if ally else str(r.tribe)): return false
  var query := PhysicsRayQueryParameters2D.create(actor.global_position,destination,1|2|8|16,[actor.get_rid()])
@@ -151,8 +154,8 @@ func strike(id: String, actor: Node, target: Node) -> bool:
  if ranged:
   if weapon=="bow" and not s.inventory.exchange(actor.resident_id,{"arrow":1},{}): return false
   var arrow := Arrow.new(); arrow.runtime=runtime; arrow.attacker=id; arrow.tribe=str(r.tribe); arrow.damage=Careers.damage(str(r.career),int(r.level)) if r.career!="chief" else 1.0
-  arrow.position=actor.position; arrow.direction=actor.position.direction_to(destination); arrow.left=reach; arrow.excluded=[actor.get_rid()]
-  s.world.objects.add_child(arrow)
+  arrow.position=actor.position; arrow.direction=actor.global_position.direction_to(destination); arrow.left=reach; arrow.excluded=[actor.get_rid()]
+  actor.get_parent().add_child(arrow)
  else:
   var raw: float=Careers.damage(str(r.career),int(r.level)) if weapon!="" else 1.0
   if is_instance_valid(runtime.npc_skills): raw+=runtime.npc_skills.consume_attack_bonus(id)

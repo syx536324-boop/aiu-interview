@@ -1,6 +1,7 @@
 # Starts one local Python camera process and asynchronously polls its private JSON preview contract.
 extends Node
 signal updated(data: Dictionary)
+var native_camera: Node
 var request: HTTPRequest
 var cleanup: HTTPRequest
 var pid := -1
@@ -20,6 +21,10 @@ func asset_path(path: String) -> String:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	if OS.has_feature("android"):
+		native_camera = preload("res://features/mobile/camera.gd").new()
+		add_child(native_camera); native_camera.updated.connect(func(data: Dictionary) -> void: updated.emit(data))
+		return
 	request = HTTPRequest.new()
 	request.timeout = 2
 	request.body_size_limit = 1500000
@@ -30,6 +35,7 @@ func _ready() -> void:
 	add_child(cleanup)
 
 func open(id: String) -> void:
+	if is_instance_valid(native_camera): native_camera.open(id); return
 	close()
 	session_id = id
 	var config: Variant = JSON.parse_string(FileAccess.get_file_as_string(asset_path("res://services/gift_camera/config.json")))
@@ -82,6 +88,7 @@ func _completed(result: int, code: int, _headers: PackedStringArray, body: Packe
 	if data is Dictionary: updated.emit(data)
 
 func close() -> void:
+	if is_instance_valid(native_camera): native_camera.close(); return
 	if is_instance_valid(request): request.cancel_request()
 	busy = false
 	if pid > 0:
@@ -93,6 +100,7 @@ func close() -> void:
 	session_id = ""
 
 func _exit_tree() -> void:
+	if is_instance_valid(native_camera): native_camera.close()
 	if pid > 0: OS.kill(pid)
 	for retiring_process: Dictionary in retiring:
 		if OS.is_process_running(int(retiring_process.pid)): OS.kill(int(retiring_process.pid))

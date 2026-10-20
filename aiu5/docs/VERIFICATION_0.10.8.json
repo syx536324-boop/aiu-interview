@@ -1,0 +1,97 @@
+{
+  "version": "0.10.8",
+  "date": "2026-10-19T11:13:54.158217+08:00",
+  "scope": "Equippable hoe; Q cultivates the 16x16-world-pixel cell beneath the character; E retains original interactions.",
+  "published": false,
+  "installed": true,
+  "player_data_policy": "Only isolated fresh saves or private copies were used for tests. Original player saves were never test targets.",
+  "verification": {
+    "q-final3-source-fresh": {
+      "checks": 54,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.8",
+      "actual_windows_executable": false,
+      "script_errors": 0
+    },
+    "q-final3-source-player-copy": {
+      "checks": 54,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.8",
+      "actual_windows_executable": false,
+      "script_errors": 0
+    },
+    "q-only-source-goblins": {
+      "checks": 77,
+      "display": "Windows",
+      "failures": [],
+      "metrics": {
+        "maximum_motion_per_frame": 0.53345000743866,
+        "moving_frames": 119,
+        "physics_frame_max_ms": 16.687,
+        "physics_frame_p95_ms": 16.681,
+        "pursuit_world_pixels": 57.3609352111816
+      },
+      "version": "0.10.8",
+      "actual_windows_executable": false,
+      "script_errors": 0
+    },
+    "native-final-fresh": {
+      "checks": 54,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.8",
+      "actual_windows_executable": true,
+      "script_errors": 0
+    },
+    "native-final-player-copy": {
+      "checks": 54,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.8",
+      "actual_windows_executable": true,
+      "script_errors": 0
+    },
+    "installed-fresh": {
+      "checks": 54,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.8",
+      "actual_windows_executable": true,
+      "script_errors": 0
+    },
+    "installed-player-copy": {
+      "checks": 54,
+      "display": "Windows",
+      "failures": [],
+      "version": "0.10.8",
+      "actual_windows_executable": true,
+      "script_errors": 0
+    }
+  },
+  "installer": {
+    "path": "exports/AIU5-Setup-0.10.8-win64.exe",
+    "bytes": 330959593,
+    "sha256": "51e336eb805cbe43058cd453f7f4b8b63e7132d88eecaecb41fa6ac3b6af0063"
+  },
+  "executable_files": {
+    "AIU5.exe": "95ac06bd9c8a9f056d94b5366449e65f05dbd2181f361ae2e61b2ed10c4abe9e",
+    "AIU5.pck": "5ba2656c846ca391927c770539a9e1411f7022e7b11c6196bfaf3743ff726408"
+  },
+  "screenshots": [
+    "docs/screenshots/hoe-0.10.8-inventory.png",
+    "docs/screenshots/hoe-0.10.8-equipped.png"
+  ],
+  "installation": {
+    "player_files": 18,
+    "installed_fresh_passed": true,
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+    "player_sha256_unchanged": true,
+    "installed_player_copy_passed": true,
+    "backup": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\hoe-0108\\player-before-install-20261019-111214",
+    "installed_files_verified": true,
+    "version": "0.10.8",
+    "override_removed": true
+  }
+}

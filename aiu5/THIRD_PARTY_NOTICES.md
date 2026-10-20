@@ -22,3 +22,12 @@
 - Microsoft Visual C++ Runtime：微软可再发行组件，应用本地运行DLL随独立推理环境提供。
 
 其余依赖的准确版本见packaging/windows/runtime-requirements.txt；各wheel自带的许可证与声明在runtime/site-packages中保留。首版模型训练数据与来源记录见training/gifts/README.md及pipeline；原图片不放进源码仓库或安装包。
+
+
+## Android 运行依赖
+
+- ONNX Runtime Android 1.23.2：MIT，https://github.com/microsoft/onnxruntime/tree/v1.23.2 。随包保留 `assets/licenses/ONNX-Runtime-LICENSE.txt` 和 `ONNX-Runtime-ThirdPartyNotices.txt`。Android 在 CPU 上运行由原18类YOLO权重导出的ONNX模型；模型许可与原版一致。
+- Noto Sans SC：SIL Open Font License 1.1，https://github.com/notofonts/noto-cjk ，许可为 `assets/fonts/OFL-NotoSansSC.txt`，字体 `NotoSansSC.ttf` 随 APK 打包。
+- Godot Android 4.7.2 仍遵循上述MIT许可；Camera2属于Android系统API。Android使用Gradle模板自带AndroidX依赖，构建模板保留其第三方声明。
+
+Android APK随包包含项目AGPL许可证、开源说明、本文及上述字体和推理库许可文件。

@@ -24,6 +24,7 @@ func flush() -> void:
 	if session.production.is_processing(): session.production.elapse(delta)
 	if is_instance_valid(session.forest) and session.forest.is_processing(): session.forest.elapse(delta)
 	if is_instance_valid(session.foraging) and session.foraging.is_processing(): session.foraging.elapse(delta)
+	if is_instance_valid(session.orchard) and session.orchard.is_processing(): session.orchard.elapse(delta)
 	if session.vitals.is_processing():
 		var left := delta
 		while left>0.00001:
@@ -34,6 +35,7 @@ func flush() -> void:
 			session.magic.branches.advance(step)
 			session.magic.enchants.advance(step)
 			session.construction.advance(step)
+			if is_instance_valid(session.monsters): session.monsters.advance(step)
 			if is_instance_valid(session.tribes): session.tribes.advance(step)
 			if is_instance_valid(session.wildlife): session.wildlife.advance(step)
 			if is_instance_valid(session.torches): session.torches.advance(step)

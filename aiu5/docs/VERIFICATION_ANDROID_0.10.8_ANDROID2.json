@@ -1,0 +1,79 @@
+{
+  "version": "0.10.8-android.2",
+  "version_code": 10802,
+  "apk": "E:\\AIU\\aiu5\\exports\\android\\沙盘上的生活-0.10.8-android.2.apk",
+  "size_bytes": 197285549,
+  "sha256": "4550cdd9c84286c9adc272c5051a34d332a2825935102510e56be088f144dd12",
+  "package": "com.aiu5.sandboxlife",
+  "min_api": 26,
+  "target_api": 36,
+  "abis": [
+    "arm64-v8a",
+    "armeabi-v7a",
+    "x86_64"
+  ],
+  "permissions": [
+    "android.permission.CAMERA"
+  ],
+  "apk_signature_v2": true,
+  "same_signing_key_as_android_1": true,
+  "desktop_artifacts_unchanged": {
+    "exports\\windows\\AIU5.exe": "95ac06bd9c8a9f056d94b5366449e65f05dbd2181f361ae2e61b2ed10c4abe9e",
+    "exports\\windows\\AIU5.pck": "5ba2656c846ca391927c770539a9e1411f7022e7b11c6196bfaf3743ff726408",
+    "exports\\AIU5-Setup-0.10.8-win64.exe": "51e336eb805cbe43058cd453f7f4b8b63e7132d88eecaecb41fa6ac3b6af0063"
+  },
+  "same_physical_directory_as_interview": true,
+  "source_mobile_regression": {
+    "android": false,
+    "checks": 36,
+    "display": "headless",
+    "failures": [],
+    "version": "0.10.8"
+  },
+  "orchard_transactions_and_save_migration": {
+    "checks": 33,
+    "failures": []
+  },
+  "workbench_and_input_hints": {
+    "checks": 23,
+    "failures": []
+  },
+  "android_15_emulator": {
+    "android": true,
+    "checks": 42,
+    "display": "Android",
+    "failures": [],
+    "version": "0.10.8"
+  },
+  "changes": {
+    "main_village_mature_apple_trees": 3,
+    "forest_tribe_mature_apple_trees": 20,
+    "plant_requires_awakened_wood_level": 1,
+    "plant_apple_cost": 1,
+    "sapling_online_seconds": 300,
+    "fruit_per_batch": 3,
+    "fruit_regrowth_online_seconds": 300,
+    "unpicked_batches_max": 1,
+    "mobile_run_rect": [
+      548,
+      318,
+      81,
+      43
+    ]
+  },
+  "manual_release_checks": [
+    "Signed overwrite installation succeeded; previous Android save loaded",
+    "Updated touch interface and planting button visually inspected"
+  ],
+  "physical_phone": {
+    "model": "V2307A",
+    "android": 15,
+    "tested": false
+  },
+  "screenshots": [
+    "android-verification-android2/apple-tree.png",
+    "android-verification-android2/tool-purpose.png",
+    "android-verification-android2/apple-release-game.png",
+    "android-verification-android2/apple-release-more.png"
+  ]
+}

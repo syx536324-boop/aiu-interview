@@ -29,8 +29,11 @@ func _register_new() -> void:
 		if node is Label: _track(node, world)
 
 func _track(node: CanvasItem, parent: Node2D) -> void:
-	if node.get_meta("procedural_resource", false): return
 	var id := node.get_instance_id()
+	# Resource and magic modules own these nodes, including any detached lifetime.
+	if node.get_meta("procedural_resource", false) or node.get_meta("streaming_exempt", false):
+		entries.erase(id)
+		return
 	if not entries.has(id): entries[id] = {"node": node, "parent": parent, "active": true}
 
 func focus(immediate := false) -> void:
@@ -63,6 +66,9 @@ func focus(immediate := false) -> void:
 		var record: Dictionary = entries[id]
 		var node: Variant = record.node
 		if not is_instance_valid(node) or node.is_queued_for_deletion():
+			entries.erase(id)
+			continue
+		if node.get_meta("procedural_resource",false) or node.get_meta("streaming_exempt",false):
 			entries.erase(id)
 			continue
 		# Indoor actors belong to interiors, never to the outdoor streaming container.
@@ -105,6 +111,7 @@ func _process(delta: float) -> void:
 		var record: Dictionary = entries[id]
 		var node: Variant = record.node
 		if not is_instance_valid(node) or not record.active or node.get_parent() != null: continue
+		if node.get_meta("procedural_resource",false) or node.get_meta("streaming_exempt",false): entries.erase(id); continue
 		record.parent.add_child(node)
 		attached_last_frame += 1
 		if Time.get_ticks_usec() - started >= 2000: break

@@ -1,0 +1,1171 @@
+{
+  "version": "0.10.5",
+  "date": "2026-10-16T11:31:21.975333+08:00",
+  "published": false,
+  "installed": true,
+  "scope": "Building bench placement freezes near obstacles due to repeated global path searches",
+  "player_data_policy": "Fresh isolated state or private copied player state only; original data never used as a test write target",
+  "baseline": {
+    "version": "0.10.4",
+    "program_sha256": "4a772173273d5dca2fc9f3d09c5ed742eb41b6746719051049398b4dbb81389f",
+    "pck_sha256": "eec994087d0f75800c66bd08ccf92580d7bcf444491828d1080f28fa00a42747",
+    "measurements": [
+      {
+        "display": "Windows",
+        "far": [
+          336.0,
+          220.0
+        ],
+        "near": [
+          328.0,
+          220.0
+        ],
+        "obstacles": 1862,
+        "phase": "loaded",
+        "solid_cells": 30244,
+        "targets": 180,
+        "version": "0.10.4"
+      },
+      {
+        "at": [
+          336.0,
+          220.0
+        ],
+        "phase": "preview_begin"
+      },
+      {
+        "at": [
+          336.0,
+          220.0
+        ],
+        "hint": "绿色位置可放置 · 左键确认 · R 旋转 · 右键取消",
+        "ms": 1.417,
+        "phase": "preview_end"
+      },
+      {
+        "at": [
+          328.0,
+          220.0
+        ],
+        "phase": "preview_begin"
+      },
+      {
+        "at": [
+          328.0,
+          220.0
+        ],
+        "hint": "绿色位置可放置 · 左键确认 · R 旋转 · 右键取消",
+        "ms": 5055.145,
+        "phase": "preview_end"
+      },
+      {
+        "phase": "complete"
+      }
+    ],
+    "process": {
+      "exit_code": 0,
+      "timeout": false,
+      "program_version": "0.10.4"
+    }
+  },
+  "verification": {
+    "final-source-fresh-2": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            264.0
+          ],
+          "ms": 15.756
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            264.0
+          ],
+          "ms": 6.824
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            264.0
+          ],
+          "ms": 6.946
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            264.0
+          ],
+          "ms": 6.685
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            264.0
+          ],
+          "ms": 8.94
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            264.0
+          ],
+          "ms": 6.676
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            264.0
+          ],
+          "ms": 6.534
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            264.0
+          ],
+          "ms": 6.575
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            264.0
+          ],
+          "ms": 6.477
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            264.0
+          ],
+          "ms": 7.817
+        },
+        {
+          "action": "preview",
+          "at": [
+            336.0,
+            264.0
+          ],
+          "ms": 6.484
+        },
+        {
+          "action": "preview",
+          "at": [
+            340.0,
+            264.0
+          ],
+          "ms": 7.675
+        },
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            268.0
+          ],
+          "ms": 6.147
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            268.0
+          ],
+          "ms": 7.284
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            268.0
+          ],
+          "ms": 6.103
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            268.0
+          ],
+          "ms": 6.704
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            268.0
+          ],
+          "ms": 6.829
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            268.0
+          ],
+          "ms": 6.305
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            268.0
+          ],
+          "ms": 6.224
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            268.0
+          ],
+          "ms": 5.988
+        },
+        {
+          "action": "place_and_save",
+          "ms": 75.473
+        }
+      ],
+      "version": "0.10.5",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "final-source-save-3": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            220.0
+          ],
+          "ms": 18.954
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            220.0
+          ],
+          "ms": 17.307
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            224.0
+          ],
+          "ms": 7.986
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            224.0
+          ],
+          "ms": 7.486
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            228.0
+          ],
+          "ms": 8.508
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            228.0
+          ],
+          "ms": 9.469
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            232.0
+          ],
+          "ms": 8.44
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            232.0
+          ],
+          "ms": 8.359
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            236.0
+          ],
+          "ms": 8.481
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            236.0
+          ],
+          "ms": 7.263
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            240.0
+          ],
+          "ms": 8.506
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            240.0
+          ],
+          "ms": 7.188
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            244.0
+          ],
+          "ms": 10.851
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            244.0
+          ],
+          "ms": 7.551
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            248.0
+          ],
+          "ms": 7.123
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            248.0
+          ],
+          "ms": 7.249
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            252.0
+          ],
+          "ms": 8.281
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            252.0
+          ],
+          "ms": 8.235
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            256.0
+          ],
+          "ms": 9.583
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            256.0
+          ],
+          "ms": 7.105
+        },
+        {
+          "action": "place_and_save",
+          "ms": 78.243
+        }
+      ],
+      "version": "0.10.5",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": false
+    },
+    "export-fresh": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            264.0
+          ],
+          "ms": 12.52
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            264.0
+          ],
+          "ms": 5.531
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            264.0
+          ],
+          "ms": 5.209
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            264.0
+          ],
+          "ms": 4.97
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            264.0
+          ],
+          "ms": 4.999
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            264.0
+          ],
+          "ms": 4.851
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            264.0
+          ],
+          "ms": 5.171
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            264.0
+          ],
+          "ms": 4.863
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            264.0
+          ],
+          "ms": 4.958
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            264.0
+          ],
+          "ms": 5.043
+        },
+        {
+          "action": "preview",
+          "at": [
+            336.0,
+            264.0
+          ],
+          "ms": 6.307
+        },
+        {
+          "action": "preview",
+          "at": [
+            340.0,
+            264.0
+          ],
+          "ms": 4.924
+        },
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            268.0
+          ],
+          "ms": 4.676
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            268.0
+          ],
+          "ms": 4.727
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            268.0
+          ],
+          "ms": 4.65
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            268.0
+          ],
+          "ms": 4.528
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            268.0
+          ],
+          "ms": 4.676
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            268.0
+          ],
+          "ms": 4.64
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            268.0
+          ],
+          "ms": 4.455
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            268.0
+          ],
+          "ms": 4.63
+        },
+        {
+          "action": "place_and_save",
+          "ms": 63.579
+        }
+      ],
+      "version": "0.10.5",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "export-player-copy": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            220.0
+          ],
+          "ms": 13.707
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            220.0
+          ],
+          "ms": 6.225
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            224.0
+          ],
+          "ms": 5.635
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            224.0
+          ],
+          "ms": 5.475
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            228.0
+          ],
+          "ms": 5.596
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            228.0
+          ],
+          "ms": 5.667
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            232.0
+          ],
+          "ms": 5.703
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            232.0
+          ],
+          "ms": 5.678
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            236.0
+          ],
+          "ms": 5.88
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            236.0
+          ],
+          "ms": 5.673
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            240.0
+          ],
+          "ms": 5.595
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            240.0
+          ],
+          "ms": 5.786
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            244.0
+          ],
+          "ms": 5.934
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            244.0
+          ],
+          "ms": 5.509
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            248.0
+          ],
+          "ms": 5.627
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            248.0
+          ],
+          "ms": 5.607
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            252.0
+          ],
+          "ms": 5.436
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            252.0
+          ],
+          "ms": 5.648
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            256.0
+          ],
+          "ms": 5.765
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            256.0
+          ],
+          "ms": 5.611
+        },
+        {
+          "action": "place_and_save",
+          "ms": 65.195
+        }
+      ],
+      "version": "0.10.5",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "export-transitions": {
+      "checks": 345,
+      "display": "Windows",
+      "failures": [],
+      "rounds": 8,
+      "transitions": 56,
+      "version": "0.10.5",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "installed-fresh": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            264.0
+          ],
+          "ms": 15.046
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            264.0
+          ],
+          "ms": 5.283
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            264.0
+          ],
+          "ms": 6.206
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            264.0
+          ],
+          "ms": 5.107
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            264.0
+          ],
+          "ms": 5.047
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            264.0
+          ],
+          "ms": 5.18
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            264.0
+          ],
+          "ms": 5.013
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            264.0
+          ],
+          "ms": 5.012
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            264.0
+          ],
+          "ms": 6.544
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            264.0
+          ],
+          "ms": 5.761
+        },
+        {
+          "action": "preview",
+          "at": [
+            336.0,
+            264.0
+          ],
+          "ms": 5.673
+        },
+        {
+          "action": "preview",
+          "at": [
+            340.0,
+            264.0
+          ],
+          "ms": 5.551
+        },
+        {
+          "action": "preview",
+          "at": [
+            296.0,
+            268.0
+          ],
+          "ms": 4.807
+        },
+        {
+          "action": "preview",
+          "at": [
+            300.0,
+            268.0
+          ],
+          "ms": 5.838
+        },
+        {
+          "action": "preview",
+          "at": [
+            304.0,
+            268.0
+          ],
+          "ms": 4.656
+        },
+        {
+          "action": "preview",
+          "at": [
+            308.0,
+            268.0
+          ],
+          "ms": 4.656
+        },
+        {
+          "action": "preview",
+          "at": [
+            312.0,
+            268.0
+          ],
+          "ms": 4.685
+        },
+        {
+          "action": "preview",
+          "at": [
+            316.0,
+            268.0
+          ],
+          "ms": 5.881
+        },
+        {
+          "action": "preview",
+          "at": [
+            320.0,
+            268.0
+          ],
+          "ms": 4.855
+        },
+        {
+          "action": "preview",
+          "at": [
+            324.0,
+            268.0
+          ],
+          "ms": 4.669
+        },
+        {
+          "action": "place_and_save",
+          "ms": 73.462
+        }
+      ],
+      "version": "0.10.5",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    },
+    "installed-player-copy": {
+      "checks": 186,
+      "display": "Windows",
+      "failures": [],
+      "measurements": [
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            220.0
+          ],
+          "ms": 14.866
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            220.0
+          ],
+          "ms": 6.427
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            224.0
+          ],
+          "ms": 5.719
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            224.0
+          ],
+          "ms": 9.13
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            228.0
+          ],
+          "ms": 8.323
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            228.0
+          ],
+          "ms": 5.682
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            232.0
+          ],
+          "ms": 5.797
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            232.0
+          ],
+          "ms": 7.755
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            236.0
+          ],
+          "ms": 11.808
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            236.0
+          ],
+          "ms": 6.209
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            240.0
+          ],
+          "ms": 6.172
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            240.0
+          ],
+          "ms": 5.661
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            244.0
+          ],
+          "ms": 5.944
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            244.0
+          ],
+          "ms": 5.843
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            248.0
+          ],
+          "ms": 5.714
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            248.0
+          ],
+          "ms": 5.644
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            252.0
+          ],
+          "ms": 14.506
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            252.0
+          ],
+          "ms": 9.484
+        },
+        {
+          "action": "preview",
+          "at": [
+            328.0,
+            256.0
+          ],
+          "ms": 5.793
+        },
+        {
+          "action": "preview",
+          "at": [
+            332.0,
+            256.0
+          ],
+          "ms": 9.849
+        },
+        {
+          "action": "place_and_save",
+          "ms": 67.071
+        }
+      ],
+      "version": "0.10.5",
+      "exit_code": 0,
+      "script_errors": 0,
+      "actual_windows_executable": true
+    }
+  },
+  "package": {
+    "name": "AIU5-Setup-0.10.5-win64.exe",
+    "bytes": 330884668,
+    "sha256": "2f7c9f783a1fa81def924301e534bfddf570c4cb5917394f389baf71f44b297d"
+  },
+  "windows_program": {
+    "AIU5.exe": "c08af52b069e81c34f5fa02a35cab0396c7a8632cddbe73ed3ec7436bf3ce1af",
+    "AIU5.pck": "9422acb192a34c3cdc43916422575a9ffa74ea2a95847fc8832f918d5003ceee",
+    "LICENSE": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+    "OPEN_SOURCE.md": "5452fe71e5cf47b1fafd41b97aa105dde5be21cdc290ddd9265d2f0ab772a12c"
+  },
+  "tested_native_copy_sha256": {
+    "AIU5.exe": "c08af52b069e81c34f5fa02a35cab0396c7a8632cddbe73ed3ec7436bf3ce1af",
+    "AIU5.pck": "9422acb192a34c3cdc43916422575a9ffa74ea2a95847fc8832f918d5003ceee"
+  },
+  "code_hashes": {
+    "features/village/navigation.gd": "45c893a1fb0a541852127020b55d7aa205765a7c3253a52d30b7a0d997d702c3",
+    "features/village/accessibility.gd": "b69e8933fcb626dc3055d39e244384484cc376d40c04cbcab716d76528f43d56",
+    "features/homestead/grounds.gd": "be9c1180fcdab71ab60df1aee45615a1981928fa05215a8d1b8ecd6f90924151",
+    "tests/building_deployment_probe.gd": "60876527750c41743591c9cfb20a728ebb9c2e41537d09e5db51532c5331808b"
+  },
+  "installation": {
+    "player_sha256_unchanged": true,
+    "installed": "C:\\Users\\shao\\AppData\\Local\\Programs\\AIU5",
+    "override_removed": true,
+    "installed_fresh_passed": true,
+    "installed_files_verified": true,
+    "version": "0.10.5",
+    "installed_player_copy_passed": true,
+    "player_files": 18,
+    "private_player_backup_created": true
+  },
+  "synchronization": {
+    "target": "C:/Users/shao/Desktop/aiu面试题/aiu5",
+    "scope": "Complete local folders including .git, .godot, runtime and installers",
+    "manifest": "C:\\Users\\shao\\Desktop\\aiu\\.setup\\building-freeze\\directory-equality.json"
+  }
+}

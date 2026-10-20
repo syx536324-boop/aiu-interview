@@ -1,5 +1,7 @@
-# Presents categorized recipes, ingredient requirements and a separate confirmation action.
+# Presents recipe requirements and bench management actions through backend snapshots.
 extends CanvasLayer
+const TouchScroll := preload("res://features/interface/touch_scroll.gd")
+const InputHints := preload("res://features/interface/input_hints.gd")
 signal close_requested
 signal recipe_requested(id: String)
 const Categories := preload("res://features/inventory/categories.gd")
@@ -7,9 +9,17 @@ var root: ColorRect
 var title: Label
 var status: Label
 var details: Label
+var detail_scroll: ScrollContainer
+var detail_recipe := ""
 var job_label: Label
+var list_gesture: Node
+var detail_gesture: Node
+var job_labels: Array[Label]=[]
+var job_bars: Array[ProgressBar]=[]
 var progress: ProgressBar
 var confirm_button: Button
+var move_button: Button
+var recover_button: Button
 var tabs: HBoxContainer
 var tab_buttons: Dictionary = {}
 var buttons: Array[Button] = []
@@ -41,19 +51,30 @@ func _ready() -> void:
 	scroll.size = Vector2(230,208)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	root.add_child(scroll)
+	list_gesture=TouchScroll.attach(scroll)
 	list = VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.add_theme_constant_override("separation",5)
 	scroll.add_child(list)
-	details = _label(Vector2(286,104),Vector2(322,170),12)
+	details = _label(Vector2(286,104),Vector2(322,140),12)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	job_label = _label(Vector2(286,277),Vector2(322,31),11)
-	progress = ProgressBar.new()
-	progress.position = Vector2(286,310)
-	progress.size = Vector2(322,10)
-	progress.max_value = 60
-	progress.show_percentage = false
-	root.add_child(progress)
+	detail_scroll = ScrollContainer.new()
+	detail_scroll.position = Vector2(286,104); detail_scroll.size = Vector2(322,140)
+	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	root.add_child(detail_scroll); details.reparent(detail_scroll)
+	detail_gesture=TouchScroll.attach(detail_scroll)
+	details.position = Vector2.ZERO; details.size = Vector2(302,0)
+	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for i in range(3):
+		var text:=_label(Vector2(286,248+i*24),Vector2(322,17),10)
+		text.clip_text=true; job_labels.append(text)
+		var bar:=ProgressBar.new()
+		var track:=StyleBoxFlat.new();track.bg_color=Color("433828")
+		var fill:=StyleBoxFlat.new();fill.bg_color=Color("b9985e")
+		bar.add_theme_stylebox_override("background",track);bar.add_theme_stylebox_override("fill",fill)
+		bar.show_percentage=false;bar.position=Vector2(286,265+i*24);bar.size=Vector2(322,5)
+		bar.show_percentage=false;root.add_child(bar);job_bars.append(bar)
+	job_label=job_labels[0];progress=job_bars[0]
 	status = _label(Vector2(32,325),Vector2(576,18),10)
 	status.clip_text = true
 	var close := _button(root,"返回 [Esc / T]",Vector2(164,32))
@@ -64,6 +85,12 @@ func _ready() -> void:
 	confirm_button.pressed.connect(func() -> void:
 		var r := selected_recipe()
 		if not r.is_empty() and bool(r.get("enabled",false)): recipe_requested.emit(selected_id))
+	move_button = _button(root,"移动",Vector2(110,32))
+	move_button.position = Vector2(208,351)
+	move_button.pressed.connect(func() -> void: recipe_requested.emit("fixture:move"))
+	recover_button = _button(root,"回收",Vector2(110,32))
+	recover_button.position = Vector2(326,351)
+	recover_button.pressed.connect(func() -> void: recipe_requested.emit("fixture:recover"))
 	root.visible = false
 func _label(at: Vector2, dimensions: Vector2, size: int) -> Label:
 	var label := Label.new()
@@ -89,6 +116,7 @@ func _ensure_buttons(count: int) -> void:
 	for i in range(buttons.size(),count):
 		var b := _button(list,"",Vector2(214,34))
 		b.pressed.connect(func() -> void:
+			if list_gesture.blocks_click():return
 			selected_id = str(b.get_meta("recipe_id",""))
 			_render())
 		buttons.append(b)
@@ -125,12 +153,21 @@ func selected_recipe() -> Dictionary:
 		if str(recipe.id)==selected_id: return recipe
 	return {}
 func _render() -> void:
+	for button: Button in [move_button,recover_button]:
+		var selected_action: Dictionary = {}
+		var id := "fixture:move" if button == move_button else "fixture:recover"
+		for action: Dictionary in current.get("fixture_actions",[]):
+			if action.id == id: selected_action = action; break
+		button.visible = not selected_action.is_empty()
+		if selected_action.is_empty(): continue
+		button.text = selected_action.name
+		button.disabled = not bool(selected_action.enabled); button.tooltip_text = selected_action.detail
 	var visible_recipes: Array = []
 	var groups: Array = ["all"]
 	for r: Dictionary in current.get("recipes",[]):
 		var group := str(r.get("category","all"))
 		if group not in groups: groups.append(group)
-		if category == "all" or group == category or r.id == "craft:collect": visible_recipes.append(r)
+		if category == "all" or group == category or str(r.id).begins_with("craft:collect") or r.id=="bench:upgrade": visible_recipes.append(r)
 	for id: String in tab_buttons:
 		tab_buttons[id].visible = id in groups
 		if tab_buttons[id].visible: _skin(tab_buttons[id],id==category)
@@ -149,22 +186,32 @@ func _render() -> void:
 		_skin(b,str(r.id)==selected_id)
 	var selected := selected_recipe()
 	confirm_button.disabled = selected.is_empty() or not bool(selected.get("enabled",false))
-	confirm_button.text = ("确认升级" if current.get("mode","")=="upgrade" else "确认合成") if selected.has("duration") else ("领取成品" if selected_id=="craft:collect" else "确认操作")
+	confirm_button.text = "确认升级" if selected_id=="bench:upgrade" or current.get("mode","")=="upgrade" else ("领取成品" if selected_id.begins_with("craft:collect") else ("确认合成" if selected.has("duration") else "确认操作"))
 	details.text = "选择左侧物品查看材料。"
 	if not selected.is_empty():
 		details.text = "【%s】%s\n\n" % [Categories.LABELS.get(selected.get("category","all"),"全部"),selected.name]
+		if str(selected.get("usage","")) != "": details.text += "用途：" + str(selected.usage) + "\n\n"
 		if selected.has("ingredients"):
-			details.text += ("升级材料（需要 / 拥有）：\n" if current.get("mode","")=="upgrade" else "合成材料（需要 / 拥有）：\n")
+			details.text += ("升级材料（需要 / 拥有）：\n" if current.get("mode","")=="upgrade" or selected_id=="bench:upgrade" else "合成材料（需要 / 拥有）：\n")
 			for item: Dictionary in selected.ingredients:
 				details.text += "%s ×%d / %d%s\n" % [item.name,item.need,item.have,"  缺少" if int(item.have)<int(item.need) else ""]
-			details.text += "\n%s时间：%.1f秒在线时间" % ["升级" if current.get("mode","")=="upgrade" else "制作",float(selected.get("duration",60))]
+			if bool(selected.get("immediate",false)): details.text+="\n确认后立即升级。"
+			else: details.text += "\n%s时间：%.1f秒在线时间" % ["升级" if current.get("mode","")=="upgrade" else "制作",float(selected.get("duration",60))]
 			if current.get("mode","")=="upgrade": details.text+="\n材料逐级＋15% · 升级耗时逐级＋30%"
 		else: details.text += str(selected.detail)
-	var job: Dictionary = current.get("job",{})
-	progress.visible = not job.is_empty()
-	if job.is_empty(): job_label.text = "材料已支付的施工可用木系三阶完成。" if current.get("mode","")=="upgrade" else ("选择左侧操作，确认后执行。" if current.get("mode","")=="tribes" else "确认后扣除材料；完成后放入制作角色背包。")
-	else:
-		var remaining := float(job.remaining)
-		progress.max_value=float(job.get("duration",60))
-		progress.value = progress.max_value-remaining
-		job_label.text = "%s · 剩余%.1f秒" % [job.name,remaining] if remaining>0 else "%s · 成品待领（不再扣材料）" % job.name
+	details.text = InputHints.text(details.text)
+	status.text = InputHints.text(status.text)
+	if detail_recipe != selected_id:
+		detail_recipe = selected_id; detail_scroll.scroll_vertical = 0
+	var jobs: Array=current.get("jobs",[])
+	if jobs.is_empty() and not current.get("job",{}).is_empty():jobs=[current.job]
+	for i in range(3):
+		job_labels[i].visible=i<jobs.size() or i==0
+		job_bars[i].visible=i<jobs.size()
+		if i>=jobs.size():
+			job_labels[i].text=("确认后扣料，立即升级工作台。" if selected_id=="bench:upgrade" else "确认后扣料，完成后交给制作角色。") if i==0 else ""
+			continue
+		var job: Dictionary=jobs[i]
+		var remaining: float=float(job.remaining)
+		job_bars[i].max_value=float(job.get("duration",60));job_bars[i].value=job_bars[i].max_value-remaining
+		job_labels[i].text="%d. %s · 剩余%.1f秒" % [i+1,job.name,remaining] if remaining>0 else "%d. %s · 成品待领" % [i+1,job.name]

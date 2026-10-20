@@ -81,7 +81,7 @@ func commit_resource_reward(actor: String, resource: String, progress: int, item
 				if item in Gear.WEAPONS: bag[i].merge(Wear.normalize())
 				if item=="torch": bag[i].merge(Torch.normalize())
 				remaining -= count
-			elif not empty_pass and slot.get("item", "") == item and not Origin.magical(slot):
+			elif not empty_pass and slot.get("item", "") == item and not Origin.magical(slot) and int(slot.get("bench_level",1))==1:
 				var count := mini(remaining, int(Catalog.ITEMS[item]["limit"]) - int(slot["count"]))
 				slot["count"] += count
 				remaining -= count
@@ -115,6 +115,8 @@ func _sanitize_slots(data: Variant, capacity := CAPACITY) -> Array:
 			if Origin.magical(clean): clean.count = 1
 			if id in Gear.WEAPONS: clean.merge(Wear.normalize(slot))
 			if id=="torch": clean.merge(Torch.normalize(slot))
+			if id=="workbench" and int(slot.get("bench_level",1))>1:
+				clean["bench_level"]=clampi(int(slot.bench_level),1,3);clean.count=1
 			result.append(clean)
 		else:
 			result.append({})
@@ -190,7 +192,7 @@ func transfer_slots(source: Array, source_index: int, target: Array, target_inde
 	var to: Dictionary = target[target_index]
 	if from.is_empty():
 		return
-	if not to.is_empty() and from["item"] == to["item"] and from.item not in Gear.WEAPONS and from.item!="torch" and not Origin.magical(from) and not Origin.magical(to):
+	if not to.is_empty() and from["item"] == to["item"] and from.item not in Gear.WEAPONS and from.item!="torch" and not Origin.magical(from) and not Origin.magical(to) and int(from.get("bench_level",1))==1 and int(to.get("bench_level",1))==1:
 		var room := int(Catalog.ITEMS[from["item"]]["limit"]) - int(to["count"])
 		var count := mini(room, int(from["count"]))
 		to["count"] += count
@@ -212,7 +214,7 @@ func quick_transfer(side: String, index: int) -> void:
 	var original := int(source[index]["count"])
 	var remaining := original
 	var id := str(source[index]["item"])
-	if id in Gear.WEAPONS or id=="torch" or Origin.magical(source[index]):
+	if id in Gear.WEAPONS or id=="torch" or Origin.magical(source[index]) or int(source[index].get("bench_level",1))>1:
 		for i in range(target.size()):
 			if target[i].is_empty():
 				target[i] = source[index]
@@ -232,7 +234,7 @@ func quick_transfer(side: String, index: int) -> void:
 				var count := mini(remaining, int(Catalog.ITEMS[id]["limit"]))
 				target[i] = {"item": id, "count": count}
 				remaining -= count
-			elif not empty_pass and slot.get("item", "") == id and not Origin.magical(slot):
+			elif not empty_pass and slot.get("item", "") == id and not Origin.magical(slot) and int(slot.get("bench_level",1))==1:
 				var count := mini(remaining, int(Catalog.ITEMS[id]["limit"]) - int(slot["count"]))
 				slot["count"] += count
 				remaining -= count
@@ -340,7 +342,7 @@ func exchange(id: String, costs: Dictionary, rewards: Dictionary, apply := true,
 					if item in Gear.WEAPONS: bag[i].merge(Wear.normalize())
 					if item=="torch": bag[i].merge(Torch.normalize())
 					remaining -= count
-				elif not empty_pass and slot.get("item", "") == item and not Origin.magical(slot):
+				elif not empty_pass and slot.get("item", "") == item and not Origin.magical(slot) and int(slot.get("bench_level",1))==1:
 					var count := mini(remaining, int(Catalog.ITEMS[item].limit) - int(slot.count))
 					slot.count += count
 					remaining -= count

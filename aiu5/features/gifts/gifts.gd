@@ -70,6 +70,7 @@ func begin_camera() -> void:
 	sequence = 0
 	received = false
 	frozen = false
+	if is_instance_valid(session.onboarding):session.onboarding.record_feature("gifts")
 	camera.open(session_id)
 	_emit()
 

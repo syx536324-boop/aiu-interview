@@ -2,7 +2,6 @@
 extends Node2D
 
 const Furniture := preload("res://features/interiors/furniture.gd")
-const Navigation := preload("res://features/village/navigation.gd")
 const Land := preload("res://features/homestead/land.gd")
 const Herd := preload("res://features/livestock/herd_catalog.gd")
 const Shed := preload("res://features/livestock/shed.gd")
@@ -12,6 +11,8 @@ var homestead: Node
 var fixtures: Array[Node2D] = []
 var room_id := "outdoors"
 var next_id := 0
+# Preplaced benches are seeded once, including when their recovered item is deployed elsewhere.
+var retired_fixtures: Dictionary = {}
 var navigation: RefCounted:
 	get: return world.navigation
 
@@ -55,6 +56,7 @@ func relocate(fixture: Node2D, at: Vector2, direction: int) -> void:
 	_collider(fixture)
 
 func remove_fixture(fixture: Node2D) -> void:
+	if fixture.public_fixture and fixture.kind == "workbench": retired_fixtures[fixture.fixture_id] = true
 	fixtures.erase(fixture)
 	if fixture.get_parent() != null: fixture.get_parent().remove_child(fixture)
 	fixture.queue_free()
@@ -110,32 +112,23 @@ func placement_error(ghost: Node2D, original: Node2D = null) -> String:
 	var error := land_error(ghost.visual_bounds(), world.active_resident, true, original)
 	if error != "": return error
 	if ghost.kind=="fence_gate": return ""
-	var original_obstacles: Array[Rect2] = world.logical_obstacles(world.gate_visual.open)
 	var obstacles: Array[Rect2] = world.logical_obstacles(world.gate_visual.open, original)
 	# An isolated rectangle in open ground cannot close an existing passage.
 	if not obstacles.any(func(rect: Rect2) -> bool: return ghost.collision_bounds().grow(12).intersects(rect)): return ""
-	# Accessibility checks consider gates open; closed gates may deliberately enclose livestock.
+	# Gates may deliberately enclose livestock; test with those entrances open.
+	var removed: Array[Rect2] = []
+	if is_instance_valid(original): removed.append(original.collision_bounds())
 	for existing in fixtures:
-		if existing.kind=="fence_gate": obstacles.erase(existing.collision_bounds())
-	obstacles.append(ghost.collision_bounds())
-	var routes = world.navigation
+		if existing.kind == "fence_gate": removed.append(existing.collision_bounds())
 	var targets: Array[Vector2] = []
-
 	for resident in world.residents:
 		if resident.room_id == "" and not resident.dead: targets.append(resident.position)
 	for point: Dictionary in world.points.values(): targets.append(point.position)
-	# Test the candidate on the existing grid, touching only changed cells, then restore it.
-	var accessible: Dictionary = {}
-	for target in targets: accessible[target] = not routes.find_path(Vector2(326, 282), target).is_empty()
-	routes.rebuild(obstacles, world.SIZE, world.MIN)
-	var blocked := false
-	for target in targets:
-		if accessible[target] and routes.find_path(Vector2(326, 282), target).is_empty():
-			blocked = true
-			break
-	routes.rebuild(original_obstacles, world.SIZE, world.MIN)
-	return "围栏不能封死村民或设施的通路，请留下出入口。" if blocked else ""
+	# Compare compressed connected regions, never run all-map A* or modify the live grid.
+	var accessible: bool = world.navigation.preserves_access(Vector2(326,282), targets, removed, ghost.collision_bounds())
+	return "围栏不能封死村民或设施的通路，请留下出入口。" if not accessible else ""
 
-func restore(records: Array) -> void:
+func restore(records: Array, retired: Dictionary = {}) -> void:
 	for fixture in fixtures.duplicate(): remove_fixture(fixture)
+	retired_fixtures = retired.duplicate(true)
 	for record: Dictionary in records: add_fixture(record)

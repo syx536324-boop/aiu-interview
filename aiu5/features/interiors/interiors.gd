@@ -1,6 +1,9 @@
 # Keeps separate rooms and safely reparents residents across their exterior and interior spaces.
 extends Node2D
 
+signal room_created(id: String, room: Node2D)
+signal room_releasing(id: String, room: Node2D)
+
 const Room := preload("res://features/interiors/room.gd")
 const Layout := preload("res://features/interiors/layout.gd")
 var rooms: Dictionary = {}
@@ -25,6 +28,7 @@ func enter(resident: CharacterBody2D, home: Dictionary) -> void:
 		room.position = Vector2(2048 + (rooms.size() % 4) * 512, 2048 + floori(rooms.size() / 4.0) * 512)
 		add_child(room)
 		rooms[room_id] = room
+		room_created.emit(room_id,room)
 	var target: Node2D = rooms[room_id]
 	if target.get_meta("outdoor_roof",false): target.position = home.at + Vector2(0,-32)
 	outside_positions[resident.resident_id] = resident.global_position
@@ -55,8 +59,9 @@ func outdoor_position(resident: CharacterBody2D) -> Vector2:
 func focus(resident: CharacterBody2D) -> void:
 	for room_id: String in rooms.keys():
 		var room: Node2D = rooms[room_id]
-		var occupied: bool = room.objects.get_children().any(func(node: Node) -> bool: return node is CharacterBody2D)
+		var occupied: bool = room.objects.get_children().any(func(node: Node) -> bool: return node is CharacterBody2D and not node.has_meta("goblin"))
 		if not occupied:
+			room_releasing.emit(room_id,room)
 			layout_overrides[room_id] = room.export_layout()
 			if room.get_parent() == self: remove_child(room)
 			room.free()

@@ -74,6 +74,7 @@ func focus(at: Vector2, indoors: bool) -> void:
 	if changed: session.world.refresh_obstacles()
 func _occupied(record: Dictionary) -> bool:
 	var bounds := Rect2(record.at-Vector2(26,54),Vector2(52,60))
+	if is_instance_valid(session.orchard) and session.orchard.occupied(bounds): return true
 	for p: Dictionary in session.homestead.plots:
 		if bounds.intersects(Land.bounds(p)): return true
 	for home: Dictionary in session.world.homes:

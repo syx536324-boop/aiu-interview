@@ -83,7 +83,7 @@ func _authorized(actor_id: String, rank: int) -> bool:
 func _reject_npc(npc: bool, text: String) -> bool:
 	return false if npc else _reject(text)
 func _enemy(actor: CharacterBody2D, at: Vector2) -> CharacterBody2D:
-	if not _outdoors(actor): return null
+	if not _outdoors(actor) and actor.room_id!="mine": return null
 	if _is_npc(actor):
 		var target_id: String=str(actor.get_meta("npc_cast_target",session.tribes.guards.npc(actor.enemy_id).get("target_id","")))
 		if target_id!="" and not target_id.begins_with("home:"):
@@ -103,7 +103,7 @@ func _enemy(actor: CharacterBody2D, at: Vector2) -> CharacterBody2D:
 	var result: CharacterBody2D
 	var distance := 22.0
 	for enemy: CharacterBody2D in session.combat.target_enemies():
-		if enemy.hp<=0 or enemy.get_parent()==null: continue
+		if enemy.hp<=0 or enemy.get_parent()==null or enemy.room_id!=actor.room_id: continue
 		var gap := enemy.global_position.distance_to(at)
 		if gap<distance and _visible(actor,enemy.global_position,200) and _line_clear(actor,enemy.global_position):
 			result=enemy

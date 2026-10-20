@@ -1,0 +1,125 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 591.91 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 5070 Laptop GPU
+
+TRANSITION_BEGIN round=0 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=0 room=kitchen
+TRANSITION_BEGIN round=0 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=0 room=blacksmith
+TRANSITION_BEGIN round=0 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=0 room=mine
+TRANSITION_BEGIN round=1 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=1 room=kitchen
+TRANSITION_BEGIN round=1 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=1 room=blacksmith
+TRANSITION_BEGIN round=1 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=1 room=mine
+TRANSITION_BEGIN round=2 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=2 room=kitchen
+TRANSITION_BEGIN round=2 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=2 room=blacksmith
+TRANSITION_BEGIN round=2 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=2 room=mine
+TRANSITION_BEGIN round=3 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=3 room=kitchen
+TRANSITION_BEGIN round=3 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=3 room=blacksmith
+TRANSITION_BEGIN round=3 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=3 room=mine
+TRANSITION_BEGIN round=4 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=4 room=kitchen
+TRANSITION_BEGIN round=4 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=4 room=blacksmith
+TRANSITION_BEGIN round=4 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=4 room=mine
+TRANSITION_BEGIN round=5 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=5 room=kitchen
+TRANSITION_BEGIN round=5 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=5 room=blacksmith
+TRANSITION_BEGIN round=5 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=5 room=mine
+TRANSITION_BEGIN round=6 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=6 room=kitchen
+TRANSITION_BEGIN round=6 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=6 room=blacksmith
+TRANSITION_BEGIN round=6 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=6 room=mine
+TRANSITION_BEGIN round=7 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=7 room=kitchen
+TRANSITION_BEGIN round=7 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=7 room=blacksmith
+TRANSITION_BEGIN round=7 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=7 room=mine
+TRANSITION_BEGIN round=8 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=8 room=kitchen
+TRANSITION_BEGIN round=8 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=8 room=blacksmith
+TRANSITION_BEGIN round=8 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=8 room=mine
+TRANSITION_BEGIN round=9 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=9 room=kitchen
+TRANSITION_BEGIN round=9 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=9 room=blacksmith
+TRANSITION_BEGIN round=9 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=9 room=mine
+TRANSITION_BEGIN round=10 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=10 room=kitchen
+TRANSITION_BEGIN round=10 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=10 room=blacksmith
+TRANSITION_BEGIN round=10 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=10 room=mine
+TRANSITION_BEGIN round=11 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=11 room=kitchen
+TRANSITION_BEGIN round=11 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=11 room=blacksmith
+TRANSITION_BEGIN round=11 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=11 room=mine
+TRANSITION_BEGIN round=12 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=12 room=kitchen
+TRANSITION_BEGIN round=12 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=12 room=blacksmith
+TRANSITION_BEGIN round=12 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=12 room=mine
+TRANSITION_BEGIN round=13 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=13 room=kitchen
+TRANSITION_BEGIN round=13 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=13 room=blacksmith
+TRANSITION_BEGIN round=13 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=13 room=mine
+TRANSITION_BEGIN round=14 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=14 room=kitchen
+TRANSITION_BEGIN round=14 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=14 room=blacksmith
+TRANSITION_BEGIN round=14 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=14 room=mine
+TRANSITION_BEGIN round=15 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=15 room=kitchen
+TRANSITION_BEGIN round=15 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=15 room=blacksmith
+TRANSITION_BEGIN round=15 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=15 room=mine
+TRANSITION_BEGIN round=16 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=16 room=kitchen
+TRANSITION_BEGIN round=16 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=16 room=blacksmith
+TRANSITION_BEGIN round=16 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=16 room=mine
+TRANSITION_BEGIN round=17 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=17 room=kitchen
+TRANSITION_BEGIN round=17 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=17 room=blacksmith
+TRANSITION_BEGIN round=17 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=17 room=mine
+TRANSITION_BEGIN round=18 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=18 room=kitchen
+TRANSITION_BEGIN round=18 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=18 room=blacksmith
+TRANSITION_BEGIN round=18 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=18 room=mine
+TRANSITION_BEGIN round=19 room=kitchen outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=19 room=kitchen
+TRANSITION_BEGIN round=19 room=blacksmith outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=19 room=blacksmith
+TRANSITION_BEGIN round=19 room=mine outside_parent=VillageObjects:<Node2D#90848626331>
+TRANSITION_EXIT round=19 room=mine
+SCENE_TRANSITION_RESULT {"checks":522,"display":"Windows","failures":[],"rounds":20,"transitions":128,"version":"0.10.4"}
+SCENE_TRANSITION_OK transitions=128
